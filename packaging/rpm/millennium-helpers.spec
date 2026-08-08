@@ -4,7 +4,7 @@ Release: 1%{?dist}
 Summary:        Millennium helpers (from source) — Go strangler CLI plus shell helpers/MCP
 License:        MIT
 URL:            https://github.com/bolens/millennium-helpers
-%global source_sha256 7b476bceeed0e1c3efdb52f7b54733f2d73e2f8265202ca98918c231ee9ff606
+%global source_sha256 53ab712c8e10ef2253d91bfc19e12e18cf327e3992cf5045c4208af01a71bf18
 Source0:        https://github.com/bolens/millennium-helpers/releases/download/v%{version}/millennium-helpers-v%{version}-src.tar.gz
 # Source0 sha256: %{source_sha256}
 
