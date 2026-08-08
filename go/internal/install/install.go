@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/version"
+	"github.com/bolens/millennium-helpers/internal/version"
 )
 
 // Result summarizes a dry-run or live install/uninstall.

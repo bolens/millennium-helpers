@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/theme"
+	"github.com/bolens/millennium-helpers/internal/theme"
 	"golang.org/x/term"
 )
 

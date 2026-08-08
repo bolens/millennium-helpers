@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/config"
-	"github.com/bolens/millenium-helpers/internal/steam"
+	"github.com/bolens/millennium-helpers/internal/config"
+	"github.com/bolens/millennium-helpers/internal/steam"
 )
 
 // Test seams for non-interactive unit tests.

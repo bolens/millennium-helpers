@@ -4,7 +4,7 @@
 
 GO ?= go
 CGO_ENABLED ?= 0
-GO_LDFLAGS := -X github.com/bolens/millenium-helpers/internal/version.Version=$(shell tr -d '\n' < VERSION)
+GO_LDFLAGS := -X github.com/bolens/millennium-helpers/internal/version.Version=$(shell tr -d '\n' < VERSION)
 
 setup:
 	@echo "Setting up local development dependencies..."

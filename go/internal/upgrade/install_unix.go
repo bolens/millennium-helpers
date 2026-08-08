@@ -12,7 +12,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/archive"
+	"github.com/bolens/millennium-helpers/internal/archive"
 )
 
 func installPlatform(archivePath, version string, o Options) error {

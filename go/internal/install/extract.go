@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/archive"
+	"github.com/bolens/millennium-helpers/internal/archive"
 )
 
 func extractHelpersArchive(archivePath, destDir string) error {

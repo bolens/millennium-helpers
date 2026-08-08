@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/steam"
+	"github.com/bolens/millennium-helpers/internal/steam"
 )
 
 const maxErrorLogBytes = 4 << 20

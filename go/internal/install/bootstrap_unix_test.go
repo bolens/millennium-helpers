@@ -26,7 +26,7 @@ func TestInstallShBootstrap(t *testing.T) {
 	exe := filepath.Join(t.TempDir(), "millennium")
 	cmd := exec.Command(
 		"go", "build", "-buildvcs=false",
-		"-ldflags", "-X github.com/bolens/millenium-helpers/internal/version.Version="+ver,
+		"-ldflags", "-X github.com/bolens/millennium-helpers/internal/version.Version="+ver,
 		"-o", exe, "./cmd/millennium",
 	)
 	cmd.Dir = filepath.Join(root, "go")

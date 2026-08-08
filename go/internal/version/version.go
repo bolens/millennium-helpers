@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// Version is set via -ldflags "-X github.com/bolens/millenium-helpers/internal/version.Version=..."
+// Version is set via -ldflags "-X github.com/bolens/millennium-helpers/internal/version.Version=..."
 var Version = ""
 
 // Resolve returns the helpers package version string.

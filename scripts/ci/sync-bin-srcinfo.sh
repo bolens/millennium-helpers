@@ -44,7 +44,7 @@ print(m.group(1).lower() if m else "")
 PY
 )"
 
-expected_source="https://github.com/bolens/millenium-helpers/releases/download/v${pkgver}/millennium-helpers-v${pkgver}-linux-amd64.tar.gz"
+expected_source="https://github.com/bolens/millennium-helpers/releases/download/v${pkgver}/millennium-helpers-v${pkgver}-linux-amd64.tar.gz"
 
 srcinfo_stale() {
   [[ -f "$SRCINFO" ]] || return 0

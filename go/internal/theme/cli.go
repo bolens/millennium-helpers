@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/suggest"
+	"github.com/bolens/millennium-helpers/internal/suggest"
 )
 
 // Options for theme CLI (list handled separately by RunListCLI).

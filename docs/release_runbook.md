@@ -16,7 +16,7 @@ Full docs index: [README.md](README.md). Licensing / release payload notice:
 - [ ] You know the target version (semver; bump minor for features, patch for fixes)
 - [ ] GitHub CLI authentication works: `gh auth status`
 - [ ] CodeQL default setup is disabled when `.github/workflows/codeql.yml` is present:
-  `gh api repos/bolens/millenium-helpers/code-scanning/default-setup`
+  `gh api repos/bolens/millennium-helpers/code-scanning/default-setup`
   must report `"state": "not-configured"` (advanced and default setup cannot run together)
 - [ ] `PACKAGING_PAT` is configured in repo secrets (required for auto packaging PR + publish).
   Verify (repo admin): Settings → Secrets and variables → Actions → `PACKAGING_PAT` exists.
@@ -218,7 +218,7 @@ gh pr list --search "packaging" --state open
 
 - [ ] Draft release is **published** (not still draft)
 - [ ] `gh release view vX.Y.Z` shows both archives and `.sha256` sidecars
-- [ ] SPDX SBOM and `.sha256` sidecar are attached; `gh attestation verify <asset> --repo bolens/millenium-helpers` succeeds
+- [ ] SPDX SBOM and `.sha256` sidecar are attached; `gh attestation verify <asset> --repo bolens/millennium-helpers` succeeds
 - [ ] `main` Formula / Scoop / Winget / versioned Arch hashes match the published assets (`make check-version`)
 - [ ] Spot-check: piped installer dry-run or `brew audit` / Scoop manifest sanity
 

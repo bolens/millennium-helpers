@@ -27,7 +27,7 @@ let
     subPackages = [ "cmd/millennium" ];
     env.CGO_ENABLED = "0";
     ldflags = [
-      "-X github.com/bolens/millenium-helpers/internal/version.Version=${version}"
+      "-X github.com/bolens/millennium-helpers/internal/version.Version=${version}"
     ];
     # Avoid VCS stamping when src is not a clean .git checkout for the builder.
     allowGoReference = false;
@@ -100,7 +100,7 @@ stdenv.mkDerivation ({
 
   meta = with lib; {
     description = "Cross-platform utility scripts and Model Context Protocol (MCP) server for managing, upgrading, diagnosing, and controlling Millennium on Linux";
-    homepage = "https://github.com/bolens/millenium-helpers";
+    homepage = "https://github.com/bolens/millennium-helpers";
     license = licenses.mit;
     platforms = platforms.linux;
     mainProgram = "millennium";

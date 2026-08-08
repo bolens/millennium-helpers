@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/config"
-	"github.com/bolens/millenium-helpers/internal/schedule"
-	"github.com/bolens/millenium-helpers/internal/steam"
-	"github.com/bolens/millenium-helpers/internal/theme"
+	"github.com/bolens/millennium-helpers/internal/config"
+	"github.com/bolens/millennium-helpers/internal/schedule"
+	"github.com/bolens/millennium-helpers/internal/steam"
+	"github.com/bolens/millennium-helpers/internal/theme"
 )
 
 func planWindows() []Action {

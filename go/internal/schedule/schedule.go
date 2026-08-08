@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/config"
-	"github.com/bolens/millenium-helpers/internal/suggest"
+	"github.com/bolens/millennium-helpers/internal/config"
+	"github.com/bolens/millennium-helpers/internal/suggest"
 )
 
 // Options holds parsed schedule argv (excluding schedule config — handled separately).

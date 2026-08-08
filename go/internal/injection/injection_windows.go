@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/bolens/millenium-helpers/internal/theme"
+	"github.com/bolens/millennium-helpers/internal/theme"
 )
 
 const disabledSuffix = ".millennium-disabled"

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bolens/millenium-helpers/internal/theme"
+	"github.com/bolens/millennium-helpers/internal/theme"
 )
 
 func installPlatform(archivePath, version string, o Options) error {

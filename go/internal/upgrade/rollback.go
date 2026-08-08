@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bolens/millenium-helpers/internal/theme"
+	"github.com/bolens/millennium-helpers/internal/theme"
 )
 
 // CanNativeRollback reports whether this process can apply a rollback in-process.

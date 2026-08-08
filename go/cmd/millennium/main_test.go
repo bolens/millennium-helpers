@@ -579,7 +579,7 @@ func buildMillennium(t *testing.T) string {
 	verFile := filepath.Join(repo, "VERSION")
 	verBytes, _ := os.ReadFile(verFile)
 	ver := strings.TrimSpace(string(verBytes))
-	ld := "-X github.com/bolens/millenium-helpers/internal/version.Version=" + ver
+	ld := "-X github.com/bolens/millennium-helpers/internal/version.Version=" + ver
 	cmd := exec.Command("go", "build", "-buildvcs=false", "-ldflags", ld, "-o", exe, "./cmd/millennium")
 	cmd.Dir = filepath.Join(repo, "go")
 	out, err := cmd.CombinedOutput()

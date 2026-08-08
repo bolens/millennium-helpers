@@ -17,4 +17,4 @@
 - [ ] `make check-all`
 - [ ] <!-- platform-specific: Pester, make test-go, brew audit, scoop install, etc. -->
 
-See [CONTRIBUTING.md](https://github.com/bolens/millenium-helpers/blob/main/CONTRIBUTING.md) for layout and parity expectations.
+See [CONTRIBUTING.md](https://github.com/bolens/millennium-helpers/blob/main/CONTRIBUTING.md) for layout and parity expectations.

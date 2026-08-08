@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/config"
-	"github.com/bolens/millenium-helpers/internal/theme"
-	"github.com/bolens/millenium-helpers/internal/version"
+	"github.com/bolens/millennium-helpers/internal/config"
+	"github.com/bolens/millennium-helpers/internal/theme"
+	"github.com/bolens/millennium-helpers/internal/version"
 )
 
 // Result is one read-only check line (summary helper).

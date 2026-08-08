@@ -1,7 +1,7 @@
 {
     "version": "nightly",
     "description": "Cross-platform utility scripts and MCP server for Millennium (development build from main).",
-    "homepage": "https://github.com/bolens/millenium-helpers",
+    "homepage": "https://github.com/bolens/millennium-helpers",
     "license": "MIT",
     "notes": [
         "Installs tip-of-main from GitHub (not a release tag).",
@@ -9,8 +9,8 @@
         "To refresh on scoop update: scoop config update_nightly true",
         "Requires a Go toolchain to build millennium.exe on first install/update."
     ],
-    "url": "https://github.com/bolens/millenium-helpers/archive/refs/heads/main.zip",
-    "extract_dir": "millenium-helpers-main",
+    "url": "https://github.com/bolens/millennium-helpers/archive/refs/heads/main.zip",
+    "extract_dir": "millennium-helpers-main",
     "bin": [
         [
             "scripts\\windows\\millennium.exe",

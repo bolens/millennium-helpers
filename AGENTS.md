@@ -6,9 +6,9 @@ cross-platform behavior, and validate the smallest relevant surface before widen
 ## Repository overview
 
 Millennium Helpers is a cross-platform Go CLI for installing, upgrading, repairing,
-diagnosing, scheduling, and managing themes for Millennium. The GitHub repository name
-`millenium-helpers` is intentionally misspelled; the product and executable are
-**Millennium** and `millennium`.
+diagnosing, scheduling, and managing themes for Millennium. The GitHub repository,
+product, and executable use the canonical spellings `millennium-helpers`,
+**Millennium**, and `millennium`.
 
 - `go/cmd/millennium/`: CLI entry point and command registration.
 - `go/internal/`: feature implementations. Prefer shared Go logic with small

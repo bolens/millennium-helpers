@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/atomicfile"
+	"github.com/bolens/millennium-helpers/internal/atomicfile"
 )
 
 // KnownKeys mirrors Bash/PowerShell schedule config.

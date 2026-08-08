@@ -7,7 +7,7 @@ import (
 )
 
 // HelpersGitHubRepo is the GitHub owner/repo for helpers releases.
-const HelpersGitHubRepo = "bolens/millenium-helpers"
+const HelpersGitHubRepo = "bolens/millennium-helpers"
 
 // NormalizeTag returns vX.Y.Z form.
 func NormalizeTag(tag string) (string, error) {

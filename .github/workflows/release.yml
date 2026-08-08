@@ -214,7 +214,7 @@ jobs:
           source scripts/ci/release_assets.sh
           VERSION="${{ steps.meta.outputs.version }}"
           TAG="${{ steps.meta.outputs.tag }}"
-          LDFLAGS="-X github.com/bolens/millenium-helpers/internal/version.Version=${VERSION}"
+          LDFLAGS="-X github.com/bolens/millennium-helpers/internal/version.Version=${VERSION}"
           mkdir -p dist bin
 
           build_go() {
@@ -276,8 +276,8 @@ jobs:
           if [[ "$TAG" == v-draft ]]; then
             ARCHIVE_REF=HEAD
           fi
-          git archive --format=tar.gz --prefix="millenium-helpers-${VERSION}/" -o "$SRC_TAR" "$ARCHIVE_REF"
-          git archive --format=zip --prefix="millenium-helpers-${VERSION}/" -o "$SRC_ZIP" "$ARCHIVE_REF"
+          git archive --format=tar.gz --prefix="millennium-helpers-${VERSION}/" -o "$SRC_TAR" "$ARCHIVE_REF"
+          git archive --format=zip --prefix="millennium-helpers-${VERSION}/" -o "$SRC_ZIP" "$ARCHIVE_REF"
           echo "Created $SRC_TAR and $SRC_ZIP"
 
           {

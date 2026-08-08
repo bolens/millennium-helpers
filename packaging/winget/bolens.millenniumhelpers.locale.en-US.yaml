@@ -4,12 +4,12 @@ PackageVersion: 3.2.1
 PackageLocale: en-US
 Publisher: bolens
 PublisherUrl: https://github.com/bolens
-PublisherSupportUrl: https://github.com/bolens/millenium-helpers/issues
+PublisherSupportUrl: https://github.com/bolens/millennium-helpers/issues
 Author: bolens
 PackageName: Millennium Helpers
-PackageUrl: https://github.com/bolens/millenium-helpers
+PackageUrl: https://github.com/bolens/millennium-helpers
 License: MIT
-LicenseUrl: https://github.com/bolens/millenium-helpers/blob/main/LICENSE
+LicenseUrl: https://github.com/bolens/millennium-helpers/blob/main/LICENSE
 Copyright: Copyright (c) 2026 bolens
 ShortDescription: Cross-platform utility scripts and Model Context Protocol (MCP) server for managing, upgrading, diagnosing, and controlling Millennium on Windows.
 Description: >-

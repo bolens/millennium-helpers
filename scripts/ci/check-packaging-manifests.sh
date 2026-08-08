@@ -43,8 +43,8 @@ url="$(jq -r .url "$scoop_src")"
 [[ "$url" == *"/releases/download/v${VERSION}/millennium-helpers-v${VERSION}-src.zip" ]] \
   || fail "Scoop from-source url must be -src.zip for v${VERSION}, got: $url"
 extract_dir="$(jq -r .extract_dir "$scoop_src")"
-[[ "$extract_dir" == "millenium-helpers-${VERSION}" ]] \
-  || fail "Scoop from-source extract_dir must be millenium-helpers-${VERSION}, got: $extract_dir"
+[[ "$extract_dir" == "millennium-helpers-${VERSION}" ]] \
+  || fail "Scoop from-source extract_dir must be millennium-helpers-${VERSION}, got: $extract_dir"
 require_bins "$scoop_src" millennium
 echo "Scoop from-source OK"
 
@@ -64,8 +64,8 @@ scoop_git=packaging/scoop/millennium-helpers-git.json
 url="$(jq -r .url "$scoop_git")"
 [[ "$url" == *"archive/refs/heads/main.zip" ]] \
   || fail "Scoop-git url must be main.zip, got: $url"
-[[ "$(jq -r .extract_dir "$scoop_git")" == "millenium-helpers-main" ]] \
-  || fail "Scoop-git extract_dir must be millenium-helpers-main"
+[[ "$(jq -r .extract_dir "$scoop_git")" == "millennium-helpers-main" ]] \
+  || fail "Scoop-git extract_dir must be millennium-helpers-main"
 require_bins "$scoop_git" millennium
 echo "Scoop-git OK"
 

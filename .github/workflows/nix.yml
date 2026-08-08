@@ -54,8 +54,8 @@ jobs:
           nix build --experimental-features "nix-command flakes" --no-link .#millennium-helpers-git
 
           VERSION="$(tr -d '[:space:]' < VERSION)"
-          TAG_URL="https://github.com/bolens/millenium-helpers/releases/download/v${VERSION}/millennium-helpers-v${VERSION}-src.tar.gz"
-          BIN_URL="https://github.com/bolens/millenium-helpers/releases/download/v${VERSION}/millennium-helpers-v${VERSION}-linux-amd64.tar.gz"
+          TAG_URL="https://github.com/bolens/millennium-helpers/releases/download/v${VERSION}/millennium-helpers-v${VERSION}-src.tar.gz"
+          BIN_URL="https://github.com/bolens/millennium-helpers/releases/download/v${VERSION}/millennium-helpers-v${VERSION}-linux-amd64.tar.gz"
 
           if curl -fsI "$TAG_URL" >/dev/null 2>&1; then
             nix build --experimental-features "nix-command flakes" --no-link .#millennium-helpers

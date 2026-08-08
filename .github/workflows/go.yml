@@ -129,7 +129,7 @@ jobs:
           ver="$(tr -d '\n' < VERSION)"
           mkdir -p bin
           cd go
-          go build -buildvcs=false -ldflags "-X github.com/bolens/millenium-helpers/internal/version.Version=${ver}" \
+          go build -buildvcs=false -ldflags "-X github.com/bolens/millennium-helpers/internal/version.Version=${ver}" \
             -o ../bin/millennium ./cmd/millennium
           ../bin/millennium version
 

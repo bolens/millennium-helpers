@@ -46,7 +46,7 @@ if [[ ! -f "${SCRIPT_DIR}/VERSION" ]]; then
     echo "Running in standalone/piped mode. Downloading helpers (track=${_PIPE_TRACK})..."
     TEMP_DIR=$(mktemp -d)
     trap 'rm -rf "$TEMP_DIR"' EXIT
-    HELPERS_REPO="${HELPERS_GITHUB_REPO:-bolens/millenium-helpers}"
+    HELPERS_REPO="${HELPERS_GITHUB_REPO:-bolens/millennium-helpers}"
     IS_SOURCE=0
     if [[ -n "${MILLENNIUM_HELPERS_RELEASE_URL:-}" ]]; then
       RELEASE_URL="$MILLENNIUM_HELPERS_RELEASE_URL"
@@ -151,7 +151,7 @@ with tarfile.open(archive, "r:gz") as bundle:
 PY
     EXTRACT_ROOT="$TEMP_DIR"
     if [[ "$IS_SOURCE" -eq 1 ]]; then
-      for cand in "$TEMP_DIR"/millenium-helpers-main "$TEMP_DIR"/millenium-helpers-*; do
+      for cand in "$TEMP_DIR"/millennium-helpers-main "$TEMP_DIR"/millennium-helpers-*; do
         if [[ -f "${cand}/install.sh" ]]; then
           EXTRACT_ROOT="$cand"
           break
