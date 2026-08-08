@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bolens/millenium-helpers/internal/config"
-	"github.com/bolens/millenium-helpers/internal/schedule"
-	"github.com/bolens/millenium-helpers/internal/theme"
-	"github.com/bolens/millenium-helpers/internal/version"
+	"github.com/bolens/millennium-helpers/internal/config"
+	"github.com/bolens/millennium-helpers/internal/schedule"
+	"github.com/bolens/millennium-helpers/internal/theme"
+	"github.com/bolens/millennium-helpers/internal/version"
 )
 
 // Report is the structured diagnostic snapshot (JSON + doctor plan).

@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bolens/millenium-helpers/internal/config"
-	"github.com/bolens/millenium-helpers/internal/logging"
-	"github.com/bolens/millenium-helpers/internal/theme"
+	"github.com/bolens/millennium-helpers/internal/config"
+	"github.com/bolens/millennium-helpers/internal/logging"
+	"github.com/bolens/millennium-helpers/internal/theme"
 )
 
 const licenseFallback = `MIT License

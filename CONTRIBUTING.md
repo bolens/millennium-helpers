@@ -1,12 +1,12 @@
 # Contributing to Millennium Helpers
 
-Thanks for contributing. This repo provides cross-platform CLI helpers for [Millennium](https://github.com/SteamClientHomebrew/Millennium) (Steam Client homebrew). The GitHub repo is spelled `millenium-helpers` intentionally; the product name remains **Millennium**.
+Thanks for contributing. This repo provides cross-platform CLI helpers for [Millennium](https://github.com/SteamClientHomebrew/Millennium) (Steam Client homebrew). The GitHub repository and product use the canonical **Millennium** spelling.
 
 ## Quick start
 
 ```bash
-git clone https://github.com/bolens/millenium-helpers.git
-cd millenium-helpers
+git clone https://github.com/bolens/millennium-helpers.git
+cd millennium-helpers
 make setup      # installs shellcheck + ruff via your package manager
 make check-all  # lint + Go tests (feature parity) + install-time Bash suite
 ```

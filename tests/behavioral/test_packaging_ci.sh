@@ -80,7 +80,7 @@ ver = sys.argv[2]
 if root in (Path("/"), Path(".").resolve()) or str(root) == "":
     raise SystemExit("refusing to seed version into repo root / cwd")
 
-repo = "bolens/millenium-helpers"
+repo = "bolens/millennium-helpers"
 
 def bump_release_url(text: str) -> str:
     text = re.sub(r"/releases/download/v[^/]+/", f"/releases/download/v{ver}/", text)
@@ -140,10 +140,10 @@ scoop_src = root / "packaging/scoop/millennium-helpers.json"
 data = json.loads(scoop_src.read_text(encoding="utf-8"))
 data["version"] = ver
 data["url"] = f"https://github.com/{repo}/releases/download/v{ver}/millennium-helpers-v{ver}-src.zip"
-data["extract_dir"] = f"millenium-helpers-{ver}"
+data["extract_dir"] = f"millennium-helpers-{ver}"
 if isinstance(data.get("autoupdate"), dict):
     data["autoupdate"]["url"] = f"https://github.com/{repo}/releases/download/v$version/millennium-helpers-v$version-src.zip"
-    data["autoupdate"]["extract_dir"] = "millenium-helpers-$version"
+    data["autoupdate"]["extract_dir"] = "millennium-helpers-$version"
 scoop_src.write_text(json.dumps(data, indent=4) + "\n", encoding="utf-8")
 
 scoop_bin = root / "packaging/scoop/millennium-helpers-bin.json"
@@ -243,7 +243,7 @@ TAG_ZIP_SHA="4444444444444444444444444444444444444444444444444444444444444444"
 
 out=$(
   cd "$WORK" && bash scripts/ci/update-packaging-versions.sh \
-    "3.4.5" "$LINUX_SHA" "$WINDOWS_SHA" "bolens/millenium-helpers" \
+    "3.4.5" "$LINUX_SHA" "$WINDOWS_SHA" "bolens/millennium-helpers" \
     "$TAG_TAR_SHA" "$TAG_ZIP_SHA" 2>&1
 )
 rc=$?

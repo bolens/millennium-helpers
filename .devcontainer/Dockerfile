@@ -37,4 +37,4 @@ RUN mkdir -p /home/developer/.local/share/Steam/steamui/skins && \
     mkdir -p /home/developer/.config/systemd/user && \
     chown -R developer:developer /home/developer
 
-WORKDIR /workspaces/millenium-helpers
+WORKDIR /workspaces/millennium-helpers

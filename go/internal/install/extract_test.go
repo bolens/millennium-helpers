@@ -23,8 +23,8 @@ func TestExtractTarGzAndFindRoot(t *testing.T) {
 		binName = "millennium.exe"
 	}
 	files := map[string]string{
-		"millenium-helpers-2.7.0/VERSION":        "2.7.0\n",
-		"millenium-helpers-2.7.0/bin/" + binName: "stub\n",
+		"millennium-helpers-2.7.0/VERSION":        "2.7.0\n",
+		"millennium-helpers-2.7.0/bin/" + binName: "stub\n",
 	}
 	for name, body := range files {
 		hdr := &tar.Header{Name: name, Mode: 0o644, Size: int64(len(body))}
@@ -56,7 +56,7 @@ func TestExtractTarGzAndFindRoot(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if filepath.Base(root) != "millenium-helpers-2.7.0" {
+	if filepath.Base(root) != "millennium-helpers-2.7.0" {
 		t.Fatalf("root=%s", root)
 	}
 	if _, err := os.Stat(filepath.Join(root, "VERSION")); err != nil {

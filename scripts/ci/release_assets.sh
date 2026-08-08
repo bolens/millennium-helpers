@@ -58,7 +58,7 @@ release_host_unix_os() {
 
 # Resolve latest GitHub release tag (vX.Y.Z). Prints tag or returns non-zero.
 release_fetch_latest_tag() {
-  local repo="${1:-bolens/millenium-helpers}"
+  local repo="${1:-bolens/millennium-helpers}"
   local body tag
   body=$(curl -fsSL --retry 2 --retry-delay 1 \
     -H "User-Agent: millennium-helpers" \

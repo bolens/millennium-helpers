@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/version"
+	"github.com/bolens/millennium-helpers/internal/version"
 )
 
 // Options are parsed from `millennium mcp` argv.

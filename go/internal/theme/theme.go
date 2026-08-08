@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/steam"
+	"github.com/bolens/millennium-helpers/internal/steam"
 )
 
 // Info describes one installed theme.

@@ -16,7 +16,7 @@
         millennium-helpers = pkgs.callPackage ./nix/default.nix {
           version = releaseInfo.version;
           src = pkgs.fetchurl {
-            url = "https://github.com/bolens/millenium-helpers/releases/download/v${releaseInfo.version}/millennium-helpers-v${releaseInfo.version}-src.tar.gz";
+            url = "https://github.com/bolens/millennium-helpers/releases/download/v${releaseInfo.version}/millennium-helpers-v${releaseInfo.version}-src.tar.gz";
             hash = releaseInfo.srcGitHash;
           };
           buildGoDispatcher = true;
@@ -27,7 +27,7 @@
           pname = "millennium-helpers-bin";
           version = releaseInfo.version;
           src = pkgs.fetchurl {
-            url = "https://github.com/bolens/millenium-helpers/releases/download/v${releaseInfo.version}/millennium-helpers-v${releaseInfo.version}-linux-amd64.tar.gz";
+            url = "https://github.com/bolens/millennium-helpers/releases/download/v${releaseInfo.version}/millennium-helpers-v${releaseInfo.version}-linux-amd64.tar.gz";
             hash = releaseInfo.srcAssetHash or releaseInfo.srcHash;
           };
           unpackFlat = true;

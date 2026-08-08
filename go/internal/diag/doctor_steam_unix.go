@@ -5,7 +5,7 @@ package diag
 import (
 	"fmt"
 
-	"github.com/bolens/millenium-helpers/internal/steam"
+	"github.com/bolens/millennium-helpers/internal/steam"
 )
 
 func doctorCloseSteam(yes bool) (relaunch bool, err error) {

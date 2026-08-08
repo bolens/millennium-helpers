@@ -79,7 +79,7 @@ jobs:
           $ver = $version
           Push-Location go
           try {
-            go build "-ldflags=-X github.com/bolens/millenium-helpers/internal/version.Version=$ver" `
+            go build "-ldflags=-X github.com/bolens/millennium-helpers/internal/version.Version=$ver" `
               -o (Join-Path $stage "scripts\windows\millennium.exe") .\cmd\millennium
             if ($LASTEXITCODE -ne 0) { throw "go build millennium.exe failed" }
           } finally {

@@ -3,9 +3,9 @@ Version: 3.2.1
 Release: 1%{?dist}
 Summary:        Millennium helpers (from source) — Go strangler CLI plus shell helpers/MCP
 License:        MIT
-URL:            https://github.com/bolens/millenium-helpers
+URL:            https://github.com/bolens/millennium-helpers
 %global source_sha256 7b476bceeed0e1c3efdb52f7b54733f2d73e2f8265202ca98918c231ee9ff606
-Source0:        https://github.com/bolens/millenium-helpers/releases/download/v%{version}/millennium-helpers-v%{version}-src.tar.gz
+Source0:        https://github.com/bolens/millennium-helpers/releases/download/v%{version}/millennium-helpers-v%{version}-src.tar.gz
 # Source0 sha256: %{source_sha256}
 
 BuildRequires:  golang, make
@@ -17,7 +17,7 @@ Cross-platform utility scripts and Model Context Protocol (MCP) server for
 managing Millennium. Builds the Go dispatcher from the tagged source tree.
 
 %prep
-%autosetup -n millenium-helpers-%{version}
+%autosetup -n millennium-helpers-%{version}
 
 %build
 export CGO_ENABLED=0

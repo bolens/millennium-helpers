@@ -5,7 +5,7 @@ Priority: optional
 Architecture: amd64
 Depends: bash, curl, unzip, python3
 Maintainer: bolens <https://github.com/bolens>
-Homepage: https://github.com/bolens/millenium-helpers
+Homepage: https://github.com/bolens/millennium-helpers
 Description: Millennium helpers (prebuilt release assets)
  Scripts/MCP from the published Linux release tarball; installs
  bin/millennium when the Go dispatcher is embedded in the asset.

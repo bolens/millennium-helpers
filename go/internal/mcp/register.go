@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/bolens/millenium-helpers/internal/atomicfile"
+	"github.com/bolens/millennium-helpers/internal/atomicfile"
 )
 
 const (

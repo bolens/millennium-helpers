@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/bolens/millenium-helpers/internal/steam"
+	"github.com/bolens/millennium-helpers/internal/steam"
 )
 
 const exitGameRunning = 75

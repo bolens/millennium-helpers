@@ -4,7 +4,7 @@
 
 Please report security issues privately via GitHub Security Advisories:
 
-https://github.com/bolens/millenium-helpers/security/advisories/new
+https://github.com/bolens/millennium-helpers/security/advisories/new
 
 Do **not** open a public issue for vulnerabilities that could enable privilege escalation, supply-chain tampering, or credential theft.
 

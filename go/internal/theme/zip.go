@@ -1,6 +1,6 @@
 package theme
 
-import "github.com/bolens/millenium-helpers/internal/archive"
+import "github.com/bolens/millennium-helpers/internal/archive"
 
 // SafeExtractZip extracts zipPath into destDir, rejecting zip-slip members.
 func SafeExtractZip(zipPath, destDir string) error {

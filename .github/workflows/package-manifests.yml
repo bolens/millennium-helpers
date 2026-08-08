@@ -79,7 +79,7 @@ jobs:
           jq -e --arg v "$VERSION" '
             .version == $v
             and (.url | endswith("/releases/download/v\($v)/millennium-helpers-v\($v)-src.zip"))
-            and .extract_dir == ("millenium-helpers-" + $v)
+            and .extract_dir == ("millennium-helpers-" + $v)
           ' "$src" >/dev/null
 
           jq -e --arg v "$VERSION" '
@@ -91,7 +91,7 @@ jobs:
           jq -e '
             .version == "nightly"
             and (.url | contains("archive/refs/heads/main.zip"))
-            and .extract_dir == "millenium-helpers-main"
+            and .extract_dir == "millennium-helpers-main"
           ' "$gitm" >/dev/null
 
           for m in "$src" "$bin" "$gitm"; do

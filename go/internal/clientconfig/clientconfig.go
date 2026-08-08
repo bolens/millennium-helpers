@@ -10,8 +10,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/atomicfile"
-	"github.com/bolens/millenium-helpers/internal/steam"
+	"github.com/bolens/millennium-helpers/internal/atomicfile"
+	"github.com/bolens/millennium-helpers/internal/steam"
 )
 
 // Summary contains the safe, user-facing subset of Millennium client settings.

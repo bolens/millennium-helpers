@@ -8,7 +8,7 @@ MinimumOSVersion: 10.0.0.0
 Installers:
 - Architecture: neutral
   InstallerType: zip
-  InstallerUrl: https://github.com/bolens/millenium-helpers/archive/refs/heads/main.zip
+  InstallerUrl: https://github.com/bolens/millennium-helpers/archive/refs/heads/main.zip
   # Source archives have no release .sha256 sidecar; hash refreshed manually when needed.
   InstallerSha256: "0000000000000000000000000000000000000000000000000000000000000000"
   UpgradeBehavior: uninstallPrevious

@@ -1,7 +1,7 @@
 # Millennium Helper Scripts
 
-[![Test Suite](https://github.com/bolens/millenium-helpers/actions/workflows/test-suite.yml/badge.svg)](https://github.com/bolens/millenium-helpers/actions/workflows/test-suite.yml)
-[![Release](https://img.shields.io/github/v/release/bolens/millenium-helpers)](https://github.com/bolens/millenium-helpers/releases/latest)
+[![Test Suite](https://github.com/bolens/millennium-helpers/actions/workflows/test-suite.yml/badge.svg)](https://github.com/bolens/millennium-helpers/actions/workflows/test-suite.yml)
+[![Release](https://img.shields.io/github/v/release/bolens/millennium-helpers)](https://github.com/bolens/millennium-helpers/releases/latest)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-blue)](#installation)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -19,12 +19,12 @@ CLI helpers for [Millennium](https://github.com/SteamClientHomebrew/Millennium) 
 
 ```bash
 # Install (Linux)
-curl -fsSL https://raw.githubusercontent.com/bolens/millenium-helpers/main/install.sh | bash -s -- install
+curl -fsSL https://raw.githubusercontent.com/bolens/millennium-helpers/main/install.sh | bash -s -- install
 ```
 
 ```powershell
 # Install (Windows) — Scoop recommended, or download the Go binary and install:
-scoop install https://raw.githubusercontent.com/bolens/millenium-helpers/main/packaging/scoop/millennium-helpers-bin.json
+scoop install https://raw.githubusercontent.com/bolens/millennium-helpers/main/packaging/scoop/millennium-helpers-bin.json
 # Or: winget install bolens.millenniumhelpers
 ```
 
@@ -72,14 +72,14 @@ $ millennium diag
 
 | Method | Command |
 | --- | --- |
-| **curl (recommended)** | `curl -fsSL https://raw.githubusercontent.com/bolens/millenium-helpers/main/install.sh \| bash -s -- install` |
+| **curl (recommended)** | `curl -fsSL https://raw.githubusercontent.com/bolens/millennium-helpers/main/install.sh \| bash -s -- install` |
 | curl (tip of `main`) | `curl -fsSL …/install.sh \| bash -s -- install --track main` |
 | curl (pinned tag) | `curl -fsSL …/install.sh \| bash -s -- install --tag v3.0.0` |
 | Clone | `git clone … && sudo ./install.sh` (needs Go, or a release tree with `bin/millennium`) |
-| Nix (from-source) | `nix profile install github:bolens/millenium-helpers` |
-| Nix (prebuilt `-bin`) | `nix profile install github:bolens/millenium-helpers#millennium-helpers-bin` |
-| Nix (tip of flake / `-git`) | `nix profile install github:bolens/millenium-helpers#millennium-helpers-git` |
-| Homebrew (from-source) | `brew tap bolens/millenium-helpers https://github.com/bolens/millenium-helpers && brew install millennium-helpers` |
+| Nix (from-source) | `nix profile install github:bolens/millennium-helpers` |
+| Nix (prebuilt `-bin`) | `nix profile install github:bolens/millennium-helpers#millennium-helpers-bin` |
+| Nix (tip of flake / `-git`) | `nix profile install github:bolens/millennium-helpers#millennium-helpers-git` |
+| Homebrew (from-source) | `brew tap bolens/millennium-helpers https://github.com/bolens/millennium-helpers && brew install millennium-helpers` |
 | Homebrew (prebuilt `-bin`) | `brew install millennium-helpers-bin` (conflicts with `millennium-helpers`) |
 | Arch (from-source) | `cd packaging/millennium-helpers && makepkg -si` |
 | Arch (`-bin`) | `cd packaging/millennium-helpers-bin && makepkg -si` |
@@ -112,10 +112,10 @@ archives, or built via `make build` when installing from a checkout.
 **Nix profile install** (from-source by default; `-bin` / `-git` as flake packages):
 
 ```bash
-nix profile install github:bolens/millenium-helpers
-nix profile install github:bolens/millenium-helpers#millennium-helpers-bin
-nix profile install github:bolens/millenium-helpers#millennium-helpers-git
-# Or pin a tag: nix profile install github:bolens/millenium-helpers/v3.0.0
+nix profile install github:bolens/millennium-helpers
+nix profile install github:bolens/millennium-helpers#millennium-helpers-bin
+nix profile install github:bolens/millennium-helpers#millennium-helpers-git
+# Or pin a tag: nix profile install github:bolens/millennium-helpers/v3.0.0
 ```
 
 **Homebrew** (formulas at `Formula/millennium-helpers.rb` and
@@ -126,7 +126,7 @@ nix profile install github:bolens/millenium-helpers#millennium-helpers-git
 brew install --formula ./Formula/millennium-helpers.rb
 
 # Or tap this repo, then install from-source or prebuilt:
-brew tap bolens/millenium-helpers https://github.com/bolens/millenium-helpers
+brew tap bolens/millennium-helpers https://github.com/bolens/millennium-helpers
 brew install millennium-helpers
 # brew install millennium-helpers-bin
 ```
@@ -149,13 +149,13 @@ millennium schedule enable [stable|beta|main]
 
 | Method | Command |
 | --- | --- |
-| **Scoop (prebuilt `-bin`, recommended)** | `scoop install https://raw.githubusercontent.com/bolens/millenium-helpers/main/packaging/scoop/millennium-helpers-bin.json` |
-| Scoop (from-source / release) | `scoop install https://raw.githubusercontent.com/bolens/millenium-helpers/main/packaging/scoop/millennium-helpers.json` |
-| Scoop (`main` / nightly) | `scoop install https://raw.githubusercontent.com/bolens/millenium-helpers/main/packaging/scoop/millennium-helpers-git.json` |
+| **Scoop (prebuilt `-bin`, recommended)** | `scoop install https://raw.githubusercontent.com/bolens/millennium-helpers/main/packaging/scoop/millennium-helpers-bin.json` |
+| Scoop (from-source / release) | `scoop install https://raw.githubusercontent.com/bolens/millennium-helpers/main/packaging/scoop/millennium-helpers.json` |
+| Scoop (`main` / nightly) | `scoop install https://raw.githubusercontent.com/bolens/millennium-helpers/main/packaging/scoop/millennium-helpers-git.json` |
 | Winget (release) | `winget install bolens.millenniumhelpers` |
 | Winget (tip of `main`) | `winget install --manifest packaging/winget-git/` (local manifests; community package `bolens.millenniumhelpers.git`) |
 | Chocolatey | Local: `cd packaging/chocolatey/millennium-helpers && choco pack && choco install millennium-helpers -s . -y` · published: `choco install millennium-helpers` |
-| Standalone Go binary | Download `millennium-v*-windows-amd64.exe` from [Releases](https://github.com/bolens/millenium-helpers/releases/latest), then `.\millennium-v*-windows-amd64.exe install` |
+| Standalone Go binary | Download `millennium-v*-windows-amd64.exe` from [Releases](https://github.com/bolens/millennium-helpers/releases/latest), then `.\millennium-v*-windows-amd64.exe install` |
 | Clone | `go build -C go -o bin\millennium.exe ./cmd/millennium` then `.\bin\millennium.exe install --skip-wizard` (or omit `--skip-wizard` for the schedule setup wizard) |
 
 <details>

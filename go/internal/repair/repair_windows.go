@@ -5,7 +5,7 @@ package repair
 import (
 	"os"
 
-	"github.com/bolens/millenium-helpers/internal/steam"
+	"github.com/bolens/millennium-helpers/internal/steam"
 )
 
 func chownTree(path string) error {

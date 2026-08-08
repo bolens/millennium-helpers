@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/bolens/millenium-helpers/internal/version"
+	"github.com/bolens/millennium-helpers/internal/version"
 )
 
 // ServeStdio runs the line-delimited JSON-RPC MCP loop.

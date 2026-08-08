@@ -23,7 +23,7 @@ VERSION="${VERSION#v}"
   exit 1
 }
 
-REPO="${REPO:-bolens/millenium-helpers}"
+REPO="${REPO:-bolens/millennium-helpers}"
 # shellcheck source=scripts/ci/release_assets.sh
 source "$ROOT/scripts/ci/release_assets.sh"
 ASSET_LINUX_AMD64="$(release_asset_helpers "$VERSION" linux amd64 tar.gz)"
@@ -125,13 +125,13 @@ path = Path("packaging/scoop/millennium-helpers.json")
 data = json.loads(path.read_text(encoding="utf-8"))
 data["version"] = version
 data["url"] = url
-data["extract_dir"] = f"millenium-helpers-{version}"
+data["extract_dir"] = f"millennium-helpers-{version}"
 if "autoupdate" in data:
     data["autoupdate"]["url"] = (
-        "https://github.com/bolens/millenium-helpers/releases/download/"
+        "https://github.com/bolens/millennium-helpers/releases/download/"
         "v$version/millennium-helpers-v$version-src.zip"
     )
-    data["autoupdate"]["extract_dir"] = "millenium-helpers-$version"
+    data["autoupdate"]["extract_dir"] = "millennium-helpers-$version"
 path.write_text(json.dumps(data, indent=4) + "\n", encoding="utf-8")
 print(f"Updated {path}")
 PY
@@ -149,12 +149,12 @@ data["version"] = version
 data["url"] = url
 if "autoupdate" in data:
     data["autoupdate"]["url"] = (
-        "https://github.com/bolens/millenium-helpers/releases/download/"
+        "https://github.com/bolens/millennium-helpers/releases/download/"
         "v$version/millennium-helpers-v$version-windows-amd64.zip"
     )
     data["autoupdate"]["hash"] = {
         "url": (
-            "https://github.com/bolens/millenium-helpers/releases/download/"
+            "https://github.com/bolens/millennium-helpers/releases/download/"
             "v$version/millennium-helpers-v$version-windows-amd64.zip.sha256"
         )
     }

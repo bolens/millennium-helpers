@@ -1,4 +1,4 @@
-module github.com/bolens/millenium-helpers
+module github.com/bolens/millennium-helpers
 
 go 1.22
 

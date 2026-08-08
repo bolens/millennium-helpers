@@ -6,7 +6,7 @@ Architecture: amd64
 Depends: bash, curl, unzip, python3
 Build-Depends: golang-go | golang, make
 Maintainer: bolens <https://github.com/bolens>
-Homepage: https://github.com/bolens/millenium-helpers
+Homepage: https://github.com/bolens/millennium-helpers
 Description: Millennium helpers (from source)
  Go strangler CLI plus shell helpers and MCP for managing Millennium.
  Built from the tagged source tree (make build).

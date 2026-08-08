@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/githubapi"
-	"github.com/bolens/millenium-helpers/internal/upgrade"
+	"github.com/bolens/millennium-helpers/internal/githubapi"
+	"github.com/bolens/millennium-helpers/internal/upgrade"
 )
 
 // FetchHelpersTree downloads/verifies/extracts a helpers archive for the track.

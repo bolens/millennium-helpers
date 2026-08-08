@@ -80,7 +80,7 @@ After changing overrides, fully quit Steam and relaunch it.
 3. **Install helpers** — Prefer a package manager when available, or:
 
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/bolens/millenium-helpers/main/install.sh | sudo bash
+   curl -fsSL https://raw.githubusercontent.com/bolens/millennium-helpers/main/install.sh | sudo bash
    ```
 
    Prefer verifying a release checksum / using Nix, Homebrew (`Formula/millennium-helpers.rb`), or AUR when you can avoid curl-pipe.

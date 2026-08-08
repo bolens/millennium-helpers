@@ -5,8 +5,8 @@
     <version>3.2.1</version>
     <title>Millennium Helpers</title>
     <authors>bolens</authors>
-    <projectUrl>https://github.com/bolens/millenium-helpers</projectUrl>
-    <licenseUrl>https://github.com/bolens/millenium-helpers/blob/main/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/bolens/millennium-helpers</projectUrl>
+    <licenseUrl>https://github.com/bolens/millennium-helpers/blob/main/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
       Millennium helpers for Windows (release zip / bin). Installs PowerShell helpers

@@ -23,7 +23,7 @@ source "$ROOT/scripts/ci/release_assets.sh"
 VERSION="${1:?version required (e.g. 2.2.0)}"
 LINUX_SHA="${2:?linux-amd64 release-asset sha256 required}"
 WINDOWS_SHA="${3:?windows-amd64 release-asset sha256 required}"
-REPO="${4:-bolens/millenium-helpers}"
+REPO="${4:-bolens/millennium-helpers}"
 SRC_TAR_SHA="${5:-}"
 SRC_ZIP_SHA="${6:-}"
 DARWIN_AMD64_SHA="${7:-}"
@@ -191,10 +191,10 @@ data = json.loads(path.read_text(encoding="utf-8"))
 data["version"] = version
 data["url"] = url
 data["hash"] = sha
-data["extract_dir"] = f"millenium-helpers-{version}"
+data["extract_dir"] = f"millennium-helpers-{version}"
 data["autoupdate"] = {
-    "url": f"https://github.com/bolens/millenium-helpers/releases/download/v$version/millennium-helpers-v$version-src.zip",
-    "extract_dir": "millenium-helpers-$version",
+    "url": f"https://github.com/bolens/millennium-helpers/releases/download/v$version/millennium-helpers-v$version-src.zip",
+    "extract_dir": "millennium-helpers-$version",
 }
 path.write_text(json.dumps(data, indent=4) + "\n", encoding="utf-8")
 print(f"Updated {path}")
@@ -213,9 +213,9 @@ data["version"] = version
 data["url"] = url
 data["hash"] = sha
 data["autoupdate"] = {
-    "url": f"https://github.com/bolens/millenium-helpers/releases/download/v$version/millennium-helpers-v$version-windows-amd64.zip",
+    "url": f"https://github.com/bolens/millennium-helpers/releases/download/v$version/millennium-helpers-v$version-windows-amd64.zip",
     "hash": {
-        "url": f"https://github.com/bolens/millenium-helpers/releases/download/v$version/millennium-helpers-v$version-windows-amd64.zip.sha256"
+        "url": f"https://github.com/bolens/millennium-helpers/releases/download/v$version/millennium-helpers-v$version-windows-amd64.zip.sha256"
     },
 }
 path.write_text(json.dumps(data, indent=4) + "\n", encoding="utf-8")

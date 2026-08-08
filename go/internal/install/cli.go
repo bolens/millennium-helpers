@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bolens/millenium-helpers/internal/schedule"
-	"github.com/bolens/millenium-helpers/internal/version"
+	"github.com/bolens/millennium-helpers/internal/schedule"
+	"github.com/bolens/millennium-helpers/internal/version"
 )
 
 const usageInstall = `Usage: millennium install [options]

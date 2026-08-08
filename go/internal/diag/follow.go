@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bolens/millenium-helpers/internal/schedule"
+	"github.com/bolens/millennium-helpers/internal/schedule"
 )
 
 // Test seams for FollowLogs (avoid hanging the suite).

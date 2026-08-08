@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/bolens/millenium-helpers/internal/steam"
-	"github.com/bolens/millenium-helpers/internal/theme"
+	"github.com/bolens/millennium-helpers/internal/steam"
+	"github.com/bolens/millennium-helpers/internal/theme"
 )
 
 func rollbackPlatform(backupName string, o Options) error {

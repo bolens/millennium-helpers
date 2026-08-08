@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bolens/millenium-helpers/internal/config"
+	"github.com/bolens/millennium-helpers/internal/config"
 )
 
 func TestNeedsLegacySetupNative(t *testing.T) {

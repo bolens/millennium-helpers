@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/bolens/millenium-helpers/internal/repair"
+	"github.com/bolens/millennium-helpers/internal/repair"
 )
 
 const disabledSuffix = ".millennium-disabled"

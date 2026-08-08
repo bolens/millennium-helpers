@@ -36,7 +36,7 @@ If you prefer to clean up and remove the helper scripts manually instead of usin
 If you installed via the standard installer script:
 * **Option A: Piped Uninstall (One-Liner)**:
   ```bash
-  curl -fsSL https://raw.githubusercontent.com/bolens/millenium-helpers/main/install.sh | sudo bash -s -- uninstall
+  curl -fsSL https://raw.githubusercontent.com/bolens/millennium-helpers/main/install.sh | sudo bash -s -- uninstall
   ```
   *(Add `--purge` at the end to also purge all Millennium hook/client files)*
 
@@ -161,13 +161,13 @@ systemctl --user daemon-reload 2>/dev/null || true
 
 ### 3. Linux (Nix Profile Install)
 
-If you installed the helpers via `nix profile install github:bolens/millenium-helpers`, Nix isolates files inside the Nix store.
+If you installed the helpers via `nix profile install github:bolens/millennium-helpers`, Nix isolates files inside the Nix store.
 
 1. **Remove from Nix profile**:
    ```bash
-   nix profile remove github:bolens/millenium-helpers
+   nix profile remove github:bolens/millennium-helpers
    # or, if you installed the tip-of-flake package:
-   nix profile remove github:bolens/millenium-helpers#millennium-helpers-git
+   nix profile remove github:bolens/millennium-helpers#millennium-helpers-git
    ```
    *(Or query `nix profile list` and remove by package number, e.g., `nix profile remove 2`)*
 
@@ -188,7 +188,7 @@ If you installed the helpers via Homebrew (`Formula/millennium-helpers.rb` in th
 
    If you tapped this repository earlier, you can also remove the tap:
    ```bash
-   brew untap bolens/millenium-helpers
+   brew untap bolens/millennium-helpers
    ```
 
 2. **Clean up user-level configs (optional)**:
