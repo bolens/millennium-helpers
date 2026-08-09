@@ -3,7 +3,6 @@ package steam
 import (
 	"os"
 	"path/filepath"
-	"runtime"
 )
 
 // FindDir returns the first existing Steam install root, or "".
@@ -32,7 +31,6 @@ func dirCandidatesUnix() []string {
 		filepath.Join(home, ".steam/root"),
 		filepath.Join(home, ".var/app/com.valvesoftware.Steam/.local/share/Steam"),
 		filepath.Join(home, "Library/Application Support/Steam"),
-		os.Getenv("STEAM"),
 	}
 }
 
@@ -42,9 +40,6 @@ func dirCandidatesCommon() []string {
 		if v := os.Getenv(env); v != "" {
 			out = append(out, v)
 		}
-	}
-	if runtime.GOOS != "windows" {
-		return append(out, dirCandidatesUnix()...)
 	}
 	return out
 }

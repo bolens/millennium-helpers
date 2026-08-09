@@ -64,3 +64,48 @@ func TestIsGameRunningMockProc(t *testing.T) {
 		t.Fatal("steam helper should be skipped")
 	}
 }
+
+func TestUnixSteamDiscoveryRejectsWine(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("unix discovery")
+	}
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+
+	wineSteam := filepath.Join(home, ".wine", "drive_c", "Program Files (x86)", "Steam")
+	if err := os.MkdirAll(wineSteam, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(wineSteam, "steam.exe"), nil, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("STEAM", wineSteam)
+	t.Setenv("STEAM_PATH", `C:\Program Files (x86)\Steam`)
+
+	if got := FindDir(); got != "" {
+		t.Fatalf("Wine Steam leaked into Unix discovery: %q", got)
+	}
+	for _, candidate := range DirCandidates() {
+		if candidate == wineSteam || candidate == `C:\Program Files (x86)\Steam` {
+			t.Fatalf("Wine Steam leaked into candidates: %q", candidate)
+		}
+	}
+}
+
+func TestUnixSteamDiscoveryAcceptsNativeOverride(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("unix discovery")
+	}
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	nativeSteam := filepath.Join(t.TempDir(), "native-steam")
+	if err := os.MkdirAll(nativeSteam, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("STEAM", nativeSteam)
+	t.Setenv("STEAM_PATH", "")
+
+	if got := FindDir(); got != nativeSteam {
+		t.Fatalf("FindDir() = %q, want native override %q", got, nativeSteam)
+	}
+}
