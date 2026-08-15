@@ -19,14 +19,17 @@ optdepends=(
 conflicts=("${pkgname}-git" "${pkgname}-bin")
 install=millennium-helpers.install
 backup=('etc/sudoers.d/millennium-helpers')
-# GitHub source archives use the repo name (millennium-helpers) as the top-level directory.
+_srcarchive="millennium-helpers-v${pkgver}-src.tar.gz"
 _srcdir="millennium-helpers-${pkgver}"
 source=("${url}/releases/download/v${pkgver}/millennium-helpers-v${pkgver}-src.tar.gz"
         "millennium-helpers.sudoers")
+noextract=("${_srcarchive}")
 sha256sums=('53ab712c8e10ef2253d91bfc19e12e18cf327e3992cf5045c4208af01a71bf18'
             'b242d171bced3313da83fb6bfd6b29fdaf17fec28892b6e38435d7dd321949bd')
 
 prepare() {
+  mkdir -p "${srcdir}/${_srcdir}"
+  bsdtar -xf "${srcdir}/${_srcarchive}" --strip-components=1 -C "${srcdir}/${_srcdir}"
   # shellcheck source=/dev/null
   source "${startdir}/arch-unix-install.sh"
   _arch_prepare_manual_conflict_check
