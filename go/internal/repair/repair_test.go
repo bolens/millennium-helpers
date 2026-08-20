@@ -85,6 +85,39 @@ func TestApplyHtmlcache(t *testing.T) {
 	}
 }
 
+func TestRuntimeHelpersExecutableAndRepair(t *testing.T) {
+	lib := filepath.Join(t.TempDir(), "lib")
+	root := filepath.Join(lib, "millennium")
+	if err := os.MkdirAll(root, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("MOCK_LIB_DIR", lib)
+	for _, name := range runtimeHelperNames {
+		if err := os.WriteFile(filepath.Join(root, name), []byte("helper"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if RuntimeHelpersExecutable() {
+		t.Fatal("non-executable runtime helpers reported healthy")
+	}
+	if err := EnsureRuntimeHelpersExecutable(); err != nil {
+		t.Fatal(err)
+	}
+	if !RuntimeHelpersExecutable() {
+		t.Fatal("repaired runtime helpers still reported unhealthy")
+	}
+	for _, name := range runtimeHelperNames {
+		st, err := os.Stat(filepath.Join(root, name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if st.Mode().Perm() != 0o755 {
+			t.Fatalf("%s mode = %o, want 755", name, st.Mode().Perm())
+		}
+	}
+}
+
 func contains(s, sub string) bool {
 	for i := 0; i+len(sub) <= len(s); i++ {
 		if s[i:i+len(sub)] == sub {

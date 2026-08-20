@@ -53,6 +53,7 @@ func TestDoctorPlan(t *testing.T) {
 		BinariesOK: false, HooksOK: false, SkinsDirOK: false,
 		FlatpakOK: true, TimerActive: true, SudoersOK: true,
 		LingerOK: true, PermissionsOK: true, TaskScheduled: true,
+		RuntimeHelpersExecutable: false,
 	}
 	steps := DoctorPlan(r, false)
 	ids := map[string]bool{}
@@ -61,6 +62,9 @@ func TestDoctorPlan(t *testing.T) {
 	}
 	if !ids["upgrade_force"] || !ids["skins_dir"] {
 		t.Fatalf("%#v", steps)
+	}
+	if !ids["runtime_helpers"] {
+		t.Fatalf("missing runtime helper repair: %#v", steps)
 	}
 }
 
@@ -79,6 +83,9 @@ func TestFormatJSON(t *testing.T) {
 		t.Fatalf("%v", m)
 	}
 	if _, ok := m["update_channel"]; !ok {
+		t.Fatalf("%v", m)
+	}
+	if _, ok := m["runtime_helpers_executable"]; !ok {
 		t.Fatalf("%v", m)
 	}
 }

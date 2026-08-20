@@ -74,6 +74,10 @@ Emit the diagnostics report as structured JSON, including
 (Millennium client channel),
 and
 .BR unmanaged_files_ok .
+On Unix, the report also includes
+.BR runtime_helpers_executable ,
+which verifies that Millennium's pressure-vessel and Lua runtime
+helper binaries can be executed.
 .TP
 .BR \-l ", " \-\-follow
 Follow (tail \-f) real-time log output with

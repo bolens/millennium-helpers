@@ -39,6 +39,9 @@ func installPlatform(archivePath, version string, o Options) error {
 	if err := copyTreeFiles(src, destTmp); err != nil {
 		return err
 	}
+	if err := normalizeRuntimeHelperModes(destTmp); err != nil {
+		return err
+	}
 	if err := os.WriteFile(filepath.Join(destTmp, "version.txt"), []byte(version+"\n"), 0o644); err != nil {
 		return err
 	}
@@ -72,6 +75,16 @@ func installPlatform(archivePath, version string, o Options) error {
 		return err
 	}
 	_ = runtime.GOOS
+	return nil
+}
+
+func normalizeRuntimeHelperModes(root string) error {
+	for _, name := range []string{"libmillennium_pvs64", "libmillennium_luavm_x86"} {
+		path := filepath.Join(root, name)
+		if err := os.Chmod(path, 0o755); err != nil {
+			return fmt.Errorf("set executable mode on %s: %w", name, err)
+		}
+	}
 	return nil
 }
 

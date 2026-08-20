@@ -27,6 +27,7 @@ func DoctorPlan(r Report, force bool) []DoctorStep {
 	}
 	add(!r.BinariesOK, "upgrade_force", "millennium upgrade --force")
 	if runtime.GOOS != "windows" {
+		add(!r.RuntimeHelpersExecutable, "runtime_helpers", "restore executable modes on Millennium runtime helpers")
 		add(!r.HooksOK, "repair_hooks", "restore bootstrap libXtst hooks")
 		add(!r.FlatpakOK, "flatpak", "flatpak override --user --filesystem=/usr/lib/millennium")
 		add(!r.TimerActive, "schedule_enable", "millennium schedule enable")
@@ -55,7 +56,7 @@ func RunDoctorLive(o Options) int {
 
 	needSteamClose := false
 	for _, s := range steps {
-		if s.ID == "upgrade_force" || s.ID == "repair_hooks" {
+		if s.ID == "upgrade_force" || s.ID == "repair_hooks" || s.ID == "runtime_helpers" {
 			needSteamClose = true
 			break
 		}
@@ -101,6 +102,8 @@ func applyDoctorStep(s DoctorStep, r Report, o Options) error {
 		return runSelf("upgrade", "--channel", r.UpdateChannel, "--force", "--yes")
 	case "repair_hooks":
 		return repair.InstallBootstrapHooks()
+	case "runtime_helpers":
+		return repair.EnsureRuntimeHelpersExecutable()
 	case "flatpak":
 		cmd := exec.Command("flatpak", "override", "--user", "--filesystem=/usr/lib/millennium", "com.valvesoftware.Steam")
 		out, err := cmd.CombinedOutput()
