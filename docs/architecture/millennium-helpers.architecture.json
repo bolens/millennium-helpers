@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Millennium Helpers command architecture",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/bolens/millennium-helpers",
+      "revision": "24a807fc38fb7cb0ea856e1a3448adcb0eef620c"
+    },
+    "views": [
+      { "id": "interactive", "label": "Interactive command", "focus": ["operators", "dispatcher", "commands", "millennium"], "note": "Follow a user command through the Go dispatcher to the installed Millennium client." },
+      { "id": "automation", "label": "Scheduled update", "focus": ["scheduler", "dispatcher", "commands", "github", "millennium"], "note": "Platform schedulers invoke the same upgrade and theme commands used interactively." },
+      { "id": "agent", "label": "MCP tools", "focus": ["agents", "mcp", "dispatcher", "commands"], "note": "The stdio MCP server maps tool calls onto the command implementation and confirmation gates." }
+    ]
+  },
+  "components": [
+    { "id": "operators", "type": "external", "label": "Operators", "sublabel": "terminal on Linux, macOS, Windows", "pos": [40, 170], "size": [180, 72] },
+    { "id": "agents", "type": "external", "label": "AI assistants", "sublabel": "JSON-RPC over stdio", "pos": [40, 390], "size": [180, 72] },
+    { "id": "scheduler", "type": "messagebus", "label": "Platform schedulers", "sublabel": "systemd, launchd, cron, Task Scheduler", "pos": [300, 520], "size": [190, 76], "sources": [{ "path": "go/internal/schedule/schedule.go", "label": "scheduler implementation" }] },
+    { "id": "mcp", "type": "backend", "label": "MCP server", "sublabel": "tool catalog and confirmation", "pos": [300, 390], "size": [190, 72], "sources": [{ "path": "go/internal/mcp/server.go", "line": 12 }, { "path": "go/internal/mcp/tools.go", "line": 10 }] },
+    { "id": "dispatcher", "type": "frontend", "label": "millennium dispatcher", "sublabel": "Cobra command tree", "pos": [300, 170], "size": [190, 72], "sources": [{ "path": "go/cmd/millennium/main.go", "line": 25 }] },
+    { "id": "commands", "type": "backend", "label": "Command modules", "sublabel": "upgrade, repair, diag, theme, install", "pos": [570, 280], "size": [200, 76], "sources": [{ "path": "go/internal/upgrade/upgrade.go", "line": 212 }, { "path": "go/internal/repair/repair.go", "line": 101 }, { "path": "go/internal/diag/share.go", "line": 99 }] },
+    { "id": "state", "type": "database", "label": "Configuration and state", "sublabel": "channel, backups, logs, scheduler status", "pos": [570, 500], "size": [200, 76], "sources": [{ "path": "go/internal/config/config.go", "line": 15 }, { "path": "go/internal/schedule/status.go", "line": 12 }] },
+    { "id": "github", "type": "cloud", "label": "GitHub releases", "sublabel": "versioned archives and SHA256 sidecars", "pos": [850, 90], "size": [190, 76] },
+    { "id": "platform", "type": "security", "label": "Platform integration", "sublabel": "sudo, UAC, services, filesystem", "pos": [850, 300], "size": [190, 76] },
+    { "id": "millennium", "type": "external", "label": "Millennium client", "sublabel": "Steam hook, themes, runtime files", "pos": [850, 510], "size": [190, 76] }
+  ],
+  "connections": [
+    { "id": "operator-dispatch", "from": "operators", "to": "dispatcher", "label": "millennium command", "variant": "emphasis", "labelAt": [260, 256] },
+    { "id": "agent-mcp", "from": "agents", "to": "mcp", "label": "tools/call", "variant": "emphasis" },
+    { "id": "mcp-dispatch", "from": "mcp", "to": "dispatcher", "label": "validated command" },
+    { "id": "schedule-dispatch", "from": "scheduler", "to": "dispatcher", "label": "upgrade and theme", "variant": "dashed", "fromSide": "top", "toSide": "bottom", "via": [[395, 480], [520, 480], [520, 260], [395, 260]] },
+    { "id": "dispatch-command", "from": "dispatcher", "to": "commands", "label": "parsed options", "variant": "emphasis" },
+    { "id": "commands-state", "from": "commands", "to": "state", "label": "read and write atomically", "labelAt": [670, 370] },
+    { "id": "commands-github", "from": "commands", "to": "github", "label": "download and verify release" },
+    { "id": "commands-platform", "from": "commands", "to": "platform", "label": "privileged changes", "variant": "security", "labelAt": [750, 400] },
+    { "id": "platform-client", "from": "platform", "to": "millennium", "label": "install or repair", "labelAt": [945, 390] },
+    { "id": "commands-client", "from": "commands", "to": "millennium", "label": "diagnose and configure" },
+    { "id": "state-scheduler", "from": "state", "to": "scheduler", "label": "channel and task status", "variant": "dashed", "labelAt": [530, 610] }
+  ]
+}

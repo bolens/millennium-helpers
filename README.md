@@ -338,6 +338,7 @@ deactivated together; apply that preview with `disable-errors --yes`. Add
 | Packaging matrix (from-source / bin / git) | [packaging/README.md](packaging/README.md) |
 | Dry-run & manual uninstall | [docs/uninstall_dryrun.md](docs/uninstall_dryrun.md) |
 | Release runbook | [docs/release_runbook.md](docs/release_runbook.md) |
+| Interactive architecture map | [docs/architecture/millennium-helpers.html](docs/architecture/millennium-helpers.html) |
 | MCP server setup & tools | [docs/mcp.md](docs/mcp.md) |
 | Security policy | [SECURITY.md](SECURITY.md) |
 | Security & troubleshooting | [docs/security_troubleshooting.md](docs/security_troubleshooting.md) |
