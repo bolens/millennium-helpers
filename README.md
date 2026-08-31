@@ -11,7 +11,8 @@ CLI helpers for [Millennium](https://github.com/SteamClientHomebrew/Millennium).
 [Installation](#installation) ·
 [Commands](#commands) ·
 [Configuration](#configuration) ·
-[Docs](docs/README.md)
+[Docs](docs/README.md) ·
+[Website](https://bolens.github.io/millennium-helpers/)
 
 ---
 
@@ -339,6 +340,7 @@ deactivated together; apply that preview with `disable-errors --yes`. Add
 | Dry-run & manual uninstall | [docs/uninstall_dryrun.md](docs/uninstall_dryrun.md) |
 | Release runbook | [docs/release_runbook.md](docs/release_runbook.md) |
 | Interactive architecture map | [docs/architecture/millennium-helpers.html](docs/architecture/millennium-helpers.html) |
+| Pages accessibility evidence | [docs/site-evidence/README.md](docs/site-evidence/README.md) |
 | MCP server setup & tools | [docs/mcp.md](docs/mcp.md) |
 | Security policy | [SECURITY.md](SECURITY.md) |
 | Security & troubleshooting | [docs/security_troubleshooting.md](docs/security_troubleshooting.md) |
