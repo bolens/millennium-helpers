@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"os/user"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -127,13 +126,38 @@ func keepFailedShare(body string) string {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		dir = os.TempDir()
 	}
-	name := fmt.Sprintf("diag-share-failed-%s.txt", time.Now().Format("20060102150405"))
-	path := filepath.Join(dir, name)
-	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
-		path = filepath.Join(os.TempDir(), name)
-		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
-			return ""
-		}
+	prefix := fmt.Sprintf("diag-share-failed-%s-", time.Now().Format("20060102150405"))
+	if path := writeUniqueFailedShare(dir, prefix, body); path != "" {
+		return path
 	}
+	if dir != os.TempDir() {
+		return writeUniqueFailedShare(os.TempDir(), prefix, body)
+	}
+	return ""
+}
+
+func writeUniqueFailedShare(dir, prefix, body string) string {
+	f, err := os.CreateTemp(dir, prefix+"*.txt")
+	if err != nil {
+		return ""
+	}
+	path := f.Name()
+	ok := false
+	defer func() {
+		_ = f.Close()
+		if !ok {
+			_ = os.Remove(path)
+		}
+	}()
+	if err := f.Chmod(0o600); err != nil {
+		return ""
+	}
+	if _, err := io.WriteString(f, body); err != nil {
+		return ""
+	}
+	if err := f.Close(); err != nil {
+		return ""
+	}
+	ok = true
 	return path
 }
