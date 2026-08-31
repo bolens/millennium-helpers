@@ -1,0 +1,9 @@
+[
+  {"title":"Install on Linux, macOS, or Windows","summary":"Choose your system and check the installation.","url":"install/"},
+  {"title":"Run a health check","summary":"Diagnose Steam, hooks, channels, and schedules without changing files.","url":"guide/#check-your-setup"},
+  {"title":"Repair Millennium","summary":"Review and apply targeted repairs.","url":"guide/#repair-a-reported-problem"},
+  {"title":"Update and schedule","summary":"Upgrade Millennium or enable stable daily updates.","url":"guide/#update-millennium"},
+  {"title":"Themes and plugins","summary":"Choose a theme or manage installed plugins.","url":"guide/#choose-a-theme"},
+  {"title":"Troubleshoot a problem","summary":"Recover from hook, update, theme, or plugin problems.","url":"help/"},
+  {"title":"How the helper works","summary":"Read the system overview and open the technical topology.","url":"architecture/"}
+]
