@@ -4,17 +4,25 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Millennium Helpers installs, repairs, updates, and diagnoses Millennium on Linux, macOS, and Windows.">
+  <meta property="og:title" content="Millennium Helpers — keep Millennium healthy">
+  <meta property="og:description" content="Install, diagnose, repair, and update Millennium with plain-language guidance.">
+  <meta property="og:image" content="https://bolens.github.io/millennium-helpers/assets/og.png">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#17151f">
   <title>Millennium Helpers — keep Millennium healthy</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="guide.css">
   <link rel="stylesheet" href="accessibility.css">
+  <link rel="stylesheet" href="assets/site.css">
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <script src="assets/site.js" defer></script>
 </head>
-<body>
+<body data-root="">
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
-    <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">M</span><span>Millennium<br><b>Helpers</b></span></a>
-    <nav aria-label="Primary navigation"><a href="#install">Install</a><a href="#first-run">First steps</a><a href="#tasks">Common tasks</a><a href="#help">Get help</a><a class="github" href="https://github.com/bolens/millennium-helpers">GitHub</a></nav>
+    <a class="brand" href="./"><span class="brand-mark" aria-hidden="true">M</span><span>Millennium<br><b>Helpers</b></span></a>
+    <nav aria-label="Primary navigation"><a href="install/">Install</a><a href="guide/">Use it</a><a href="help/">Get help</a><a href="architecture/">How it works</a><a class="github" href="https://github.com/bolens/millennium-helpers">GitHub</a></nav>
+    <form class="header-search" action="search/" role="search"><label class="sr-only" for="home-search">Search the guides</label><input id="home-search" name="q" type="search" placeholder="Search guides"><button type="submit">Search</button></form>
   </header>
 
   <main id="main">
@@ -23,7 +31,7 @@
         <p class="kicker">One cross-platform command</p>
         <h1 id="hero-title">Keep Millennium <em>healthy.</em></h1>
         <p class="intro">Install, diagnose, repair, upgrade, and schedule Millennium from one CLI. Its guardrails protect your Steam setup while you stay in control.</p>
-        <div class="actions"><a class="button primary" href="#install">Install helpers</a><a class="button ghost" href="https://github.com/bolens/millennium-helpers/releases/latest">View v4.0.0</a></div>
+        <div class="actions"><a class="button primary" href="install/">Install helpers</a><a class="button ghost" href="https://github.com/bolens/millennium-helpers/releases/latest">View __SITE_VERSION__</a></div>
       </div>
       <div class="status-card" aria-label="Example Millennium diagnostic results">
         <p class="card-label">millennium diag</p>
@@ -44,7 +52,7 @@
         <article><span>03</span><h3>Repair</h3><code>millennium doctor</code><p>Apply targeted fixes with confirmation and dry-run support.</p></article>
         <article><span>04</span><h3>Maintain</h3><code>millennium upgrade</code><p>Update safely, roll back when needed, and manage themes.</p></article>
       </div>
-      <a class="architecture" href="docs/architecture/millennium-helpers.html">Explore the command architecture <span aria-hidden="true">↗</span></a>
+      <a class="architecture" href="architecture/">Learn how the helper works <span aria-hidden="true">↗</span></a>
     </section>
 
     <section class="safety" aria-labelledby="safety-title">
@@ -96,10 +104,10 @@ millennium config theme NAME</code></pre></article>
 
     <section class="technical" aria-labelledby="technical-title">
       <div><p class="kicker">Technical documentation</p><h2 id="technical-title">Packaging, automation, or integration?</h2><p>The repository contains command reference material, package-maintainer notes, MCP setup, release procedures, and contributor guidance.</p></div>
-      <ul><li><a href="https://github.com/bolens/millennium-helpers/tree/main/docs">Technical documentation</a></li><li><a href="docs/architecture/millennium-helpers.html">Interactive architecture map</a></li><li><a href="https://github.com/bolens/millennium-helpers/blob/main/spec/cli-contract.yaml">CLI contract</a></li><li><a href="https://github.com/bolens/millennium-helpers/blob/main/CONTRIBUTING.md">Contributing guide</a></li></ul>
+      <ul><li><a href="https://github.com/bolens/millennium-helpers/tree/main/docs">Technical documentation</a></li><li><a href="architecture/">How the helper works</a></li><li><a href="https://github.com/bolens/millennium-helpers/blob/main/spec/cli-contract.yaml">CLI contract</a></li><li><a href="https://github.com/bolens/millennium-helpers/blob/main/CONTRIBUTING.md">Contributing guide</a></li></ul>
     </section>
   </main>
 
-  <footer><p><strong>Millennium Helpers</strong> · Independent tooling for Millennium.</p><nav aria-label="Footer navigation"><a href="https://github.com/bolens/millennium-helpers/releases">Releases</a><a href="https://github.com/bolens/millennium-helpers/tree/main/docs">Guides</a><a href="https://github.com/bolens/millennium-helpers/blob/main/LICENSE">MIT License</a></nav></footer>
+  <footer><p><strong>Millennium Helpers</strong> · Independent tooling for Millennium.</p><nav aria-label="Footer navigation"><a href="https://github.com/bolens/millennium-helpers/releases">Releases</a><a href="https://github.com/bolens/millennium-helpers/tree/main/docs">Guides</a><a href="https://github.com/bolens/millennium-helpers/blob/main/LICENSE">MIT License</a><a href="https://github.com/bolens/millennium-helpers/issues/new?title=Pages%20feedback%3A%20&amp;body=Page%3A%20%0A%0AWhat%20would%20make%20this%20page%20more%20helpful%3F%0A">Was this site helpful?</a></nav></footer>
 </body>
 </html>
