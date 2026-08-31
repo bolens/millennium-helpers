@@ -24,7 +24,7 @@ This setup achieves this securely:
 9. **Doctor**: Syncing helper scripts over root-owned install paths requires `millennium diag doctor --yes` after a verified release download.
 10. **Archive extract**: Theme and Windows client zips reject path-traversal members (`..` / absolute paths).
 
-Arch packages ship `%wheel` NOPASSWD for the four privileged commands; that is intentional for multi-admin Wheel hosts—prefer the curl-installer user-specific sudoers drop-in on shared desktops if wheel membership is broad.
+Arch packages grant `%wheel` passwordless access to the four privileged commands. On a shared desktop with broad wheel membership, prefer the curl installer's user-specific sudoers rule.
 
 ---
 

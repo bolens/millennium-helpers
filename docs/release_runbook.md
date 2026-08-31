@@ -204,6 +204,9 @@ This starts **CD: Deployment & Release Automation**, which:
 5. Opens a packaging PR with real SHA256s
 6. Auto-merges the packaging PR and publishes the draft when packaging CI is green
 
+The workflow carries release hashes into the packaging update. A normal release
+does not require a second, manual hash pass.
+
 Monitor:
 
 ```bash

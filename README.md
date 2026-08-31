@@ -5,7 +5,7 @@
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-blue)](#installation)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-CLI helpers for [Millennium](https://github.com/SteamClientHomebrew/Millennium) — install, repair, upgrade, roll back, diagnose, theme, and schedule updates for the Steam Client homebrew hook on Linux and Windows.
+CLI helpers for [Millennium](https://github.com/SteamClientHomebrew/Millennium). Install, repair, upgrade, roll back, diagnose, theme, and schedule updates for the Steam Client homebrew hook on Linux and Windows.
 
 [Getting started](#getting-started) ·
 [Installation](#installation) ·
@@ -52,17 +52,16 @@ $ millennium diag
 
 ---
 
-## Features
+## What it does
 
-- **Go CLI** — One `bin/millennium` binary owns schedule, theme, diag/doctor, upgrade, purge, repair, and MCP on Linux and Windows
-- **Single PATH entry** — Installs put only `millennium` on PATH (`millennium <cmd>…`)
-- **Guided install** — Interactive wizard for Millennium **client** channel, background updates, and optional GitHub PAT (helpers **track** is set separately with `--track` / `-Track`)
-- **Scheduled updates** — `systemd` (system/user), launchd/cron, or Task Scheduler; timers call `millennium …`
-- **Secure elevation** — `/etc/sudoers.d/` drop-in (Linux) or UAC / `RunAs` (Windows)
-- **Stable, beta & main client channels** — Switch Millennium client update channel without reinstalling helpers
-- **Repair & doctor** — Ownership fixes, cache purge, hook repair, self-update
-- **MCP server** — Built-in Go stdio MCP (`millennium mcp`) for AI assistants ([guide](docs/mcp.md))
-- **Packaging matrix** — from-source / `-bin` / `-git` for Arch, Homebrew, Scoop, Nix; plus deb, rpm, Chocolatey, Winget ([packaging/README.md](packaging/README.md))
+- One Go binary, `millennium`, handles scheduling, themes, diagnostics, upgrades, purge, repair, and MCP on Linux and Windows.
+- Installs add one command to `PATH`: `millennium <cmd>…`.
+- The install wizard configures the Millennium **client** channel, background updates, and an optional GitHub PAT. Set the helpers **track** separately with `--track` or `-Track`.
+- Scheduled updates use system or user `systemd`, launchd, cron, or Task Scheduler.
+- Privileged operations use a Linux `/etc/sudoers.d/` rule or Windows UAC and `RunAs`.
+- Switch the client among stable, beta, and main without reinstalling the helpers.
+- `millennium mcp` runs a built-in stdio MCP server for AI assistants. See the [MCP guide](docs/mcp.md).
+- Packaging covers source, binary, and tip-of-main builds for Arch, Homebrew, Scoop, and Nix, plus deb, rpm, Chocolatey, and Winget. See the [packaging guide](packaging/README.md).
 
 ---
 
@@ -339,6 +338,7 @@ deactivated together; apply that preview with `disable-errors --yes`. Add
 | Packaging matrix (from-source / bin / git) | [packaging/README.md](packaging/README.md) |
 | Dry-run & manual uninstall | [docs/uninstall_dryrun.md](docs/uninstall_dryrun.md) |
 | Release runbook | [docs/release_runbook.md](docs/release_runbook.md) |
+| Interactive architecture map | [docs/architecture/millennium-helpers.html](docs/architecture/millennium-helpers.html) |
 | MCP server setup & tools | [docs/mcp.md](docs/mcp.md) |
 | Security policy | [SECURITY.md](SECURITY.md) |
 | Security & troubleshooting | [docs/security_troubleshooting.md](docs/security_troubleshooting.md) |
