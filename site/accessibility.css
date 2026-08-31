@@ -1,3 +1,7 @@
+.technical {
+  background: #3f228b;
+}
+
 @media (prefers-color-scheme: dark) {
   .button.primary {
     color: #17151f;
