@@ -7,13 +7,14 @@
   <meta name="theme-color" content="#17151f">
   <title>Millennium Helpers — keep Millennium healthy</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="guide.css">
   <link rel="stylesheet" href="accessibility.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">M</span><span>Millennium<br><b>Helpers</b></span></a>
-    <nav aria-label="Primary navigation"><a href="#capabilities">Capabilities</a><a href="#install">Install</a><a href="https://github.com/bolens/millennium-helpers/tree/main/docs">Docs</a><a class="github" href="https://github.com/bolens/millennium-helpers">GitHub</a></nav>
+    <nav aria-label="Primary navigation"><a href="#install">Install</a><a href="#first-run">First steps</a><a href="#tasks">Common tasks</a><a href="#help">Get help</a><a class="github" href="https://github.com/bolens/millennium-helpers">GitHub</a></nav>
   </header>
 
   <main id="main">
@@ -52,12 +53,50 @@
     </section>
 
     <section class="install" id="install" aria-labelledby="install-title">
-      <div><p class="kicker">Start on your platform</p><h2 id="install-title">Ready when Steam is.</h2></div>
+      <div><p class="kicker">Start on your platform</p><h2 id="install-title">Install Millennium Helpers.</h2><p>Millennium Helpers manages an existing Steam installation. Close Steam before you install or repair Millennium.</p></div>
       <div class="install-options">
-        <article><h3>Linux / macOS</h3><pre tabindex="0" aria-label="Linux and macOS install command"><code>curl -fsSL https://raw.githubusercontent.com/bolens/millennium-helpers/main/install.sh | bash -s -- install</code></pre></article>
-        <article><h3>Windows with Scoop</h3><pre tabindex="0" aria-label="Windows Scoop install command"><code>scoop install https://raw.githubusercontent.com/bolens/millennium-helpers/main/packaging/scoop/millennium-helpers-bin.json</code></pre></article>
+        <article><p class="choice-label">Recommended on Linux</p><h3>Run the installer</h3><pre tabindex="0" aria-label="Linux install command"><code>curl -fsSL https://raw.githubusercontent.com/bolens/millennium-helpers/main/install.sh | bash -s -- install</code></pre><p>The installer asks which Millennium channel and update schedule you want.</p></article>
+        <article><p class="choice-label">Recommended on Windows</p><h3>Install with Scoop</h3><pre tabindex="0" aria-label="Windows Scoop install command"><code>scoop install https://raw.githubusercontent.com/bolens/millennium-helpers/main/packaging/scoop/millennium-helpers-bin.json</code></pre><p>You can also run <code>winget install bolens.millenniumhelpers</code>.</p></article>
       </div>
-      <a class="button light" href="https://github.com/bolens/millennium-helpers#installation">Compare every install method</a>
+      <p class="install-note">After installation, open a new terminal and run <code>millennium --help</code>. If you see the command list, the helpers are ready.</p>
+    </section>
+
+    <section class="guide-section" id="first-run" aria-labelledby="first-run-title">
+      <header class="guide-heading"><p class="kicker">First steps</p><h2 id="first-run-title">Check your Millennium setup.</h2><p>The diagnostic command reads your setup and reports problems. It does not change files.</p></header>
+      <div class="steps">
+        <article><span>1</span><h3>Close Steam</h3><p>Steam can lock files that Millennium Helpers needs to inspect or replace.</p></article>
+        <article><span>2</span><h3>Run the health check</h3><pre tabindex="0"><code>millennium diag</code></pre><p>Green checks mean that part of your setup is working.</p></article>
+        <article><span>3</span><h3>Repair reported problems</h3><pre tabindex="0"><code>millennium doctor</code></pre><p>Review each proposed change before you confirm it.</p></article>
+      </div>
+      <aside class="plain-note"><h3>Safe to run first</h3><p><code>millennium diag</code> only reads your setup. For commands that change files, use <code>--dry-run</code> to preview the work when the command supports it.</p></aside>
+    </section>
+
+    <section class="guide-section tasks" id="tasks" aria-labelledby="tasks-title">
+      <header class="guide-heading"><p class="kicker">Common tasks</p><h2 id="tasks-title">Keep Millennium working.</h2><p>Run these commands in a terminal. Close Steam before an upgrade, repair, or rollback.</p></header>
+      <div class="task-list">
+        <article><div><h3>Update Millennium</h3><p>Install the newest version from your selected client channel.</p></div><pre tabindex="0"><code>millennium upgrade</code></pre></article>
+        <article><div><h3>Turn on daily updates</h3><p>Use the stable channel unless you want preview releases.</p></div><pre tabindex="0"><code>millennium schedule enable stable</code></pre></article>
+        <article><div><h3>Choose a theme</h3><p>List installed themes, then select the one you want.</p></div><pre tabindex="0"><code>millennium theme list
+millennium config theme NAME</code></pre></article>
+        <article><div><h3>Manage plugins</h3><p>Open the interactive plugin and theme selector.</p></div><pre tabindex="0"><code>millennium config plugins</code></pre></article>
+        <article><div><h3>Check scheduled updates</h3><p>See whether the background updater is installed and active.</p></div><pre tabindex="0"><code>millennium schedule status</code></pre></article>
+      </div>
+    </section>
+
+    <section class="guide-section help" id="help" aria-labelledby="help-title">
+      <header class="guide-heading"><p class="kicker">Get help</p><h2 id="help-title">Start with the symptom.</h2></header>
+      <div class="help-grid">
+        <article><h3>Steam starts without Millennium</h3><p>Close Steam and run <code>millennium diag</code>. If the hook check fails, run <code>millennium doctor</code>.</p></article>
+        <article><h3>An update did not finish</h3><p>Run <code>millennium diag</code>, then retry <code>millennium upgrade</code>. Keep Steam closed until the command finishes.</p></article>
+        <article><h3>A theme or plugin causes trouble</h3><p>Run <code>millennium config plugins</code> and disable the recent change. Restart Steam after you save the selection.</p></article>
+        <article><h3>You need to share a report</h3><p>Run <code>millennium diag --share</code>. The command removes known sensitive fields before it uploads the report. Review the file path shown in the output.</p></article>
+      </div>
+      <div class="support-links"><a href="https://github.com/bolens/millennium-helpers/issues/new/choose">Report a problem</a><a href="https://github.com/bolens/millennium-helpers/blob/main/docs/security_troubleshooting.md">Advanced troubleshooting</a></div>
+    </section>
+
+    <section class="technical" aria-labelledby="technical-title">
+      <div><p class="kicker">Technical documentation</p><h2 id="technical-title">Packaging, automation, or integration?</h2><p>The repository contains command reference material, package-maintainer notes, MCP setup, release procedures, and contributor guidance.</p></div>
+      <ul><li><a href="https://github.com/bolens/millennium-helpers/tree/main/docs">Technical documentation</a></li><li><a href="docs/architecture/millennium-helpers.html">Interactive architecture map</a></li><li><a href="https://github.com/bolens/millennium-helpers/blob/main/spec/cli-contract.yaml">CLI contract</a></li><li><a href="https://github.com/bolens/millennium-helpers/blob/main/CONTRIBUTING.md">Contributing guide</a></li></ul>
     </section>
   </main>
 
