@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-08-31
+
+### Changed
+- **Breaking:** Go consumers must migrate imports from `github.com/bolens/millenium-helpers` to `github.com/bolens/millennium-helpers`. Installer, packaging, and documentation URLs use the corrected repository name.
+
+### Fixed
+- Unix Steam discovery rejects Wine paths instead of treating them as native installations
+- From-source packaging accepts the controlled release archive layout
+
+### Security
+- Release and CI builds use Go 1.25.13 to include standard-library vulnerability fixes
+
 ## [3.2.1] - 2026-08-08
 
 ### Fixed

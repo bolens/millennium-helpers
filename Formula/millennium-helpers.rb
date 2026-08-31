@@ -1,8 +1,8 @@
 class MillenniumHelpers < Formula
   desc "Go CLI and helpers for managing Millennium Steam mods"
   homepage "https://github.com/bolens/millennium-helpers"
-  url "https://github.com/bolens/millennium-helpers/releases/download/v3.2.1/millennium-helpers-v3.2.1-src.tar.gz"
-  sha256 "53ab712c8e10ef2253d91bfc19e12e18cf327e3992cf5045c4208af01a71bf18"
+  url "https://github.com/bolens/millennium-helpers/releases/download/v4.0.0/millennium-helpers-v4.0.0-src.tar.gz"
+  sha256 "a90fe34e27d12afc042458ff9e700491226c27727a533a091e9f0e7f30ade71d"
   license "MIT"
   head "https://github.com/bolens/millennium-helpers.git", branch: "main"
 

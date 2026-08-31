@@ -1,10 +1,10 @@
 Name:           millennium-helpers-bin
-Version: 3.2.1
+Version: 4.0.0
 Release: 1%{?dist}
 Summary:        Millennium helpers (prebuilt release assets)
 License:        MIT
 URL:            https://github.com/bolens/millennium-helpers
-%global source_sha256 fe220070208776338e6da005388340c9aa1b3a0b3240cb8aa4c1948a1976dedf
+%global source_sha256 cb74efe72d767933067f30d94a180b3a80d9480a76cbfd530bd5bb9701e01b32
 Source0:        https://github.com/bolens/millennium-helpers/releases/download/v%{version}/millennium-helpers-v%{version}-linux-amd64.tar.gz
 # Source0 sha256: %{source_sha256}
 

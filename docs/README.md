@@ -14,6 +14,8 @@ the project [README](../README.md) **Further reading** table, and each guide’s
 | [steam_deck.md](steam_deck.md) | Users | Steam Deck (SteamOS) and Flatpak Steam hooks / overrides |
 | [uninstall_dryrun.md](uninstall_dryrun.md) | Users | Dry-run mode and manual uninstall per install method |
 | [release_runbook.md](release_runbook.md) | Maintainers | Cutting a `vX.Y.Z` release (preflight → tag → packaging) |
+| [architecture/millennium-helpers.html](architecture/millennium-helpers.html) | Contributors | Interactive command, scheduler, MCP, platform, and client architecture |
+| [site-evidence/README.md](site-evidence/README.md) | Contributors | Pages accessibility audit and desktop/mobile layout evidence |
 
 ## Project root docs
 

@@ -2,7 +2,7 @@
 # Binary/asset package: installs the published release tarball (scripts + optional prebuilt Go dispatcher).
 pkgname=millennium-helpers-bin
 _pkgname=millennium-helpers
-pkgver=3.2.1
+pkgver=4.0.0
 pkgrel=1
 pkgdesc="Millennium helpers (prebuilt release assets) — Go dispatcher when present, plus shell helpers/MCP"
 arch=('any')
@@ -22,7 +22,7 @@ install=millennium-helpers.install
 backup=('etc/sudoers.d/millennium-helpers')
 source=("${url}/releases/download/v${pkgver}/millennium-helpers-v${pkgver}-linux-amd64.tar.gz"
         "millennium-helpers.sudoers")
-sha256sums=('fe220070208776338e6da005388340c9aa1b3a0b3240cb8aa4c1948a1976dedf'
+sha256sums=('cb74efe72d767933067f30d94a180b3a80d9480a76cbfd530bd5bb9701e01b32'
             'b242d171bced3313da83fb6bfd6b29fdaf17fec28892b6e38435d7dd321949bd')
 
 prepare() {

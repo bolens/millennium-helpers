@@ -141,6 +141,27 @@ func TestRedactAndUpload(t *testing.T) {
 	}
 }
 
+func TestKeepFailedShareDoesNotOverwriteEarlierReport(t *testing.T) {
+	stateDir := t.TempDir()
+	t.Setenv("MILLENNIUM_STATE_DIR", stateDir)
+
+	first := keepFailedShare("first report")
+	second := keepFailedShare("second report")
+	if first == "" || second == "" {
+		t.Fatalf("failed paths: first=%q second=%q", first, second)
+	}
+	if first == second {
+		t.Fatalf("second report overwrote %q", first)
+	}
+	got, err := os.ReadFile(first)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != "first report" {
+		t.Fatalf("first report = %q", got)
+	}
+}
+
 func TestVerifyChecksums(t *testing.T) {
 	dir := t.TempDir()
 	content := []byte("hello")
