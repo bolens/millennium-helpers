@@ -1,0 +1,9 @@
+@media (max-width: 480px) {
+  .site-header nav {
+    display: none;
+  }
+
+  .header-search {
+    min-width: 0;
+  }
+}
