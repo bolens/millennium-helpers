@@ -59,9 +59,9 @@ jobs:
           - distro: ubuntu
             image: ubuntu:24.04
           - distro: fedora
-            image: fedora:latest
+            image: fedora:latest@sha256:43b29f65a41eb9c35e1cd5323e3bdf3b655c2357a9f4f1ff2f9c2798e5045d80
           - distro: archlinux
-            image: archlinux:latest
+            image: archlinux:latest@sha256:82b1b08faae9d61e3e7e13d562f4d09114d939105b0d59ff34140f3bd418593a
     steps:
       - name: Install git
         shell: bash
@@ -128,9 +128,9 @@ jobs:
           - distro: ubuntu
             image: ubuntu:24.04
           - distro: fedora
-            image: fedora:latest
+            image: fedora:latest@sha256:43b29f65a41eb9c35e1cd5323e3bdf3b655c2357a9f4f1ff2f9c2798e5045d80
           - distro: archlinux
-            image: archlinux:latest
+            image: archlinux:latest@sha256:82b1b08faae9d61e3e7e13d562f4d09114d939105b0d59ff34140f3bd418593a
     steps:
       - name: Install dependencies (Debian/Ubuntu)
         if: matrix.distro == 'debian' || matrix.distro == 'ubuntu'
