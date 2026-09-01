@@ -67,6 +67,18 @@ def local_target(page: Path, site: Path, href: str) -> Path | None:
     return target.resolve()
 
 
+def discovery_asset_target(site: Path, href: str) -> Path | None:
+    path = Path(unquote(urlparse(href).path))
+    candidates = [path]
+    if path.is_absolute() and len(path.parts) > 2:
+        candidates.append(Path("/").joinpath(*path.parts[2:]))
+    for candidate in candidates:
+        target = (site / candidate.as_posix().lstrip("/")).resolve()
+        if target.is_file() and site in target.parents:
+            return target
+    return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--site", type=Path, default=Path("site"))
@@ -118,7 +130,10 @@ def main() -> int:
     home_parser = PageParser()
     home_parser.feed(home)
     social_url = home_parser.meta.get("og:image", "")
-    social_card = site / "assets" / Path(urlparse(social_url).path).name
+    social_card = discovery_asset_target(site, social_url)
+    if social_card is None:
+        errors.append(f"index.html: unresolved og:image asset {social_url}")
+        social_card = site / "__missing_social_card__.png"
     try:
         data = social_card.read_bytes()
         if len(data) < 24 or data[:8] != b"\x89PNG\r\n\x1a\n":
