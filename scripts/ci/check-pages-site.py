@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import struct
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -114,6 +115,23 @@ def main() -> int:
                 errors.append(f"{rel}: broken internal link {href}")
 
     home = (site / "index.html").read_text(encoding="utf-8")
+    home_parser = PageParser()
+    home_parser.feed(home)
+    social_url = home_parser.meta.get("og:image", "")
+    social_card = site / "assets" / Path(urlparse(social_url).path).name
+    try:
+        data = social_card.read_bytes()
+        if len(data) < 24 or data[:8] != b"\x89PNG\r\n\x1a\n":
+            raise ValueError("not a complete PNG")
+        width, height = struct.unpack(">II", data[16:24])
+        if home_parser.meta.get("og:image:width") != str(width):
+            errors.append("index.html: og:image:width does not match the social card")
+        if home_parser.meta.get("og:image:height") != str(height):
+            errors.append("index.html: og:image:height does not match the social card")
+    except (OSError, ValueError, struct.error) as exc:
+        errors.append(
+            f"index.html: invalid referenced social card {social_card}: {exc}"
+        )
     for contract in (
         'rel="canonical"',
         "og:type",
