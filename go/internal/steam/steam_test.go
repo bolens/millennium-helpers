@@ -23,6 +23,20 @@ func TestParseRelaunchEnv(t *testing.T) {
 	}
 }
 
+func TestRelaunchStateFileExplicitOverrideWins(t *testing.T) {
+	name, _, err := TargetUser()
+	if err != nil {
+		t.Fatal(err)
+	}
+	explicit := filepath.Join(t.TempDir(), "state")
+	t.Setenv("MILLENNIUM_STATE_DIR", explicit)
+	t.Setenv("XDG_STATE_HOME", filepath.Join(t.TempDir(), "xdg"))
+
+	if got, want := RelaunchStateFile(name, t.TempDir()), filepath.Join(explicit, "relaunch.env"); got != want {
+		t.Fatalf("RelaunchStateFile() = %q, want explicit override %q", got, want)
+	}
+}
+
 func TestIsSafeRelaunchStateFile(t *testing.T) {
 	dir := t.TempDir()
 	p := filepath.Join(dir, "relaunch.env")
