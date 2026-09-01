@@ -31,6 +31,7 @@ jobs:
   test-scoop-bin:
     name: Test Scoop-bin Package Install
     runs-on: windows-latest
+    timeout-minutes: 60
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -146,6 +147,7 @@ jobs:
   chocolatey-schema:
     name: Validate Chocolatey install script shape
     runs-on: windows-latest
+    timeout-minutes: 60
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

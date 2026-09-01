@@ -29,6 +29,7 @@ jobs:
   assert-skip-policy:
     name: Assert skip CI policy
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     if: github.event_name == 'workflow_dispatch'
     steps:
       - name: Refuse skip_ci_gate for real release tags
@@ -47,6 +48,7 @@ jobs:
     name: Wait for required CI
     needs: [assert-skip-policy]
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     # Real tags always gate. v-draft may skip only via explicit workflow_dispatch.
     if: >-
       always() &&
@@ -166,6 +168,7 @@ jobs:
       (needs.assert-skip-policy.result == 'success' || needs.assert-skip-policy.result == 'skipped') &&
       (needs.gate.result == 'success' || needs.gate.result == 'skipped')
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     permissions:
       contents: write
       attestations: write
@@ -478,6 +481,7 @@ jobs:
       needs.build-release.outputs.tag != 'v-draft' &&
       needs.build-release.outputs.tag != ''
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     outputs:
       pr_number: ${{ steps.cpr.outputs.pull-request-number }}
       pr_url: ${{ steps.cpr.outputs.pull-request-url }}

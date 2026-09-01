@@ -47,6 +47,7 @@ jobs:
   syntax-check:
     name: Linux (${{ matrix.distro }}) - Syntax Check
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     container:
       image: ${{ matrix.image }}
     strategy:
@@ -111,6 +112,7 @@ jobs:
     name: Linux (${{ matrix.distro }}) - ${{ matrix.suite }}
     needs: [syntax-check]
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     container:
       image: ${{ matrix.image }}
     strategy:
@@ -198,6 +200,7 @@ jobs:
     name: Windows - ${{ matrix.suite }}
     needs: [syntax-check]
     runs-on: windows-latest
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -218,6 +221,7 @@ jobs:
     name: macOS - ${{ matrix.suite }}
     needs: [syntax-check]
     runs-on: macos-latest
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
