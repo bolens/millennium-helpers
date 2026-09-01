@@ -21,9 +21,9 @@ jobs:
       - name: Checkout base (label definitions)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
           # pull_request_target: use base branch only (trusted).
           ref: ${{ github.base_ref }}
-          persist-credentials: false
 
       - name: Sync label colors and descriptions
         if: hashFiles('.github/labels.yml') != ''
