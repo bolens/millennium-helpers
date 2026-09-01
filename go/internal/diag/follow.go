@@ -16,6 +16,8 @@ import (
 var (
 	followPollInterval = 200 * time.Millisecond
 	followMaxCycles    = 0 // 0 = until process exit / Ctrl+C
+	followCycleHook    func()
+	followOutput       io.Writer = os.Stdout
 )
 
 // logFilterParts returns lowercase substrings for Millennium-related lines.
@@ -71,7 +73,7 @@ func followFiltered(path string, parts []string, initialTail int) int {
 	}
 	for _, line := range lines {
 		if lineMatchesFilter(line, parts) {
-			fmt.Println(line)
+			fmt.Fprintln(followOutput, line)
 		}
 	}
 
@@ -94,6 +96,9 @@ func followFiltered(path string, parts []string, initialTail int) int {
 			return 0
 		}
 		cycles++
+		if followCycleHook != nil {
+			followCycleHook()
+		}
 
 		st, err := os.Stat(path)
 		if err != nil {
@@ -140,7 +145,7 @@ func followFiltered(path string, parts []string, initialTail int) int {
 		}
 		for _, line := range chunks {
 			if lineMatchesFilter(line, parts) {
-				fmt.Println(line)
+				fmt.Fprintln(followOutput, line)
 			}
 		}
 	}
