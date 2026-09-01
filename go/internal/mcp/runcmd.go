@@ -46,6 +46,7 @@ func FeatureArgv(feature string, rest ...string) []string {
 var osExecutable = os.Executable
 var lookPath = exec.LookPath
 var commandContext = exec.Command
+var timeoutAfter = time.After
 
 func resolveExecutable() string {
 	exe, err := osExecutable()
@@ -163,7 +164,7 @@ func runWithTimeout(cmd *exec.Cmd, timeout time.Duration) (string, error) {
 	select {
 	case err := <-done:
 		return buf.String(), err
-	case <-time.After(timeout):
+	case <-timeoutAfter(timeout):
 		killCommandTree(cmd)
 		<-done
 		return buf.String(), timeoutError{}
