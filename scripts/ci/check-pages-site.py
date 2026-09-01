@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import struct
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -66,6 +67,18 @@ def local_target(page: Path, site: Path, href: str) -> Path | None:
     return target.resolve()
 
 
+def discovery_asset_target(site: Path, href: str) -> Path | None:
+    path = Path(unquote(urlparse(href).path))
+    candidates = [path]
+    if path.is_absolute() and len(path.parts) > 2:
+        candidates.append(Path("/").joinpath(*path.parts[2:]))
+    for candidate in candidates:
+        target = (site / candidate.as_posix().lstrip("/")).resolve()
+        if target.is_file() and site in target.parents:
+            return target
+    return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--site", type=Path, default=Path("site"))
@@ -77,6 +90,16 @@ def main() -> int:
     for route in REQUIRED_ROUTES:
         if not (site / route).is_file():
             errors.append(f"missing route: {route}")
+    for asset in (
+        "site.webmanifest",
+        "assets/favicon.png",
+        "assets/apple-touch-icon.png",
+        "assets/icon-192.png",
+        "assets/icon-512.png",
+        "assets/social-card.png",
+    ):
+        if not (site / asset).is_file():
+            errors.append(f"missing discovery asset: {asset}")
 
     pages = sorted(site.rglob("*.html"))
     for page in pages:
@@ -102,6 +125,43 @@ def main() -> int:
             target = local_target(page, site, href)
             if target is not None and not target.exists():
                 errors.append(f"{rel}: broken internal link {href}")
+
+    home = (site / "index.html").read_text(encoding="utf-8")
+    home_parser = PageParser()
+    home_parser.feed(home)
+    social_url = home_parser.meta.get("og:image", "")
+    social_card = discovery_asset_target(site, social_url)
+    if social_card is None:
+        errors.append(f"index.html: unresolved og:image asset {social_url}")
+        social_card = site / "__missing_social_card__.png"
+    try:
+        data = social_card.read_bytes()
+        if len(data) < 24 or data[:8] != b"\x89PNG\r\n\x1a\n":
+            raise ValueError("not a complete PNG")
+        width, height = struct.unpack(">II", data[16:24])
+        if home_parser.meta.get("og:image:width") != str(width):
+            errors.append("index.html: og:image:width does not match the social card")
+        if home_parser.meta.get("og:image:height") != str(height):
+            errors.append("index.html: og:image:height does not match the social card")
+    except (OSError, ValueError, struct.error) as exc:
+        errors.append(
+            f"index.html: invalid referenced social card {social_card}: {exc}"
+        )
+    for contract in (
+        'rel="canonical"',
+        "og:type",
+        "og:url",
+        "og:site_name",
+        "og:image:width",
+        "twitter:title",
+        "twitter:description",
+        "twitter:image",
+        "twitter:image:alt",
+        'rel="apple-touch-icon"',
+        'rel="manifest"',
+    ):
+        if contract not in home:
+            errors.append(f"index.html: missing discovery contract {contract}")
 
     index = site / "search-index.json"
     if not index.is_file():

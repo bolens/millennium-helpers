@@ -4,17 +4,31 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Millennium Helpers installs, repairs, updates, and diagnoses Millennium on Linux, macOS, and Windows.">
-  <meta property="og:title" content="Millennium Helpers — keep Millennium healthy">
+  <link rel="canonical" href="https://bolens.github.io/millennium-helpers/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bolens.github.io/millennium-helpers/">
+  <meta property="og:site_name" content="Millennium Helpers">
+  <meta property="og:title" content="Millennium Helpers: keep Millennium healthy">
   <meta property="og:description" content="Install, diagnose, repair, and update Millennium with plain-language guidance.">
-  <meta property="og:image" content="https://bolens.github.io/millennium-helpers/assets/og.png">
+  <meta property="og:image" content="https://bolens.github.io/millennium-helpers/assets/social-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Millennium Helpers diagnostic showing a healthy Steam setup">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Millennium Helpers: keep Millennium healthy">
+  <meta name="twitter:description" content="Install, diagnose, repair, and update Millennium with plain-language guidance.">
+  <meta name="twitter:image" content="https://bolens.github.io/millennium-helpers/assets/social-card.png">
+  <meta name="twitter:image:alt" content="Millennium Helpers diagnostic showing a healthy Steam setup">
   <meta name="theme-color" content="#17151f">
-  <title>Millennium Helpers — keep Millennium healthy</title>
+  <title>Millennium Helpers: keep Millennium healthy</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="guide.css">
   <link rel="stylesheet" href="accessibility.css">
   <link rel="stylesheet" href="assets/site.css">
+  <style>@media(max-width:480px){.site-header{flex-wrap:wrap;gap:1rem}.header-search{order:3;width:100%;min-width:0}.header-search input{flex:1;min-width:0;width:auto}}</style>
   <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
   <script src="assets/site.js" defer></script>
 </head>
 <body data-root="">
@@ -30,7 +44,7 @@
       <div class="hero-copy">
         <p class="kicker">One cross-platform command</p>
         <h1 id="hero-title">Keep Millennium <em>healthy.</em></h1>
-        <p class="intro">Install, diagnose, repair, upgrade, and schedule Millennium from one CLI. Its guardrails protect your Steam setup while you stay in control.</p>
+        <p class="intro">Install, diagnose, repair, upgrade, and schedule Millennium from one CLI. File-changing commands support confirmation or a dry run.</p>
         <div class="actions"><a class="button primary" href="install/">Install helpers</a><a class="button ghost" href="https://github.com/bolens/millennium-helpers/releases/latest">View __SITE_VERSION__</a></div>
       </div>
       <div class="status-card" aria-label="Example Millennium diagnostic results">
@@ -45,18 +59,18 @@
     <section class="platforms" aria-label="Supported platforms and package managers"><p>Runs where Steam runs</p><ul><li>Linux</li><li>macOS</li><li>Windows</li><li>Arch</li><li>Nix</li><li>Homebrew</li><li>Scoop</li></ul></section>
 
     <section class="section" id="capabilities" aria-labelledby="capabilities-title">
-      <header class="section-head"><div><p class="kicker">A complete maintenance loop</p><h2 id="capabilities-title">From first install to fast recovery.</h2></div><p>Each command does one job, reports what changed, and keeps destructive work explicit.</p></header>
+      <header class="section-head"><div><p class="kicker">Commands</p><h2 id="capabilities-title">Install, inspect, repair, and update.</h2></div><p>Each command reports what changed. Destructive work requires explicit confirmation.</p></header>
       <div class="command-grid">
         <article><span>01</span><h3>Install</h3><code>millennium install</code><p>Set up the CLI and choose how Millennium updates.</p></article>
         <article><span>02</span><h3>Diagnose</h3><code>millennium diag</code><p>Inspect Steam, the hook, channels, and scheduled jobs.</p></article>
         <article><span>03</span><h3>Repair</h3><code>millennium doctor</code><p>Apply targeted fixes with confirmation and dry-run support.</p></article>
-        <article><span>04</span><h3>Maintain</h3><code>millennium upgrade</code><p>Update safely, roll back when needed, and manage themes.</p></article>
+        <article><span>04</span><h3>Maintain</h3><code>millennium upgrade</code><p>Update Millennium, roll back a release, and manage themes.</p></article>
       </div>
       <a class="architecture" href="architecture/">Learn how the helper works <span aria-hidden="true">↗</span></a>
     </section>
 
     <section class="safety" aria-labelledby="safety-title">
-      <div class="safety-copy"><p class="kicker">Guardrails included</p><h2 id="safety-title">Automation you can inspect.</h2><p>Dry runs preview destructive work. Diagnostics sanitize shared reports. Signed releases carry checksums, provenance, and software bills of materials.</p><a href="https://github.com/bolens/millennium-helpers/blob/main/SECURITY.md">Read the security model</a></div>
+      <div class="safety-copy"><p class="kicker">Before files change</p><h2 id="safety-title">Preview the command. Verify the release.</h2><p>Dry runs show destructive work before it starts. Diagnostics sanitize shared reports. Signed releases include checksums, provenance, and software bills of materials.</p><a href="https://github.com/bolens/millennium-helpers/blob/main/SECURITY.md">Read the security model</a></div>
       <dl><div><dt>One binary</dt><dd>Shared behavior across supported operating systems</dd></div><div><dt>Explicit changes</dt><dd>Confirmation and dry-run paths for destructive commands</dd></div><div><dt>Verified builds</dt><dd>Checksums, Sigstore bundles, attestations, and SPDX SBOMs</dd></div></dl>
     </section>
 
