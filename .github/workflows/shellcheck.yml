@@ -38,6 +38,6 @@ jobs:
       - name: Run ShellCheck Lint
         uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
         with:
-          ignore_paths: completions/ packaging/
+          ignore_paths: completions packaging .specify
           # zsh_completion_sim.zsh is zsh-only; ShellCheck cannot lint it (SC1071).
           ignore_names: zsh_completion_sim.zsh
