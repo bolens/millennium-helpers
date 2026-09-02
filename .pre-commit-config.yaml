@@ -140,9 +140,11 @@ repos:
       # --- pre-push (install with: pre-commit install --hook-type pre-push) ---
 
       - id: pre-push-lint
-        name: make lint
-        entry: make lint
-        language: system
+        name: make check-all
+        entry: bash scripts/ci/pre-push-check-all.sh
+        language: python
+        additional_dependencies:
+          - PyYAML>=6.0,<7
         pass_filenames: false
         always_run: true
         stages: [pre-push]

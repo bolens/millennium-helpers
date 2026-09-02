@@ -6,5 +6,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT/go"
 
 GOVULNCHECK_VERSION="${GOVULNCHECK_VERSION:-v1.1.4}"
+GOTOOLCHAIN="${GOTOOLCHAIN:-go1.25.13}"
+export GOTOOLCHAIN
 
 go run "golang.org/x/vuln/cmd/govulncheck@${GOVULNCHECK_VERSION}" ./...
