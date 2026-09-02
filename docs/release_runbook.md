@@ -128,11 +128,12 @@ EOF
 )"
 git push -u origin HEAD
 gh pr create --base main --fill
-gh pr checks --watch
+gh pr merge --auto --squash --delete-branch
 ```
 
-Merge only after required PR checks pass. Do not push the release commit directly
-to `main` or bypass branch protection. After merging:
+Queue squash auto-merge after opening the PR. GitHub merges only after the
+required PR checks pass. Do not push the release commit directly to `main` or
+bypass branch protection. After merging:
 
 ```bash
 gh pr merge --squash --delete-branch
