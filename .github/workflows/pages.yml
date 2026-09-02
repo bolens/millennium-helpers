@@ -46,7 +46,7 @@ jobs:
       - name: Verify generated changelog
         run: python3 scripts/render-changelog.py --name "Millennium Helpers" --base-url https://bolens.github.io/millennium-helpers/ --accent "#78dce8" --social-image assets/social-card.png --favicon assets/favicon.png --docs-shell --output site/changelog/index.html
       - name: Validate site source
-        run: python3 scripts/ci/check-pages-site.py --site site --architecture docs/architecture/millennium-helpers.html
+        run: python3 scripts/ci/check-pages-site.py --site site --architecture docs/architecture/millennium-helpers.html --architecture-source docs/architecture/millennium-helpers.architecture.json
       - name: Build versioned preview
         run: |
           version="v$(tr -d '\r\n' < VERSION)"
