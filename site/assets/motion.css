@@ -1,0 +1,7 @@
+.health-signal { display:block; width:100%; height:2.5rem; margin-bottom:.6rem; overflow:visible; }
+.health-signal path { fill:none; stroke:var(--line); stroke-width:2; stroke-dasharray:.06 .03; animation:health-track 5.4s linear infinite; }
+.health-signal g circle { fill:var(--surface); stroke:var(--mint); stroke-width:2; }
+.health-signal .health-pulse { fill:var(--yellow); stroke:none; filter:drop-shadow(0 0 7px color-mix(in srgb,var(--yellow) 70%,transparent)); animation:health-pulse 5.4s cubic-bezier(.45,0,.2,1) infinite; }
+@keyframes health-track { to { stroke-dashoffset:-1; } }
+@keyframes health-pulse { 0%,8%{transform:translateX(0)}30%{transform:translateX(126px)}56%{transform:translateX(252px)}84%,100%{transform:translateX(378px)} }
+@media(prefers-reduced-motion:reduce){.health-signal *{animation:none!important}.health-signal .health-pulse{transform:translateX(378px)}}
