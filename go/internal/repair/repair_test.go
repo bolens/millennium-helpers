@@ -3,6 +3,7 @@ package repair
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -82,6 +83,42 @@ func TestApplyHtmlcache(t *testing.T) {
 	entries, err := os.ReadDir(cache)
 	if err != nil || len(entries) != 0 {
 		t.Fatalf("cache %#v err=%v", entries, err)
+	}
+}
+
+func TestRuntimeHelpersExecutableAndRepair(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Unix executable modes are not meaningful on Windows")
+	}
+	lib := filepath.Join(t.TempDir(), "lib")
+	root := filepath.Join(lib, "millennium")
+	if err := os.MkdirAll(root, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("MOCK_LIB_DIR", lib)
+	for _, name := range runtimeHelperNames {
+		if err := os.WriteFile(filepath.Join(root, name), []byte("helper"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if RuntimeHelpersExecutable() {
+		t.Fatal("non-executable runtime helpers reported healthy")
+	}
+	if err := EnsureRuntimeHelpersExecutable(); err != nil {
+		t.Fatal(err)
+	}
+	if !RuntimeHelpersExecutable() {
+		t.Fatal("repaired runtime helpers still reported unhealthy")
+	}
+	for _, name := range runtimeHelperNames {
+		st, err := os.Stat(filepath.Join(root, name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if st.Mode().Perm() != 0o755 {
+			t.Fatalf("%s mode = %o, want 755", name, st.Mode().Perm())
+		}
 	}
 }
 

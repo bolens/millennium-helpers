@@ -38,6 +38,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 `
 
+func normalizeRuntimeHelperModes(root string) error {
+	for _, name := range []string{"libmillennium_pvs64", "libmillennium_luavm_x86"} {
+		path := filepath.Join(root, name)
+		if err := os.Chmod(path, 0o755); err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return fmt.Errorf("set executable mode on %s: %w", name, err)
+		}
+	}
+	return nil
+}
+
 // CanNativeInstall reports whether this process can write the install root.
 func CanNativeInstall() bool {
 	if runtime.GOOS == "windows" {

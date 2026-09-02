@@ -1,11 +1,11 @@
 package diag
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestLineMatchesFilter(t *testing.T) {
@@ -25,33 +25,33 @@ func TestFollowFilteredAppend(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	followPollInterval = 20 * time.Millisecond
-	followMaxCycles = 40
+	var output bytes.Buffer
+	followMaxCycles = 1
+	followOutput = &output
+	followCycleHook = func() {
+		f, err := os.OpenFile(p, os.O_APPEND|os.O_WRONLY, 0o644)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := f.WriteString("still noise\nBOOTSTRAP ok\n"); err != nil {
+			_ = f.Close()
+			t.Fatal(err)
+		}
+		if err := f.Close(); err != nil {
+			t.Fatal(err)
+		}
+	}
 	t.Cleanup(func() {
-		followPollInterval = 200 * time.Millisecond
 		followMaxCycles = 0
+		followCycleHook = nil
+		followOutput = os.Stdout
 	})
 
-	done := make(chan int, 1)
-	go func() {
-		done <- followFiltered(p, logFilterParts(), 100)
-	}()
-
-	time.Sleep(50 * time.Millisecond)
-	f, err := os.OpenFile(p, os.O_APPEND|os.O_WRONLY, 0o644)
-	if err != nil {
-		t.Fatal(err)
+	if code := followFiltered(p, logFilterParts(), 100); code != 0 {
+		t.Fatalf("code=%d", code)
 	}
-	_, _ = f.WriteString("still noise\nBOOTSTRAP ok\n")
-	_ = f.Close()
-
-	select {
-	case code := <-done:
-		if code != 0 {
-			t.Fatalf("code=%d", code)
-		}
-	case <-time.After(3 * time.Second):
-		t.Fatal("follow did not stop")
+	if got := output.String(); !strings.Contains(got, "MILLENNIUM start") || !strings.Contains(got, "BOOTSTRAP ok") {
+		t.Fatalf("filtered output missing expected lines: %q", got)
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -53,6 +54,7 @@ func TestDoctorPlan(t *testing.T) {
 		BinariesOK: false, HooksOK: false, SkinsDirOK: false,
 		FlatpakOK: true, TimerActive: true, SudoersOK: true,
 		LingerOK: true, PermissionsOK: true, TaskScheduled: true,
+		RuntimeHelpersExecutable: false,
 	}
 	steps := DoctorPlan(r, false)
 	ids := map[string]bool{}
@@ -61,6 +63,21 @@ func TestDoctorPlan(t *testing.T) {
 	}
 	if !ids["upgrade_force"] || !ids["skins_dir"] {
 		t.Fatalf("%#v", steps)
+	}
+	if runtime.GOOS != "windows" && ids["runtime_helpers"] {
+		t.Fatalf("runtime helper repair should wait for healthy binaries: %#v", steps)
+	}
+	r.BinariesOK = true
+	steps = DoctorPlan(r, false)
+	ids = map[string]bool{}
+	for _, s := range steps {
+		ids[s.ID] = true
+	}
+	if runtime.GOOS != "windows" && !ids["runtime_helpers"] {
+		t.Fatalf("missing runtime helper repair: %#v", steps)
+	}
+	if runtime.GOOS == "windows" && ids["runtime_helpers"] {
+		t.Fatalf("unexpected Windows runtime helper repair: %#v", steps)
 	}
 }
 
@@ -80,6 +97,10 @@ func TestFormatJSON(t *testing.T) {
 	}
 	if _, ok := m["update_channel"]; !ok {
 		t.Fatalf("%v", m)
+	}
+	_, hasRuntimeHelpers := m["runtime_helpers_executable"]
+	if (runtime.GOOS != "windows") != hasRuntimeHelpers {
+		t.Fatalf("runtime helper field mismatch on %s: %v", runtime.GOOS, m)
 	}
 }
 

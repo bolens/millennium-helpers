@@ -117,6 +117,33 @@ func TestNativeInstallUnix(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(lib, "millennium", "LICENSE")); err != nil {
 		t.Fatal(err)
 	}
+	for _, name := range []string{"libmillennium_pvs64", "libmillennium_luavm_x86"} {
+		st, err := os.Stat(filepath.Join(lib, "millennium", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if st.Mode().Perm() != 0o755 {
+			t.Fatalf("%s mode = %o, want 755", name, st.Mode().Perm())
+		}
+	}
+}
+
+func TestNormalizeRuntimeHelperModesAllowsLegacyArchive(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("unix executable modes are not meaningful on Windows")
+	}
+	root := t.TempDir()
+	helper := filepath.Join(root, "libmillennium_pvs64")
+	if err := os.WriteFile(helper, []byte("helper"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := normalizeRuntimeHelperModes(root); err != nil {
+		t.Fatal(err)
+	}
+	st, err := os.Stat(helper)
+	if err != nil || st.Mode().Perm() != 0o755 {
+		t.Fatalf("mode = %o, err = %v", st.Mode().Perm(), err)
+	}
 }
 
 func writeTestTarGz(path string) error {
@@ -141,9 +168,10 @@ func writeTestTarGz(path string) error {
 		"usr/lib/millennium/libmillennium_x86.so",
 		"usr/lib/millennium/libmillennium_hhx64.so",
 		"usr/lib/millennium/libmillennium_pvs64",
+		"usr/lib/millennium/libmillennium_luavm_x86",
 	}
 	for _, n := range files {
-		if err := add(n, "binary-"+filepath.Base(n), 0o755); err != nil {
+		if err := add(n, "binary-"+filepath.Base(n), 0o644); err != nil {
 			return err
 		}
 	}

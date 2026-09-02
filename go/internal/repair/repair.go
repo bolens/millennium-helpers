@@ -12,6 +12,43 @@ import (
 	"github.com/bolens/millennium-helpers/internal/theme"
 )
 
+var runtimeHelperNames = []string{
+	"libmillennium_pvs64",
+	"libmillennium_luavm_x86",
+}
+
+// RuntimeHelpersExecutable reports whether Unix runtime helper binaries exist
+// and have at least one executable mode bit. Windows does not use these files.
+func RuntimeHelpersExecutable() bool {
+	if runtime.GOOS == "windows" {
+		return true
+	}
+	root := MillenniumLibRoot()
+	for _, name := range runtimeHelperNames {
+		st, err := os.Stat(filepath.Join(root, name))
+		if err != nil || !st.Mode().IsRegular() || st.Mode().Perm()&0o111 == 0 {
+			return false
+		}
+	}
+	return true
+}
+
+// EnsureRuntimeHelpersExecutable restores the canonical executable mode used
+// by Millennium's pressure-vessel and Lua runtime helpers.
+func EnsureRuntimeHelpersExecutable() error {
+	if runtime.GOOS == "windows" {
+		return nil
+	}
+	root := MillenniumLibRoot()
+	for _, name := range runtimeHelperNames {
+		path := filepath.Join(root, name)
+		if err := os.Chmod(path, 0o755); err != nil {
+			return fmt.Errorf("chmod 0755 %s: %w", name, err)
+		}
+	}
+	return nil
+}
+
 // Target is a path that repair would chown / touch.
 type Target struct {
 	Path string

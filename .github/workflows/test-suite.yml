@@ -47,6 +47,7 @@ jobs:
   syntax-check:
     name: Linux (${{ matrix.distro }}) - Syntax Check
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     container:
       image: ${{ matrix.image }}
     strategy:
@@ -58,9 +59,9 @@ jobs:
           - distro: ubuntu
             image: ubuntu:24.04
           - distro: fedora
-            image: fedora:latest
+            image: fedora:latest@sha256:43b29f65a41eb9c35e1cd5323e3bdf3b655c2357a9f4f1ff2f9c2798e5045d80
           - distro: archlinux
-            image: archlinux:latest
+            image: archlinux:latest@sha256:82b1b08faae9d61e3e7e13d562f4d09114d939105b0d59ff34140f3bd418593a
     steps:
       - name: Install git
         shell: bash
@@ -92,6 +93,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: bash -n all scripts
         run: |
@@ -109,6 +112,7 @@ jobs:
     name: Linux (${{ matrix.distro }}) - ${{ matrix.suite }}
     needs: [syntax-check]
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     container:
       image: ${{ matrix.image }}
     strategy:
@@ -124,9 +128,9 @@ jobs:
           - distro: ubuntu
             image: ubuntu:24.04
           - distro: fedora
-            image: fedora:latest
+            image: fedora:latest@sha256:43b29f65a41eb9c35e1cd5323e3bdf3b655c2357a9f4f1ff2f9c2798e5045d80
           - distro: archlinux
-            image: archlinux:latest
+            image: archlinux:latest@sha256:82b1b08faae9d61e3e7e13d562f4d09114d939105b0d59ff34140f3bd418593a
     steps:
       - name: Install dependencies (Debian/Ubuntu)
         if: matrix.distro == 'debian' || matrix.distro == 'ubuntu'
@@ -181,6 +185,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Create non-root test user
         run: |
@@ -194,6 +200,7 @@ jobs:
     name: Windows - ${{ matrix.suite }}
     needs: [syntax-check]
     runs-on: windows-latest
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -202,6 +209,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Run Pester tests
         shell: pwsh
@@ -212,6 +221,7 @@ jobs:
     name: macOS - ${{ matrix.suite }}
     needs: [syntax-check]
     runs-on: macos-latest
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -221,6 +231,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Install PyYAML for packaging suite
         if: matrix.suite == 'tests/behavioral/test_packaging_ci.sh'

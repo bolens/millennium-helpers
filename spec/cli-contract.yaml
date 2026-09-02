@@ -179,6 +179,10 @@ commands:
           (Millennium client channel),
           and
           .BR unmanaged_files_ok .
+          On Unix, the report also includes
+          .BR runtime_helpers_executable ,
+          which verifies that Millennium's pressure-vessel and Lua runtime
+          helper binaries can be executed.
       - name: follow
         long: --follow
         short: -l

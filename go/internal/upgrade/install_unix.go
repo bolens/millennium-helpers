@@ -39,6 +39,9 @@ func installPlatform(archivePath, version string, o Options) error {
 	if err := copyTreeFiles(src, destTmp); err != nil {
 		return err
 	}
+	if err := normalizeRuntimeHelperModes(destTmp); err != nil {
+		return err
+	}
 	if err := os.WriteFile(filepath.Join(destTmp, "version.txt"), []byte(version+"\n"), 0o644); err != nil {
 		return err
 	}

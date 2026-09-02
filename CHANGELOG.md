@@ -69,48 +69,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.0.0] - 2026-07-15
 
 ### Added
-- `millennium install` / `millennium uninstall` (Go): checkout/fixture installs, release/main network download + SHA verify, Linux sudoers, Windows User PATH + completion profile hooks, interactive schedule setup wizard handoff
-- Thin Unix `install.sh` bootstrap to `millennium install` (piped Windows `install.ps1` removed; use Scoop/Winget/standalone `millennium.exe`)
-- Contract-driven façade sync (`make sync-cli-facade`): completion lists/flags, man OPTIONS, MCP `InputSchema`, and MCP dispatch allowlists from [`spec/cli-contract.yaml`](spec/cli-contract.yaml)
-- Go owns install.sh bootstrap and CLI smoke coverage formerly under shell/Pester (`test_install.sh`, `install.Tests.ps1`, feature greps in `go.yml`)
 
-### Removed
-- Checkout Bash/PowerShell feature scripts (`scripts/millennium-*.sh`, `scripts/windows/millennium-*.ps1`); feature entrypoint is `millennium` only
-- Feature Bash/Pester suites retired in favor of Go unit tests and `go.yml` smokes
-- Fat Bash/PowerShell installer bodies (replaced by Go `millennium install`; Unix keeps thin `install.sh`)
-- Install-time shared libs (`scripts/common.sh`, `scripts/lib/*`, `scripts/windows/common.ps1`, `scripts/windows/lib/*`); release asset helpers moved to `scripts/ci/release_assets.sh`
-- Windows `scripts/windows/install.ps1` bootstrap (Scoop/Winget/Chocolatey / standalone `millennium.exe` replace it)
-- Unification roadmap/audit maintainer trackers (Go peel complete; see contract + CONTRIBUTING)
+- `millennium install` and `millennium uninstall` provide verified release or main-track installation on Linux and Windows, including PATH, completions, schedules, and sudoers integration.
+- A contract-driven generator keeps completions, man pages, MCP schemas, and dispatch allowlists synchronized with `spec/cli-contract.yaml`.
 
 ### Changed
-- Release payloads and installers stop shipping/copying feature scripts; uninstall/wizard invoke `millennium` / `millennium.exe`
-- **Breaking:** PATH installs only `millennium` (no long-name `millennium-*` twins). Use `millennium <cmd>`; uninstall still removes legacy twins. argv0 twins remain supported if present.
-- Completions and sudoers allowlist `millennium` / `millennium <cmd>` only (no new long-name registration)
-- CI feature coverage is [`go.yml`](.github/workflows/go.yml) on Linux, Windows, and macOS; [`test-suite.yml`](.github/workflows/test-suite.yml) keeps install/unit/packaging/completions
-- User docs and packaging post-install messages prefer `millennium <cmd>` (man filenames and MCP host `command: millennium-mcp` unchanged)
+
+- **Breaking:** New installs expose only the `millennium` command. Use `millennium <command>` instead of the former long-name executables. Existing long-name dispatch remains compatible when present.
+- Release archives and packages ship the Go CLI instead of duplicate Bash and PowerShell feature implementations.
+- Platform CI now tests the Go-owned command surface on Linux, Windows, and macOS.
+
+### Removed
+
+- Retired feature scripts, PATH dispatchers, shared installer libraries, the Windows piped installer, and completed migration trackers.
 
 ## [2.7.0] - 2026-07-15
 
 ### Added
-- Unified Go CLI (`make build` → `bin/millennium`) for schedule, theme, diag/doctor, upgrade, purge, repair, and MCP (`millennium mcp` / PATH `millennium-mcp`)
-- Machine-readable CLI contract ([`spec/cli-contract.yaml`](spec/cli-contract.yaml)) with `make check-cli-contract`, dual-OS `go.yml` smokes, and Linux quality gates (`go vet`, `gofmt`, golangci-lint, govulncheck)
-- Packaging three-variant matrix (from-source / `-bin` / `-git`) for Arch, Homebrew, Scoop, Nix; plus deb, rpm, and Chocolatey ([packaging/README.md](packaging/README.md)); release CD embeds per-OS Go binaries and waits on a broader green CI gate
-- PATH long-name argv0 twins: installed `millennium-{upgrade,schedule,theme,diag,repair,purge,mcp}` are the Go binary (Windows `.cmd` / Scoop shims invoke `millennium <cmd>`)
-- Shared Go packages for Steam lifecycle (`go/internal/steam`), CLI logging (`go/internal/logging`), and zip-slip–safe extract (`go/internal/archive`)
-- Native schedule systemd scopes (system + user), upgrade sudo handoff on Linux, Windows Task Scheduler enable/disable, and interactive schedule setup wizard
+
+- A unified Go CLI for scheduling, themes, diagnostics, upgrades, repair, purge, and MCP operations.
+- A machine-readable CLI contract with synchronized completions, man pages, MCP schemas, and cross-platform smoke tests.
+- Arch, Homebrew, Scoop, Nix, deb, rpm, and Chocolatey packaging with OS-specific release archives.
+- Native Linux and Windows scheduling plus an interactive setup wizard.
 
 ### Changed
-- Installers hard-require the Go dispatcher for PATH `millennium`; no shell/PowerShell PATH dispatcher fallback
-- Feature long-name entrypoints peel onto Go; checkout Bash/PS scripts remain as development fallbacks (installed PATH uses twins)
-- Windows scheduled updates invoke `millennium.exe upgrade` / `theme update`; Unix systemd/launchd/cron invoke `millennium schedule|upgrade|theme` (rewritten on next `schedule enable`)
-- Release assets are versioned and OS/arch-split; from-source packaging uses controlled `-src` archives (no GitHub autoarchive URLs)
-- Docs and audit/roadmap describe present-tense Go ownership (phase/graduation jargon removed)
+
+- Installers require the Go dispatcher and register platform schedulers through `millennium <command>`.
+- Release assets are versioned by OS and architecture; source packages use controlled archives.
 
 ### Removed
-- Shell/PowerShell PATH dispatchers (`millennium.sh` / `millennium.ps1` and install escape hatches)
-- Feature dual libs peeled into Go (schedule/theme/upgrade/repair/purge/diag dual modules)
-- Dead shared shell libs superseded by Go (`steam.sh` / `Steam.ps1`, `archive.sh`, `github.sh`, `backup.sh`)
-- Python MCP hatch (`millennium-mcp.py` / `MILLENNIUM_MCP_PYTHON`)
+
+- Shell and PowerShell PATH dispatchers, duplicate feature libraries, dead shared helpers, and the Python MCP fallback.
 
 ## [2.6.2] - 2026-07-10
 

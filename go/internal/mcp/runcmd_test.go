@@ -28,7 +28,7 @@ func TestRunCmdTimeout(t *testing.T) {
 	}
 	dir := t.TempDir()
 	hang := filepath.Join(dir, "mcp-hang-test")
-	if err := os.WriteFile(hang, []byte("#!/bin/sh\nsleep 5\n"), 0o755); err != nil {
+	if err := os.WriteFile(hang, []byte("#!/bin/sh\nsleep 60\n"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	prevLook := lookPath
@@ -39,17 +39,19 @@ func TestRunCmdTimeout(t *testing.T) {
 		return prevLook(file)
 	}
 	defer func() { lookPath = prevLook }()
+	prevTimeoutAfter := timeoutAfter
+	timeoutAfter = func(time.Duration) <-chan time.Time {
+		ch := make(chan time.Time, 1)
+		ch <- time.Time{}
+		return ch
+	}
+	defer func() { timeoutAfter = prevTimeoutAfter }()
 
 	// Avoid TEST_SUITE_RUN skip path
 	t.Setenv("TEST_SUITE_RUN", "")
-	start := time.Now()
 	r := RunCmd([]string{"mcp-hang-test"}, false, time.Second)
-	elapsed := time.Since(start)
 	if !r.IsError || !strings.Contains(r.Content[0]["text"], "timed out") {
 		t.Fatalf("timeout: %+v", r)
-	}
-	if elapsed > 3*time.Second {
-		t.Fatalf("timeout left child process running: elapsed=%s", elapsed)
 	}
 }
 

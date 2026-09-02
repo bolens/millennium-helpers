@@ -3,6 +3,7 @@ package diag
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/bolens/millennium-helpers/internal/config"
@@ -45,6 +46,9 @@ func RunReadOnly() []Result {
 	rep := Collect()
 	out = append(out, Result{OK: true, Label: "Steam Client", Detail: rep.SteamDetail})
 	out = append(out, Result{OK: rep.BinariesOK, Label: "Millennium Binaries", Detail: rep.BinariesDetail})
+	if runtime.GOOS != "windows" {
+		out = append(out, Result{OK: rep.RuntimeHelpersExecutable, Label: "Runtime Helper Modes", Detail: fmt.Sprintf("executable=%v", rep.RuntimeHelpersExecutable)})
+	}
 	if steam := theme.FindSteamDir(); steam != "" {
 		out = append(out, Result{OK: true, Label: "Steam Directory", Detail: steam})
 	} else {
@@ -83,6 +87,9 @@ func FormatReportFromCollect(r Report) string {
 	}
 	row(true, "Steam Client", r.SteamDetail, !r.SteamRunning)
 	row(r.BinariesOK, "Millennium Binary Version", r.BinariesDetail, false)
+	if runtime.GOOS != "windows" {
+		row(r.RuntimeHelpersExecutable, "Runtime Helper Modes", fmt.Sprintf("executable=%v", r.RuntimeHelpersExecutable), false)
+	}
 	row(r.SkinsDirOK, "Skins Directory", fmt.Sprintf("present=%v", r.SkinsDirOK), false)
 	schedOK := r.TimerActive || r.TaskScheduled
 	if schedOK {

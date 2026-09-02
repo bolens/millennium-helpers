@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/bolens/millennium-helpers/internal/config"
+	"github.com/bolens/millennium-helpers/internal/repair"
 	"github.com/bolens/millennium-helpers/internal/schedule"
 	"github.com/bolens/millennium-helpers/internal/theme"
 	"github.com/bolens/millennium-helpers/internal/version"
@@ -21,28 +22,29 @@ import (
 
 // Report is the structured diagnostic snapshot (JSON + doctor plan).
 type Report struct {
-	SteamRunning     bool   `json:"steam_running"`
-	BinariesOK       bool   `json:"binaries_ok"`
-	HooksOK          bool   `json:"hooks_ok,omitempty"`
-	FlatpakOK        bool   `json:"flatpak_ok,omitempty"`
-	SudoersOK        bool   `json:"sudoers_ok,omitempty"`
-	TimerActive      bool   `json:"timer_active,omitempty"`
-	LingerOK         bool   `json:"linger_ok,omitempty"`
-	TaskScheduled    bool   `json:"task_scheduled,omitempty"`
-	ScriptsUpToDate  bool   `json:"scripts_up_to_date"`
-	PermissionsOK    bool   `json:"permissions_ok"`
-	SkinsDirOK       bool   `json:"skins_dir_ok"`
-	CompletionsOK    bool   `json:"completions_ok"`
-	CleanOfObsolete  bool   `json:"clean_of_obsolete"`
-	UnmanagedFilesOK bool   `json:"unmanaged_files_ok,omitempty"`
-	MixedInstallOK   bool   `json:"mixed_install_ok"`
-	InstallMethod    string `json:"install_method"`
-	HelpersCheckout  string `json:"helpers_checkout"`
-	HelpersTrack     string `json:"helpers_track"`
-	HelpersRef       string `json:"helpers_ref"`
-	LatestReleaseTag string `json:"latest_release_tag"`
-	UpdateChannel    string `json:"update_channel"`
-	Version          string `json:"version,omitempty"`
+	SteamRunning             bool   `json:"steam_running"`
+	BinariesOK               bool   `json:"binaries_ok"`
+	RuntimeHelpersExecutable bool   `json:"runtime_helpers_executable"`
+	HooksOK                  bool   `json:"hooks_ok,omitempty"`
+	FlatpakOK                bool   `json:"flatpak_ok,omitempty"`
+	SudoersOK                bool   `json:"sudoers_ok,omitempty"`
+	TimerActive              bool   `json:"timer_active,omitempty"`
+	LingerOK                 bool   `json:"linger_ok,omitempty"`
+	TaskScheduled            bool   `json:"task_scheduled,omitempty"`
+	ScriptsUpToDate          bool   `json:"scripts_up_to_date"`
+	PermissionsOK            bool   `json:"permissions_ok"`
+	SkinsDirOK               bool   `json:"skins_dir_ok"`
+	CompletionsOK            bool   `json:"completions_ok"`
+	CleanOfObsolete          bool   `json:"clean_of_obsolete"`
+	UnmanagedFilesOK         bool   `json:"unmanaged_files_ok,omitempty"`
+	MixedInstallOK           bool   `json:"mixed_install_ok"`
+	InstallMethod            string `json:"install_method"`
+	HelpersCheckout          string `json:"helpers_checkout"`
+	HelpersTrack             string `json:"helpers_track"`
+	HelpersRef               string `json:"helpers_ref"`
+	LatestReleaseTag         string `json:"latest_release_tag"`
+	UpdateChannel            string `json:"update_channel"`
+	Version                  string `json:"version,omitempty"`
 
 	// Human details (not always in JSON)
 	BinariesDetail string `json:"-"`
@@ -125,6 +127,7 @@ func Collect() Report {
 	if os.Getenv("DIAG_TEST_BYPASS_CHECKS") != "" {
 		r.SteamRunning = false
 		r.BinariesOK = true
+		r.RuntimeHelpersExecutable = true
 		r.HooksOK = true
 		r.FlatpakOK = true
 		r.SudoersOK = true
@@ -148,6 +151,7 @@ func Collect() Report {
 	}
 
 	r.BinariesOK, r.BinariesDetail = checkBinaries()
+	r.RuntimeHelpersExecutable = repair.RuntimeHelpersExecutable()
 	if runtime.GOOS != "windows" {
 		r.HooksOK, r.FlatpakOK = checkHooks()
 		r.SudoersOK = checkSudoers()
@@ -396,26 +400,27 @@ func scheduleConfiguredWindows() bool {
 // FormatJSON emits contract-shaped JSON for the current OS.
 func FormatJSON(r Report) string {
 	type unixJSON struct {
-		SteamRunning     bool   `json:"steam_running"`
-		BinariesOK       bool   `json:"binaries_ok"`
-		HooksOK          bool   `json:"hooks_ok"`
-		FlatpakOK        bool   `json:"flatpak_ok"`
-		SudoersOK        bool   `json:"sudoers_ok"`
-		TimerActive      bool   `json:"timer_active"`
-		LingerOK         bool   `json:"linger_ok"`
-		ScriptsUpToDate  bool   `json:"scripts_up_to_date"`
-		PermissionsOK    bool   `json:"permissions_ok"`
-		SkinsDirOK       bool   `json:"skins_dir_ok"`
-		CompletionsOK    bool   `json:"completions_ok"`
-		CleanOfObsolete  bool   `json:"clean_of_obsolete"`
-		UnmanagedFilesOK bool   `json:"unmanaged_files_ok"`
-		MixedInstallOK   bool   `json:"mixed_install_ok"`
-		InstallMethod    string `json:"install_method"`
-		HelpersCheckout  string `json:"helpers_checkout"`
-		HelpersTrack     string `json:"helpers_track"`
-		HelpersRef       string `json:"helpers_ref"`
-		LatestReleaseTag string `json:"latest_release_tag"`
-		UpdateChannel    string `json:"update_channel"`
+		SteamRunning             bool   `json:"steam_running"`
+		BinariesOK               bool   `json:"binaries_ok"`
+		RuntimeHelpersExecutable bool   `json:"runtime_helpers_executable"`
+		HooksOK                  bool   `json:"hooks_ok"`
+		FlatpakOK                bool   `json:"flatpak_ok"`
+		SudoersOK                bool   `json:"sudoers_ok"`
+		TimerActive              bool   `json:"timer_active"`
+		LingerOK                 bool   `json:"linger_ok"`
+		ScriptsUpToDate          bool   `json:"scripts_up_to_date"`
+		PermissionsOK            bool   `json:"permissions_ok"`
+		SkinsDirOK               bool   `json:"skins_dir_ok"`
+		CompletionsOK            bool   `json:"completions_ok"`
+		CleanOfObsolete          bool   `json:"clean_of_obsolete"`
+		UnmanagedFilesOK         bool   `json:"unmanaged_files_ok"`
+		MixedInstallOK           bool   `json:"mixed_install_ok"`
+		InstallMethod            string `json:"install_method"`
+		HelpersCheckout          string `json:"helpers_checkout"`
+		HelpersTrack             string `json:"helpers_track"`
+		HelpersRef               string `json:"helpers_ref"`
+		LatestReleaseTag         string `json:"latest_release_tag"`
+		UpdateChannel            string `json:"update_channel"`
 	}
 	type winJSON struct {
 		SteamRunning     bool   `json:"steam_running"`
@@ -449,7 +454,8 @@ func FormatJSON(r Report) string {
 	} else {
 		b, err = json.MarshalIndent(unixJSON{
 			SteamRunning: r.SteamRunning, BinariesOK: r.BinariesOK, HooksOK: r.HooksOK, FlatpakOK: r.FlatpakOK,
-			SudoersOK: r.SudoersOK, TimerActive: r.TimerActive, LingerOK: r.LingerOK,
+			RuntimeHelpersExecutable: r.RuntimeHelpersExecutable,
+			SudoersOK:                r.SudoersOK, TimerActive: r.TimerActive, LingerOK: r.LingerOK,
 			ScriptsUpToDate: r.ScriptsUpToDate, PermissionsOK: r.PermissionsOK, SkinsDirOK: r.SkinsDirOK,
 			CompletionsOK: r.CompletionsOK, CleanOfObsolete: r.CleanOfObsolete, UnmanagedFilesOK: r.UnmanagedFilesOK,
 			MixedInstallOK: r.MixedInstallOK, InstallMethod: r.InstallMethod, HelpersCheckout: r.HelpersCheckout,

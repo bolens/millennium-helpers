@@ -36,16 +36,13 @@ func TargetUser() (name, home string, err error) {
 // RelaunchStateFile returns ~/.local/state/millennium-helpers/relaunch.env for the user.
 func RelaunchStateFile(username, home string) string {
 	cur, _ := user.Current()
+	if d := os.Getenv("MILLENNIUM_STATE_DIR"); d != "" && (cur == nil || cur.Username == username) {
+		return filepath.Join(d, "relaunch.env")
+	}
 	if cur != nil && cur.Username == username {
 		if xdg := os.Getenv("XDG_STATE_HOME"); xdg != "" {
 			return filepath.Join(xdg, "millennium-helpers", "relaunch.env")
 		}
-		if d := os.Getenv("MILLENNIUM_STATE_DIR"); d != "" {
-			return filepath.Join(d, "relaunch.env")
-		}
-	}
-	if d := os.Getenv("MILLENNIUM_STATE_DIR"); d != "" && (cur == nil || cur.Username == username) {
-		return filepath.Join(d, "relaunch.env")
 	}
 	return filepath.Join(home, ".local", "state", "millennium-helpers", "relaunch.env")
 }
