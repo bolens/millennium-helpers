@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Pages code examples use theme-aware shell syntax highlighting without changing copied commands.
 
+### Fixed
+
+- Explicit light mode keeps its light palette when the operating system prefers dark mode.
+
 ## [4.0.0] - 2026-08-31
 
 ### Changed
