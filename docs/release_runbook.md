@@ -191,7 +191,7 @@ Do **not** tag while ShellCheck, the Test Suite, or Completions CI is red.
 ## 5. Tag and push
 
 ```bash
-git tag -a "vX.Y.Z" -m "vX.Y.Z"
+git tag -s "vX.Y.Z" -m "vX.Y.Z"
 git push origin "vX.Y.Z"
 ```
 
@@ -233,7 +233,7 @@ gh pr list --search "packaging" --state open
 | --- | --- |
 | Local lint/tests fail | Fix before tagging |
 | CI red on `main` after bump | Fix forward on `main`; do not tag yet |
-| Tag already pushed, CI red | Fix on `main`, then move the tag: `git tag -d vX.Y.Z && git push origin :refs/tags/vX.Y.Z && git tag -a vX.Y.Z -m vX.Y.Z && git push origin vX.Y.Z` (only if the draft was never published) |
+| Tag already pushed, CI red | Fix on `main` and publish a new patch release. Do not move a published tag. |
 | Draft exists, packaging PR CI fails | Fix packaging on the PR branch; merge manually; publish draft with `gh release edit vX.Y.Z --draft=false` |
 | `PACKAGING_PAT` missing | Draft assets may still upload; finish packaging PR + publish manually |
 
@@ -275,7 +275,7 @@ do
 done
 # wait until gate workflows are success on this SHA, then:
 
-git tag -a vX.Y.Z -m vX.Y.Z && git push origin vX.Y.Z
+git tag -s vX.Y.Z -m vX.Y.Z && git push origin vX.Y.Z
 gh run list --workflow release.yml --limit 3
 ```
 
