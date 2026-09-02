@@ -1,0 +1,4 @@
+[data-color-scheme="light"]{color-scheme:light;--guide-bg:#f5f2e9;--guide-card:#fffdf7;--guide-ink:#141b21;--guide-muted:#4d5960;--guide-line:#b9b3a5;--guide-accent:#075f53;--guide-focus:#006dff;--guide-code:#0b1115}
+[data-color-scheme="dark"]{color-scheme:dark;--guide-bg:#12191d;--guide-card:#192328;--guide-ink:#f6f2e8;--guide-muted:#c7d0d4;--guide-line:#58636a;--guide-accent:#66d9bd;--guide-focus:#78aaff;--guide-code:#080d10}
+.color-mode-picker{display:inline-flex;align-items:center;gap:.4rem;color:var(--guide-muted);font-size:.72rem;font-weight:750}.color-mode-picker select{max-width:8rem;padding:.35rem .55rem;border:1px solid var(--guide-line);background:var(--guide-card);color:var(--guide-ink);font:inherit}
+@media(max-width:850px){.color-mode-picker span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}}
