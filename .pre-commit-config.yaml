@@ -140,8 +140,8 @@ repos:
       # --- pre-push (install with: pre-commit install --hook-type pre-push) ---
 
       - id: pre-push-lint
-        name: make lint
-        entry: make lint
+        name: make check-all
+        entry: make check-all
         language: system
         pass_filenames: false
         always_run: true
