@@ -142,7 +142,9 @@ repos:
       - id: pre-push-lint
         name: make check-all
         entry: make check-all
-        language: system
+        language: python
+        additional_dependencies:
+          - PyYAML>=6.0,<7
         pass_filenames: false
         always_run: true
         stages: [pre-push]
