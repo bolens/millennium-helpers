@@ -20,9 +20,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   # Must run even when skip_ci_gate=true (the gate job itself is skipped then).
@@ -49,6 +47,9 @@ jobs:
     needs: [assert-skip-policy]
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    permissions:
+      actions: read
+      contents: read
     # Real tags always gate. v-draft may skip only via explicit workflow_dispatch.
     if: >-
       always() &&
@@ -192,9 +193,10 @@ jobs:
 
       - name: Resolve tag and version
         id: meta
+        env:
+          TAG: ${{ github.event.inputs.tag_name || github.ref_name }}
         run: |
           set -euo pipefail
-          TAG="${{ github.event.inputs.tag_name || github.ref_name }}"
           VERSION="${TAG#v}"
           FILE_VERSION="$(tr -d '[:space:]' < VERSION)"
           if [[ "$TAG" != v-draft && "$VERSION" != "$FILE_VERSION" ]]; then
@@ -472,6 +474,9 @@ jobs:
 
   update-packaging:
     name: Open packaging update PR
+    permissions:
+      contents: write
+      pull-requests: write
     needs: [build-release]
     # always(): build-release uses always() because assert-skip-policy is skipped on
     # tag pushes; without always() here, this job is skipped even when build succeeds.
@@ -617,6 +622,10 @@ jobs:
 
   finalize:
     name: Merge packaging PR & publish release
+    permissions:
+      actions: write
+      contents: write
+      pull-requests: write
     needs: [build-release, update-packaging]
     if: >-
       always() &&
