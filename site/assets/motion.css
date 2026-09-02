@@ -16,7 +16,7 @@
 .health-signal .health-track {
   stroke: var(--mint);
   stroke-dasharray: .09 .035;
-  animation: health-track 4.8s linear infinite;
+  animation: health-track 5.4s linear infinite;
 }
 .health-signal circle {
   fill: var(--surface);
@@ -27,7 +27,7 @@
   fill: var(--yellow);
   stroke: none;
   filter: drop-shadow(0 0 7px color-mix(in srgb, var(--yellow) 75%, transparent));
-  animation: health-pulse 4.8s cubic-bezier(.45, 0, .2, 1) infinite;
+  animation: health-pulse 5.4s cubic-bezier(.45, 0, .2, 1) infinite;
 }
 .status-card > div {
   transition: background-color 180ms ease, transform 180ms ease;
