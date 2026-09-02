@@ -78,19 +78,6 @@ func installPlatform(archivePath, version string, o Options) error {
 	return nil
 }
 
-func normalizeRuntimeHelperModes(root string) error {
-	for _, name := range []string{"libmillennium_pvs64", "libmillennium_luavm_x86"} {
-		path := filepath.Join(root, name)
-		if err := os.Chmod(path, 0o755); err != nil {
-			if os.IsNotExist(err) {
-				continue
-			}
-			return fmt.Errorf("set executable mode on %s: %w", name, err)
-		}
-	}
-	return nil
-}
-
 func copyTreeFiles(src, dst string) error {
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {

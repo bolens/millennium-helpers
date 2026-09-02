@@ -73,7 +73,10 @@ func followFiltered(path string, parts []string, initialTail int) int {
 	}
 	for _, line := range lines {
 		if lineMatchesFilter(line, parts) {
-			fmt.Fprintln(followOutput, line)
+			if _, err := fmt.Fprintln(followOutput, line); err != nil {
+				fmt.Fprintf(os.Stderr, "Error: write follow output: %v\n", err)
+				return 1
+			}
 		}
 	}
 
@@ -145,7 +148,10 @@ func followFiltered(path string, parts []string, initialTail int) int {
 		}
 		for _, line := range chunks {
 			if lineMatchesFilter(line, parts) {
-				fmt.Fprintln(followOutput, line)
+				if _, err := fmt.Fprintln(followOutput, line); err != nil {
+					fmt.Fprintf(os.Stderr, "Error: write follow output: %v\n", err)
+					return 1
+				}
 			}
 		}
 	}
