@@ -23,3 +23,12 @@ contract or runbook. The CLI contract is `spec/cli-contract.yaml`.
 - Run the narrowest relevant tests first, then the contract/platform checks for
   touched surfaces. Use the repository's full local gate for cross-cutting or
   release-bound work and report unavailable platform checks.
+
+## Spec-driven changes
+
+Use Spec Kit for new capabilities, architecture, security-sensitive behavior,
+migrations, and coordinated multi-file changes. Keep narrow fixes, dependency
+updates, prose edits, and release housekeeping in the normal repository
+workflow unless their risk warrants a written specification. Keep completed
+feature directories under `specs/` as decision history; do not backfill them for
+finished work.
