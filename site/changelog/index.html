@@ -1,0 +1,219 @@
+<!doctype html><html lang="en" data-changelog-mode="system" data-color-mode-storage="millennium-helpers-changelog-mode"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark light"><meta name="theme-color" content="#09111d"><title>Changelog · Millennium Helpers</title><meta name="description" content="Release history for Millennium Helpers."><link rel="canonical" href="https://bolens.github.io/millennium-helpers/changelog/"><meta property="og:type" content="website"><meta property="og:title" content="Changelog · Millennium Helpers"><meta property="og:description" content="Release history for Millennium Helpers."><meta property="og:url" content="https://bolens.github.io/millennium-helpers/changelog/"><meta property="og:site_name" content="Millennium Helpers"><meta property="og:image" content="https://bolens.github.io/millennium-helpers/assets/social-card.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Millennium Helpers release history"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Changelog · Millennium Helpers"><meta name="twitter:description" content="Release history for Millennium Helpers."><meta name="twitter:image" content="https://bolens.github.io/millennium-helpers/assets/social-card.png"><meta name="twitter:image:alt" content="Millennium Helpers release history"><link rel="icon" href="../assets/favicon.png"><script src="../assets/site.js" defer></script><script>(()=>{const r=document.documentElement,k='millennium-helpers-changelog-mode',q=s=>typeof matchMedia==='function'?matchMedia(s):{matches:false},l=q('(prefers-color-scheme: light)'),d=q('(prefers-color-scheme: dark)');let m;try{m=localStorage.getItem(k)}catch{}if(!['system','time','light','dark'].includes(m))m='system';const x=()=>m==='time'?(new Date().getHours()>=7&&new Date().getHours()<19?'light':'dark'):m==='light'||m==='dark'?m:l.matches?'light':d.matches?'dark':'dark';const apply=()=>{r.dataset.changelogMode=m;r.dataset.changelogScheme=x()};apply();addEventListener('DOMContentLoaded',()=>{const s=document.querySelector('[data-mode]');s.value=m;s.addEventListener('change',()=>{m=s.value;try{localStorage.setItem(k,m)}catch{}apply()})});l.addEventListener?.('change',apply);d.addEventListener?.('change',apply);setInterval(()=>{if(m==='time')apply()},60000)})()</script><style>
+:root{--accent:#78dce8;--bg:#09111d;--panel:#111d2d;--ink:#edf5ff;--muted:#9fb0c5;--line:#2a3c53;color-scheme:dark}[data-changelog-scheme=light]{--bg:#f5f7fa;--panel:#fff;--ink:#142033;--muted:#56677d;--line:#c8d2df;color-scheme:light}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 ui-sans-serif,system-ui,sans-serif}a{color:var(--accent)}header{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.8rem max(1rem,calc((100vw - 74rem)/2));border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(16px)}header>a{font-weight:800;text-decoration:none;color:var(--ink)}nav,label{display:flex;align-items:center;gap:.75rem}label{color:var(--muted);font-size:.8rem}select{max-width:9rem;padding:.45rem .6rem;border:1px solid var(--line);border-radius:.55rem;background:var(--panel);color:var(--ink)}main{width:min(74rem,calc(100% - 2rem));margin:auto;padding:clamp(2rem,6vw,5rem) 0}.intro{max-width:46rem;margin-bottom:2.5rem}h1{font-size:clamp(2.4rem,7vw,5.4rem);line-height:.95;letter-spacing:-.055em;margin:.2rem 0 1rem}.intro p{color:var(--muted);font-size:1.08rem}h2{display:inline-block;min-width:14rem;margin:2rem 2rem 1rem 0;padding-top:1.5rem;border-top:1px solid var(--line);font-size:1.15rem}h3{margin:1rem 0 .25rem;color:var(--accent);font-size:.78rem;text-transform:uppercase;letter-spacing:.12em}p,ul{max-width:52rem;overflow-wrap:anywhere;margin:.25rem 0 1rem}li+li{margin-top:.6rem}code{padding:.12rem .3rem;border-radius:.3rem;background:var(--panel)}footer{padding:2rem;text-align:center;color:var(--muted);border-top:1px solid var(--line)}@media(max-width:700px){header{align-items:flex-start;flex-wrap:wrap}nav{flex-wrap:wrap}label span{position:absolute;width:1px;height:1px;overflow:hidden}}
+</style></head><body><header><a href="../">Millennium Helpers</a><nav><a aria-current="page" href="./">Changelog</a><a href="https://github.com/bolens/millennium-helpers">GitHub</a><label><span>Theme</span><select data-mode aria-label="Color theme"><option value="system">System</option><option value="time">Day cycle</option><option value="light">Light</option><option value="dark">Dark</option></select></label></nav></header><main><div class="intro"><p>Release notes</p><h1>What changed.</h1><p>Generated from the project changelog whenever its release history changes.</p></div><p>All notable changes to Millennium Helpers are documented in this file.</p>
+<p>The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>, and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<h2 id="unreleased">Unreleased</h2>
+<h2 id="4-0-0-2026-08-31">4.0.0 - 2026-08-31</h2>
+<h3>Changed</h3>
+<ul>
+<li><strong>Breaking:</strong> Go consumers must migrate imports from <code>github.com/bolens/millenium-helpers</code> to <code>github.com/bolens/millennium-helpers</code>. Installer, packaging, and documentation URLs use the corrected repository name.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>Unix Steam discovery rejects Wine paths instead of treating them as native installations</li>
+<li>From-source packaging accepts the controlled release archive layout</li>
+</ul>
+<h3>Security</h3>
+<ul>
+<li>Release and CI builds use Go 1.25.13 to include standard-library vulnerability fixes</li>
+</ul>
+<h2 id="3-2-1-2026-08-08">3.2.1 - 2026-08-08</h2>
+<h3>Fixed</h3>
+<ul>
+<li>Fish top-level completion offers <code>millennium config</code>, with dispatcher entries generated from the CLI contract to prevent future omissions</li>
+</ul>
+<h2 id="3-2-0-2026-08-07">3.2.0 - 2026-08-07</h2>
+<h3>Added</h3>
+<ul>
+<li>Native <code>millennium config</code> commands inspect client settings, toggle installed plugins, select or disable themes, and identify/disable components with directly attributed recent errors without relying on Steam&#x27;s settings UI</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>Error remediation ignores recognized prior Steam sessions, tolerates missing component directories, and rejects action-specific options outside their valid CLI and MCP actions</li>
+</ul>
+<h2 id="3-1-0-2026-08-07">3.1.0 - 2026-08-07</h2>
+<h3>Added</h3>
+<ul>
+<li>Reversible <code>millennium injection status|disable|enable</code> controls preserve configuration, plugins, themes, and installed client files</li>
+<li>Injection safety checks refuse foreign or conflicting bootstrap files and report partial hook states</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>MCP registration uses <code>millennium mcp</code>, and Windows scheduled updates resolve the unified dispatcher directly</li>
+</ul>
+<h3>Removed</h3>
+<ul>
+<li>Retired argv0 twin dispatch, legacy execution environment switches, metadata migration, and the unused legacy Go package</li>
+</ul>
+<h2 id="3-0-2-2026-08-05">3.0.2 - 2026-08-05</h2>
+<h3>Changed</h3>
+<ul>
+<li>Repository agent guidance documents safe contribution and validation practices</li>
+<li>Release CI pins third-party actions, verifies downloaded tooling, and publishes build-provenance attestations</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>Remote archives, bootstrap downloads, and GitHub API responses enforce path, entry-count, and size limits</li>
+<li>MCP child processes terminate as a process tree when requests time out</li>
+<li>Configuration updates and the setup wizard preserve malformed or unreadable state instead of overwriting it</li>
+<li>Linux all-users upgrades link hooks for the target user</li>
+<li>Failed Windows installs and rollbacks restore the previous installation transactionally</li>
+<li>Backup retention applies configured count and maximum age on Linux and Windows</li>
+<li>Theme bulk updates and uninstall cleanup report partial failures</li>
+</ul>
+<h2 id="3-0-1-2026-07-15">3.0.1 - 2026-07-15</h2>
+<h3>Fixed</h3>
+<ul>
+<li>Arch PKGBUILD/<code>.SRCINFO</code> <code>millennium-helpers.sudoers</code> sha256sums after the v3.0.0 peel (makepkg validity check)</li>
+<li><code>check-version</code> asserts Arch sudoers checksums stay in sync (skips absent package trees in CI fixtures)</li>
+<li>MCP JSON spacing helper no longer sizes buffers with <code>len+N</code> (CodeQL <code>go/allocation-size-overflow</code>)</li>
+</ul>
+<h2 id="3-0-0-2026-07-15">3.0.0 - 2026-07-15</h2>
+<h3>Added</h3>
+<ul>
+<li><code>millennium install</code> and <code>millennium uninstall</code> provide verified release or main-track installation on Linux and Windows, including PATH, completions, schedules, and sudoers integration.</li>
+<li>A contract-driven generator keeps completions, man pages, MCP schemas, and dispatch allowlists synchronized with <code>spec/cli-contract.yaml</code>.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li><strong>Breaking:</strong> New installs expose only the <code>millennium</code> command. Use <code>millennium &lt;command&gt;</code> instead of the former long-name executables. Existing long-name dispatch remains compatible when present.</li>
+<li>Release archives and packages ship the Go CLI instead of duplicate Bash and PowerShell feature implementations.</li>
+<li>Platform CI now tests the Go-owned command surface on Linux, Windows, and macOS.</li>
+</ul>
+<h3>Removed</h3>
+<ul>
+<li>Retired feature scripts, PATH dispatchers, shared installer libraries, the Windows piped installer, and completed migration trackers.</li>
+</ul>
+<h2 id="2-7-0-2026-07-15">2.7.0 - 2026-07-15</h2>
+<h3>Added</h3>
+<ul>
+<li>A unified Go CLI for scheduling, themes, diagnostics, upgrades, repair, purge, and MCP operations.</li>
+<li>A machine-readable CLI contract with synchronized completions, man pages, MCP schemas, and cross-platform smoke tests.</li>
+<li>Arch, Homebrew, Scoop, Nix, deb, rpm, and Chocolatey packaging with OS-specific release archives.</li>
+<li>Native Linux and Windows scheduling plus an interactive setup wizard.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>Installers require the Go dispatcher and register platform schedulers through <code>millennium &lt;command&gt;</code>.</li>
+<li>Release assets are versioned by OS and architecture; source packages use controlled archives.</li>
+</ul>
+<h3>Removed</h3>
+<ul>
+<li>Shell and PowerShell PATH dispatchers, duplicate feature libraries, dead shared helpers, and the Python MCP fallback.</li>
+</ul>
+<h2 id="2-6-2-2026-07-10">2.6.2 - 2026-07-10</h2>
+<h3>Fixed</h3>
+<ul>
+<li>Windows↔Unix parity: schedule <code>config</code> under StrictMode; scheduled task uses <code>-Yes -Quiet</code>, theme update, and <code>updater.log</code></li>
+<li>Windows upgrade honors <code>backup_max_age_days</code> and accepts GNU-style channel/force/file/rollback flags</li>
+<li>Windows repair supports <code>-SkipTheme</code> / <code>--skip-theme</code> and refreshes themes after force reinstall</li>
+<li>Setup wizard (Unix + Windows) preserves <code>backup_limit</code> / <code>backup_max_age_days</code> when rewriting config</li>
+</ul>
+<h2 id="2-6-1-2026-07-10">2.6.1 - 2026-07-10</h2>
+<h3>Changed</h3>
+<ul>
+<li>Arch <code>-git</code> packaging follows AUR VCS policy: no perpetual <code>pkgver</code> sync on every commit; <code>pkgver()</code> is authoritative at <code>makepkg</code> time; <code>.SRCINFO</code> regenerates only when the <code>-git</code> recipe changes (<code>make sync-git-srcinfo</code>)</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>Portable packaging CI sed (GNU vs BSD/macOS) and Windows InstallTrack I/O so Cross-Platform Test Suite stays green</li>
+<li>Diag install-track meta no longer breaks when <code>USERPROFILE</code> is unset or tests mock <code>Get-Content</code></li>
+</ul>
+<h2 id="2-6-0-2026-07-10">2.6.0 - 2026-07-10</h2>
+<h3>Added</h3>
+<ul>
+<li>Helpers install tracks (<code>release</code> / <code>main</code> / <code>tag</code> / <code>checkout</code>) with <code>install-meta.json</code>, <code>--track</code>/<code>--tag</code> (Unix) and <code>-Track</code>/<code>-Tag</code> (Windows)</li>
+<li>Auto-migrate legacy installs without meta on first install/diag/doctor touch</li>
+<li>Winget tip-of-main manifests (<code>packaging/winget-git/</code>, <code>bolens.millenniumhelpers.git</code>)</li>
+<li>Millennium client channel <code>main</code> (tip-of-development) alongside <code>stable</code>/<code>beta</code> — separate from helpers track</li>
+<li>Diag JSON fields <code>helpers_track</code> / <code>helpers_ref</code>; track-aware doctor sync</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>Doctor and update checks follow the recorded helpers track (pinned tags stay pinned; <code>-git</code> packages are not compared to release tags)</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li><code>sync-stable-srcinfo</code> no longer truncates <code>.SRCINFO</code> when <code>makepkg --printsrcinfo</code> fails (e.g. missing <code>install=</code> file in test trees)</li>
+</ul>
+<h2 id="2-5-0-2026-07-10">2.5.0 - 2026-07-10</h2>
+<h3>Added</h3>
+<ul>
+<li>Versioned Arch package (<code>packaging/millennium-helpers</code>) built from the Linux release tarball; release CD bumps pkgver + sha256 alongside Formula/Scoop/Winget/Nix</li>
+<li>Scoop <code>millennium-helpers-git</code> nightly manifest (tip of <code>main</code> via GitHub archive)</li>
+<li>Nix flake packages: <code>millennium-helpers</code> (release tarball) and <code>millennium-helpers-git</code> (flake source / latest commit)</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>Arch <code>-git</code> recipe moved to <code>packaging/millennium-helpers-git/</code> (AUR-ready layout)</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li><code>millennium-schedule setup</code> under sudo verifies passwordless rules for the real user (<code>sudo -U</code>), matching doctor</li>
+</ul>
+<h2 id="2-4-0-2026-07-10">2.4.0 - 2026-07-10</h2>
+<h3>Added</h3>
+<ul>
+<li>Modular <code>millennium-diag</code> libraries on Linux (<code>scripts/lib/diag_*.sh</code>) and Windows (<code>scripts/windows/lib/Diag*.ps1</code>)</li>
+<li>Install-method detection (pacman/scoop/winget/manual/mixed) with release-tag comparison</li>
+<li>Doctor cleanup of unmanaged leftovers before package-upgrade hints</li>
+<li>PowerShell completion health checks and doctor repair</li>
+<li><code>-Yes</code> / <code>--yes</code> auto scoop/winget/pacman package upgrade when helpers are outdated</li>
+<li>JSON fields: <code>install_method</code>, <code>mixed_install_ok</code>, <code>helpers_checkout</code>, <code>latest_release_tag</code>, <code>completions_ok</code></li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>Pacman upgrades no longer blocked by unmanaged completion leftovers; doctor refuses to overwrite package-owned files</li>
+<li>Empty <code>DIAG_TEST_OBSOLETE_LIST</code> correctly means “no obsolete candidates” in tests</li>
+<li>Winget package ID uses <code>bolens.millenniumhelpers</code></li>
+<li>Windows PowerShell 5.1 no longer fails to parse diag modules (ASCII-only sources; Scoop profile hook no longer calls <code>scoop</code> at profile load)</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>Thin loaders: Linux <code>diag.sh</code> (replaces <code>diag_report.sh</code>), Windows <code>Diag.ps1</code> (replaces <code>DiagReport.ps1</code>)</li>
+<li>Manual installs sync helper scripts from the latest release tarball/zip instead of <code>main</code></li>
+</ul>
+<h2 id="2-3-0-2026-07-10">2.3.0 - 2026-07-10</h2>
+<h3>Added</h3>
+<ul>
+<li>PowerShell Tab completions with installer profile hooks (Windows + Scoop)</li>
+<li>Cross-shell completion tests (bash/zsh/fish/nushell) and nested zsh simulation</li>
+<li>Homebrew bash/zsh completion symlinks and Nushell completion install</li>
+<li>Isolated prefix install/uninstall coverage in <code>test_install.sh</code></li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>Fish completions no longer ship bare <code>VERSION_PLACEHOLDER</code> tokens</li>
+<li><code>sudo millennium-schedule</code> reaches the user systemd bus via shared <code>sysctl_user</code></li>
+<li>Uninstall disables cron as well as systemd/LaunchAgent schedulers</li>
+<li>Windows uninstall removes the <code>MillenniumUpdate</code> scheduled task</li>
+<li>Shared library resolution works from Homebrew-style <code>prefix/bin</code> layouts</li>
+<li>Cron enable/disable under sudo targets the invoking user&#x27;s crontab</li>
+<li>PKGBUILD conflict cleanup docs include bare <code>millennium</code> artifacts</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>Linux installer also installs Nushell completions into the user config path</li>
+<li>Release Windows zip includes <code>completions/powershell/</code></li>
+<li>Manual uninstall docs cover PowerShell hooks, state dirs, and Scoop hooks</li>
+</ul>
+<h2 id="2-2-1-2026-07-10">2.2.1 - 2026-07-10</h2>
+<h3>Security</h3>
+<ul>
+<li>Verify SHA256 checksums in piped <code>install.sh</code> against release <code>.sha256</code> sidecars</li>
+<li>Verify SHA256 checksums during Windows <code>millennium-upgrade</code> (parity with Linux)</li>
+<li>Restrict Windows <code>config.json</code> ACLs when writing <code>github_token</code></li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>Include <code>scripts/millennium-mcp.py</code> in the trimmed Windows release zip / Scoop CI staging</li>
+<li>Update standalone installer tests for trimmed release archive layout</li>
+<li>Republish release assets so packaging checksums match the Windows zip that includes MCP</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>Wire <code>test_millennium_dispatcher.sh</code> and <code>test_packaging_ci.sh</code> into the CI matrix</li>
+<li>Slim local <code>tests/run_tests.sh</code> to source shared assertions and defer packaging gates to CI</li>
+</ul>
+<h2 id="2-2-0-2026-07-09">2.2.0 - 2026-07-09</h2>
+<p>See GitHub release notes for v2.2.0.</p></main><footer><a href="../">Back to Millennium Helpers</a></footer></body></html>
