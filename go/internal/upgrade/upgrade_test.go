@@ -128,6 +128,24 @@ func TestNativeInstallUnix(t *testing.T) {
 	}
 }
 
+func TestNormalizeRuntimeHelperModesAllowsLegacyArchive(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("unix executable modes are not meaningful on Windows")
+	}
+	root := t.TempDir()
+	helper := filepath.Join(root, "libmillennium_pvs64")
+	if err := os.WriteFile(helper, []byte("helper"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := normalizeRuntimeHelperModes(root); err != nil {
+		t.Fatal(err)
+	}
+	st, err := os.Stat(helper)
+	if err != nil || st.Mode().Perm() != 0o755 {
+		t.Fatalf("mode = %o, err = %v", st.Mode().Perm(), err)
+	}
+}
+
 func writeTestTarGz(path string) error {
 	f, err := os.Create(path)
 	if err != nil {

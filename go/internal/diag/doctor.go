@@ -27,7 +27,7 @@ func DoctorPlan(r Report, force bool) []DoctorStep {
 	}
 	add(!r.BinariesOK, "upgrade_force", "millennium upgrade --force")
 	if runtime.GOOS != "windows" {
-		add(!r.RuntimeHelpersExecutable, "runtime_helpers", "restore executable modes on Millennium runtime helpers")
+		add(r.BinariesOK && !r.RuntimeHelpersExecutable, "runtime_helpers", "restore executable modes on Millennium runtime helpers")
 		add(!r.HooksOK, "repair_hooks", "restore bootstrap libXtst hooks")
 		add(!r.FlatpakOK, "flatpak", "flatpak override --user --filesystem=/usr/lib/millennium")
 		add(!r.TimerActive, "schedule_enable", "millennium schedule enable")

@@ -43,7 +43,7 @@ func EnsureRuntimeHelpersExecutable() error {
 	for _, name := range runtimeHelperNames {
 		path := filepath.Join(root, name)
 		if err := os.Chmod(path, 0o755); err != nil {
-			return fmt.Errorf("chmod 0755 %s: %w", path, err)
+			return fmt.Errorf("chmod 0755 %s: %w", name, err)
 		}
 	}
 	return nil

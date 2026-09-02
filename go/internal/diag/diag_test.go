@@ -64,6 +64,15 @@ func TestDoctorPlan(t *testing.T) {
 	if !ids["upgrade_force"] || !ids["skins_dir"] {
 		t.Fatalf("%#v", steps)
 	}
+	if runtime.GOOS != "windows" && ids["runtime_helpers"] {
+		t.Fatalf("runtime helper repair should wait for healthy binaries: %#v", steps)
+	}
+	r.BinariesOK = true
+	steps = DoctorPlan(r, false)
+	ids = map[string]bool{}
+	for _, s := range steps {
+		ids[s.ID] = true
+	}
 	if runtime.GOOS != "windows" && !ids["runtime_helpers"] {
 		t.Fatalf("missing runtime helper repair: %#v", steps)
 	}
