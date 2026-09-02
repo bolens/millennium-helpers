@@ -141,7 +141,7 @@ repos:
 
       - id: pre-push-lint
         name: make check-all
-        entry: make check-all
+        entry: bash scripts/ci/pre-push-check-all.sh
         language: python
         additional_dependencies:
           - PyYAML>=6.0,<7
