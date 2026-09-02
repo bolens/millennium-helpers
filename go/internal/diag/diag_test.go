@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -63,8 +64,11 @@ func TestDoctorPlan(t *testing.T) {
 	if !ids["upgrade_force"] || !ids["skins_dir"] {
 		t.Fatalf("%#v", steps)
 	}
-	if !ids["runtime_helpers"] {
+	if runtime.GOOS != "windows" && !ids["runtime_helpers"] {
 		t.Fatalf("missing runtime helper repair: %#v", steps)
+	}
+	if runtime.GOOS == "windows" && ids["runtime_helpers"] {
+		t.Fatalf("unexpected Windows runtime helper repair: %#v", steps)
 	}
 }
 
@@ -85,8 +89,9 @@ func TestFormatJSON(t *testing.T) {
 	if _, ok := m["update_channel"]; !ok {
 		t.Fatalf("%v", m)
 	}
-	if _, ok := m["runtime_helpers_executable"]; !ok {
-		t.Fatalf("%v", m)
+	_, hasRuntimeHelpers := m["runtime_helpers_executable"]
+	if (runtime.GOOS != "windows") != hasRuntimeHelpers {
+		t.Fatalf("runtime helper field mismatch on %s: %v", runtime.GOOS, m)
 	}
 }
 

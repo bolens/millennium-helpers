@@ -448,7 +448,7 @@ jobs:
             stage="$home/stage/usr/lib/millennium"
             mkdir -p "$stage"
             for f in libmillennium_bootstrap_x86.so libmillennium_bootstrap_hhx64.so \
-                     libmillennium_x86.so libmillennium_hhx64.so libmillennium_pvs64; do
+                     libmillennium_x86.so libmillennium_hhx64.so libmillennium_pvs64 libmillennium_luavm_x86; do
               printf 'stub\n' >"$stage/$f"
             done
             archive="$home/millennium-v9.9.9-linux-x86_64.tar.gz"

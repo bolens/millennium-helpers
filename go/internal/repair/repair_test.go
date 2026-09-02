@@ -3,6 +3,7 @@ package repair
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -86,6 +87,9 @@ func TestApplyHtmlcache(t *testing.T) {
 }
 
 func TestRuntimeHelpersExecutableAndRepair(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Unix executable modes are not meaningful on Windows")
+	}
 	lib := filepath.Join(t.TempDir(), "lib")
 	root := filepath.Join(lib, "millennium")
 	if err := os.MkdirAll(root, 0o755); err != nil {
