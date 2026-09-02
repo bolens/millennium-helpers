@@ -1,0 +1,51 @@
+/* Diagnostic heartbeat: one calm signal connects the health checks. */
+.health-signal {
+  display: block;
+  width: 100%;
+  height: 2.75rem;
+  margin: 0 0 .4rem;
+  overflow: visible;
+}
+.health-signal path {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.health-signal .health-track {
+  stroke: var(--mint);
+  stroke-dasharray: .09 .035;
+  animation: health-track 4.8s linear infinite;
+}
+.health-signal circle {
+  fill: var(--surface);
+  stroke: var(--violet);
+  stroke-width: 3;
+}
+.health-signal .health-pulse {
+  fill: var(--yellow);
+  stroke: none;
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--yellow) 75%, transparent));
+  animation: health-pulse 4.8s cubic-bezier(.45, 0, .2, 1) infinite;
+}
+.status-card > div {
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+.status-card > div:hover {
+  background: color-mix(in srgb, var(--mint) 8%, transparent);
+  transform: translateX(.2rem);
+}
+@keyframes health-track { to { stroke-dashoffset: -1; } }
+@keyframes health-pulse {
+  0%, 8% { transform: translateX(0); }
+  34% { transform: translateX(126px); }
+  62% { transform: translateX(252px); }
+  90%, 100% { transform: translateX(378px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .health-signal * { animation: none !important; }
+  .health-signal .health-pulse { transform: translateX(378px); }
+  .status-card > div { transition: none; }
+  .status-card > div:hover { transform: none; }
+}
