@@ -11,7 +11,9 @@
     "views": [
       { "id": "interactive", "label": "Interactive command", "focus": ["operators", "dispatcher", "commands", "millennium"], "note": "Follow a user command through the Go dispatcher to the installed Millennium client." },
       { "id": "automation", "label": "Scheduled update", "focus": ["scheduler", "dispatcher", "commands", "github", "millennium"], "note": "Platform schedulers invoke the same upgrade and theme commands used interactively." },
-      { "id": "agent", "label": "MCP tools", "focus": ["agents", "mcp", "dispatcher", "commands"], "note": "The stdio MCP server maps tool calls onto the command implementation and confirmation gates." }
+      { "id": "agent", "label": "MCP tools", "focus": ["agents", "mcp", "dispatcher", "commands"], "note": "The stdio MCP server maps tool calls onto the command implementation and confirmation gates." },
+      { "id": "verified-upgrade", "label": "Verified upgrade", "focus": ["operators", "dispatcher", "commands", "github", "platform", "millennium"], "note": "Upgrade selects a release, verifies its SHA-256 sidecar, then hands the archive to the platform installer." },
+      { "id": "client-maintenance", "label": "Client maintenance", "focus": ["operators", "dispatcher", "commands", "state", "millennium"], "note": "Diagnostics, repair, and configuration share one dispatcher while keeping client state explicit." }
     ]
   },
   "components": [
