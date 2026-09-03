@@ -1,0 +1,18 @@
+# Millennium Helpers
+
+Millennium Helpers is a cross-platform command-line toolkit for installing, configuring, diagnosing, and integrating Millennium. This site is the user guide for setup, commands, troubleshooting, search, and architecture.
+
+## Documentation
+
+- Home: https://bolens.github.io/millennium-helpers/
+- Install: https://bolens.github.io/millennium-helpers/install/
+- Guide: https://bolens.github.io/millennium-helpers/guide/
+- Help and troubleshooting: https://bolens.github.io/millennium-helpers/help/
+- Search: https://bolens.github.io/millennium-helpers/search/
+- Architecture: https://bolens.github.io/millennium-helpers/architecture/
+- Changelog: https://bolens.github.io/millennium-helpers/changelog/
+
+## Source
+
+- Repository: https://github.com/bolens/millennium-helpers
+- Issues: https://github.com/bolens/millennium-helpers/issues

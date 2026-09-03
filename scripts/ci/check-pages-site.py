@@ -94,6 +94,9 @@ def main() -> int:
         if not (site / route).is_file():
             errors.append(f"missing route: {route}")
     for asset in (
+        "robots.txt",
+        "sitemap.xml",
+        "llms.txt",
         "site.webmanifest",
         "assets/favicon.png",
         "assets/apple-touch-icon.png",
@@ -138,6 +141,22 @@ def main() -> int:
                 errors.append(f"{rel}: broken internal link {href}")
 
     home = (site / "index.html").read_text(encoding="utf-8")
+    sitemap = (site / "sitemap.xml").read_text(encoding="utf-8")
+    llms = (site / "llms.txt").read_text(encoding="utf-8")
+    for route in (
+        "",
+        "install/",
+        "guide/",
+        "help/",
+        "search/",
+        "architecture/",
+        "changelog/",
+    ):
+        url = f"https://bolens.github.io/millennium-helpers/{route}"
+        if f"<loc>{url}</loc>" not in sitemap:
+            errors.append(f"sitemap.xml: missing {url}")
+        if url not in llms:
+            errors.append(f"llms.txt: missing {url}")
     home_parser = PageParser()
     home_parser.feed(home)
     social_url = home_parser.meta.get("og:image", "")
