@@ -17,15 +17,6 @@ on:
       - 'Makefile'
   pull_request:
     branches: [ main ]
-    paths:
-      - 'go/**'
-      - 'VERSION'
-      - 'spec/cli-contract.yaml'
-      - 'scripts/ci/check-cli-contract.py'
-      - 'scripts/ci/check-govulncheck.sh'
-      - '.golangci.yml'
-      - '.github/workflows/go.yml'
-      - 'Makefile'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
