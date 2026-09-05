@@ -14,3 +14,16 @@ file and the project runbook differ, the project runbook is authoritative and
 must be corrected in the same pull request.
 
 Fleet policy: <https://github.com/bolens/.github/blob/main/RELEASING.md>.
+
+## Branch protection
+
+The default branch requires pull requests, resolved conversations, linear
+history, and an up-to-date branch with passing required checks, including the Go
+quality, three platform tests, CLI contract, and workflow lint/security jobs.
+These rules also apply to administrators; force pushes and branch deletion are
+disabled. Zero approving reviews are required because this is a solo-maintainer
+repository; review the complete diff before merging.
+
+Keep required checks available on every pull request. Filter expensive work
+inside jobs or use an always-running result job that rejects failures and
+cancellations. Update the protection settings when renaming required jobs.
