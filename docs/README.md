@@ -86,3 +86,5 @@ guide where one exists (for example `millennium-mcp(1)` → [mcp.md](mcp.md)).
 ## Related
 
 - [Project README](../README.md) · [CONTRIBUTING.md](../CONTRIBUTING.md) · [SECURITY.md](../SECURITY.md) · [CHANGELOG.md](../CHANGELOG.md) · [licensing.md](licensing.md)
+
+- [Editor setup](../.vscode/README.md)
