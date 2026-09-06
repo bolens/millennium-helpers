@@ -366,7 +366,7 @@ make test-go       # Go unit + dispatcher smokes
 # make test-all-distros            # optional; requires Docker
 ```
 
-Helpers report version via `--version` / `-V` (from the repo `VERSION` file). A Dev Container (includes `pwsh` + Docker-in-Docker) and a Nix `devShell` (lint tools only) are available for a reproducible environment. Go owns the installed CLI; feature CI is [`go.yml`](.github/workflows/go.yml) (Linux / Windows / macOS). See [CONTRIBUTING.md](CONTRIBUTING.md) for layout and install bootstrap notes.
+Helpers report version via `--version` / `-V` (from the repo `VERSION` file). A Dev Container (includes `pwsh`, with Docker-in-Docker in the full variant) and a Nix `devShell` (lint tools only) are available for a reproducible environment. Go owns the installed CLI; feature CI is [`go.yml`](.github/workflows/go.yml) (Linux / Windows / macOS). See [CONTRIBUTING.md](CONTRIBUTING.md) for layout and install bootstrap notes.
 
 ---
 
