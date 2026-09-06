@@ -379,3 +379,10 @@ These helpers install and manage **[Millennium](https://github.com/SteamClientHo
 This project is not affiliated with or endorsed by SteamClientHomebrew, Project Millennium, or Valve Corporation. Steam® is a trademark of Valve Corporation.
 
 Full details, packaging notes, and maintainer sync checklist: **[docs/licensing.md](docs/licensing.md)**.
+
+## License scope and attribution
+
+See [third-party notices](THIRD_PARTY_NOTICES.md) for the project license scope,
+retained upstream notices, and dependency or asset exceptions.
+
+Full [dependency license texts](THIRD_PARTY_LICENSES.txt) accompany this source.

@@ -62,3 +62,10 @@ When changing license text, attribution, or how upgrade installs notices:
 2. Update this page and [README § License](../README.md#license).
 3. Confirm man-page `LICENSE` sections still reference this doc.
 4. Run `make check-docs` (also part of `make lint` / `make check-all`).
+
+## Compiled dependency notices
+
+[`THIRD_PARTY_LICENSES.txt`](../THIRD_PARTY_LICENSES.txt) retains the Go runtime
+and module license texts for the inspected dependency versions. Include it with
+compiled dispatchers and retain the separate Millennium notice. See
+[third-party scope](../THIRD_PARTY_NOTICES.md) for other imported material.
