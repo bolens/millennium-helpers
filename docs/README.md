@@ -1,7 +1,50 @@
 # Documentation
 
-Index of Millennium Helpers docs. `make check-docs` enforces that this index,
-the project [README](../README.md) **Further reading** table, and each guide’s
+Contract-first Millennium installation and maintenance.
+
+## Start here
+
+| Need | Owning document |
+| --- | --- |
+| Use the project | [README.md](../README.md) |
+| Change the repository | [AGENTS.md](../AGENTS.md) |
+| Deliver or recover | [RELEASING.md](../RELEASING.md) |
+| Plan substantial changes | [.specify/memory/project-guide.md](../.specify/memory/project-guide.md) |
+| Non-negotiable constraints | [.specify/memory/constitution.md](../.specify/memory/constitution.md) |
+
+## Architecture
+
+[The CLI contract](../spec/cli-contract.yaml) owns commands, flags, channels, completions, man
+options, and MCP surfaces. Shared Go code implements behavior, with small platform adapters. Update
+the contract before generating facade changes. The [architecture
+diagram](architecture/millennium-helpers.html) maps the implementation.
+
+## Deployment and recovery
+
+[Installation](../README.md) owns user setup. [RELEASING.md](../RELEASING.md) and the [release
+runbook](release_runbook.md) own distribution and recovery. Preserve legacy invocation compatibility
+while exposing `millennium` for new installs. Source validation does not authorize changes to a live
+Steam installation.
+
+## Database and state
+
+The CLI manages filesystem installation and diagnostic state, not a repository-owned database
+service. [Uninstall dry-run behavior](uninstall_dryrun.md) owns deletion previews. [Security
+troubleshooting](security_troubleshooting.md) owns sanitized diagnostics. Preserve user
+configuration and distinguish package rollback from reversing installer side effects.
+
+## Documentation maintenance
+
+Keep decisions, invariants, failure modes, and recovery requirements in the owning document. Link to
+commands, defaults, schemas, and generated catalogs instead of copying them. Change the owner and
+affected references together. Update this index when adding or moving a guide, and verify relative
+links and heading anchors. Historical specs and audits describe their recorded revision, not current
+runtime proof. A topic without an implementation stays explicitly unimplemented.
+
+## Topic guides
+
+Index of Millennium Helpers docs. `make check-docs` enforces that this index, the project
+[README](../README.md) **Further reading** table, and each guide’s
 **Related** section stay cross-linked.
 
 ## Guides
@@ -31,10 +74,9 @@ the project [README](../README.md) **Further reading** table, and each guide’s
 
 ## Manual pages
 
-Installed with the helpers (`man millennium`, `man millennium-diag`, …). Each page
-has a `LICENSE` section pointing at [licensing.md](licensing.md); command-specific
-pages also point at the matching guide where one exists (for example
-`millennium-mcp(1)` → [mcp.md](mcp.md)).
+Installed with the helpers (`man millennium`, `man millennium-diag`, …). Each page has a `LICENSE`
+section pointing at [licensing.md](licensing.md); command-specific pages also point at the matching
+guide where one exists (for example `millennium-mcp(1)` → [mcp.md](mcp.md)).
 
 ## Keeping links in sync
 
@@ -44,3 +86,5 @@ pages also point at the matching guide where one exists (for example
 ## Related
 
 - [Project README](../README.md) · [CONTRIBUTING.md](../CONTRIBUTING.md) · [SECURITY.md](../SECURITY.md) · [CHANGELOG.md](../CHANGELOG.md) · [licensing.md](licensing.md)
+
+- [Editor setup](../.vscode/README.md)
