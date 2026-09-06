@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "millennium-helpers": {
+      "command": "millennium",
+      "args": [
+        "mcp"
+      ]
+    }
+  }
+}

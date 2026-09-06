@@ -13,3 +13,29 @@ indent_size = 4
 
 [*.json]
 indent_size = 4
+
+[*.{md,mdx}]
+trim_trailing_whitespace = false
+
+[{Makefile,makefile,GNUmakefile,*.mk}]
+indent_style = tab
+indent_size = tab
+
+[*.go]
+indent_style = tab
+indent_size = tab
+
+# Lockfiles are written by their owning tool.
+[{go.sum,flake.lock}]
+indent_style = unset
+indent_size = unset
+trim_trailing_whitespace = unset
+insert_final_newline = unset
+
+[*.png]
+charset = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+indent_style = unset
+indent_size = unset
