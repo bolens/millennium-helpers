@@ -1,5 +1,7 @@
 # Release playbook
 
+[Documentation](docs/README.md)
+
 The authoritative Millennium Helpers procedure is
 [`docs/release_runbook.md`](docs/release_runbook.md). It covers the multi-platform
 test matrix, version and packaging synchronization, protected squash-merge
