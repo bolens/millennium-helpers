@@ -12,7 +12,7 @@ make check-all  # lint + Go tests (feature parity) + install-time Bash suite
 ```
 
 Alternatives:
-- **Dev Container**: open the repo in a container (PowerShell, Docker-in-Docker, shellcheck, ruff, zsh/fish/nushell, Pester). Then run `make check-all`.
+- **Dev Container**: open the repo in a container (Go, PowerShell, shellcheck, ruff, zsh/fish/nushell, Pester). Run `make check-all`. Choose **Millennium with Docker and Nix** for the distro matrix and Nix shell.
 - **Nix**: `nix develop` for a shell with bash, python, shellcheck, and ruff (does **not** include `pwsh` or Docker).
 - **Windows Pester**: `make test-windows` (requires PowerShell 7+ / `pwsh`).
 
@@ -39,7 +39,7 @@ Tools fall into three tiers. Install what matches the work you are doing.
 
 | Tool | Used for | Install notes |
 | --- | --- | --- |
-| **PowerShell 7+ (`pwsh`)** | `make test-windows`, Windows script work | [Install PowerShell](https://learn.microsoft.com/powershell/scripting/install/installing-powershell); Dev Container feature includes it |
+| **PowerShell 7+ (`pwsh`)** | `make test-windows`, Windows script work | [Install PowerShell](https://learn.microsoft.com/powershell/scripting/install/installing-powershell); Dev Container includes it |
 | **Pester** | Windows unit tests | `Install-Module Pester -Scope CurrentUser` (Dev Container post-create does this) |
 | **Go 1.22+** | Also listed under Core; needed anytime you touch `go/` beyond `check-all` | Same install notes as Core |
 | **PyYAML** | `make check-cli-contract` / `make check-winget` | `pip install pyyaml` |
@@ -53,7 +53,7 @@ Tools fall into three tiers. Install what matches the work you are doing.
 
 | Tool | Used for | Install notes |
 | --- | --- | --- |
-| **Docker** | `make test-debian` / `test-ubuntu` / `test-fedora` / `test-all-distros` | Docker Engine or Docker Desktop; Dev Container enables Docker-in-Docker |
+| **Docker** | `make test-debian` / `test-ubuntu` / `test-fedora` / `test-all-distros` | Docker Engine or Docker Desktop; the full Dev Container variant enables Docker-in-Docker |
 | `mandoc` | Local man-page lint (also in CI) | Distro package |
 
 ### What each environment provides
@@ -61,7 +61,7 @@ Tools fall into three tiers. Install what matches the work you are doing.
 | Environment | Core lint/test | `pwsh` + Pester | Docker distro matrix | Go CLI | Extra shells (zsh/fish/nu) |
 | --- | --- | --- | --- | --- | --- |
 | Host + `make setup` | Yes (after deps) | Manual | Manual | Manual (`go`) | Manual |
-| **Dev Container** (`.devcontainer/`) | Yes | Yes | Yes (DinD) | Yes (Go feature) | Yes |
+| **Dev Container** (`.devcontainer/`) | Yes | Yes | Full variant (DinD) | Yes (Go 1.25) | Yes |
 | **`nix develop`** | Yes (shellcheck/ruff + Go) | No | No | Yes | No |
 
 Before a release, follow [docs/release_runbook.md](docs/release_runbook.md): at minimum `make check-all` (lint + test-go + test) and `make test-windows`; use `make test-all-distros` when Docker is available.
@@ -317,3 +317,8 @@ When changing attribution, the vendored notice, upgrade license installation, ma
 - Keep PRs focused; include a short summary and test plan.
 - Mention any completion, man-page, or docs updates.
 - CI must pass (multi-distro + macOS test matrix, ShellCheck, Ruff, man pages, Homebrew audit, completions, packaging checks).
+
+## Devcontainer
+
+See [the devcontainer guide](.devcontainer/README.md) for the repository toolchain,
+setup, checks and platform limits.

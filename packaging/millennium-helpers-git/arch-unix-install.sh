@@ -45,6 +45,11 @@ _arch_install_unix_helpers() {
   fi
 
   install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  for notice in THIRD_PARTY_LICENSES.txt THIRD_PARTY_NOTICES.md; do
+    if [[ -f "$notice" ]]; then
+      install -Dm644 "$notice" "${pkgdir}/usr/share/licenses/${pkgname}/$notice"
+    fi
+  done
 }
 
 _arch_prepare_manual_conflict_check() {

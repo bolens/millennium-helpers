@@ -1,5 +1,7 @@
 # millennium-helpers Spec Kit project guide
 
+[Documentation](../../docs/README.md)
+
 A cross-platform Go installer and maintenance CLI for Millennium, driven by one CLI
 contract.
 

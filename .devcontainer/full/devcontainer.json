@@ -1,8 +1,8 @@
 {
-    "name": "millennium-helpers development",
+    "name": "Millennium with Docker and Nix",
     "build": {
-        "dockerfile": "Dockerfile",
-        "context": "."
+        "dockerfile": "../Dockerfile",
+        "context": ".."
     },
     "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
     "workspaceFolder": "/workspace",
@@ -25,7 +25,9 @@
                 "github.vscode-github-actions",
                 "golang.go",
                 "ms-vscode.powershell",
+                "jnoortheen.nix-ide",
                 "ms-plugins.nushell",
+                "ms-azuretools.vscode-docker",
                 "themisanthrope.fish-lsp"
             ],
             "settings": {
@@ -45,6 +47,15 @@
                 "python.defaultInterpreterPath": "/usr/bin/python3",
                 "files.eol": "\n"
             }
+        }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker@sha256:25b9f05705ffba7dbe503230ac76081419306f8c8bc88e0ce78c4ecd99a0c78c": {
+            "moby": false
+        },
+        "ghcr.io/devcontainers/features/nix@sha256:8953a9da475055d140db0ede314e8e1b117d28c1eabf289c1b07c7619ce6c078": {
+            "multiUser": false,
+            "extraNixConfig": "experimental-features = nix-command flakes"
         }
     }
 }
