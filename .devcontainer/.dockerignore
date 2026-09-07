@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!install-pwsh-linux.sh
+!ubuntu/Dockerfile
+!arch/Dockerfile
+!install-nushell.sh
