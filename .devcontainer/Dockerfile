@@ -1,40 +1,64 @@
-FROM archlinux:latest
+FROM docker.io/library/node:24-trixie-slim@sha256:50c3b2f6988dfc307b86e5301d69611af31f4789bdf232863b07d3b02fe55ae0 AS node
+FROM ghcr.io/astral-sh/uv:latest@sha256:2bb3ebca0a796a155094a27773d290c4b074572e6107f171d88d086682fd2500 AS uv
+FROM ghcr.io/astral-sh/ruff:latest@sha256:77e0110c04fdfdd7c97657a680aad0faa7c7d2161556d698695e87d608071ac2 AS ruff
+FROM docker.io/rhysd/actionlint:latest@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 AS actionlint
+FROM docker.io/hadolint/hadolint:latest@sha256:32dac94127fd60b7b7e3fbfc65e1383b9b5e25c9bfd7b8536de7a539fe68a12d AS hadolint
+FROM docker.io/library/golang:1.25-trixie@sha256:2c4c60ef415fbfa5e90300722293bef36c5e63fae17570ce18f580af933dbd73 AS golang
 
-# Install dependencies needed for development, linting, and testing.
-# Stay root here so Dev Container features (PowerShell, Nix, DinD) can install cleanly;
-# remoteUser in devcontainer.json switches to developer at runtime.
-RUN pacman -Syu --noconfirm && \
-    pacman -S --noconfirm \
-    base-devel \
+FROM mcr.microsoft.com/devcontainers/base:trixie@sha256:b8c3669fb4cc652621b3386517c40ab3e151e827de958d6fe75528798ffb5727
+
+# Distribution packages provide native tools used by this repository.
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash \
     bash-completion \
+    build-essential \
+    ca-certificates \
     curl \
+    diffutils \
+    file \
+    findutils \
+    fish \
+    gawk \
     git \
-    github-cli \
     jq \
+    less \
+    libicu76 \
+    libssl3t64 \
+    locales \
     mandoc \
-    openssh \
-    pre-commit \
-    python \
-    python-pip \
-    ruff \
+    openssh-client \
+    pkg-config \
+    procps \
+    python3 \
+    python3-pip \
+    python3-venv \
+    python3-yaml \
+    ripgrep \
     shellcheck \
     sudo \
-    systemd \
+    tar \
     unzip \
-    which \
-    zsh \
-    fish \
-    nushell && \
-    pacman -Scc --noconfirm
+    wget \
+    xz-utils \
+    zip \
+    && rm -rf /var/lib/apt/lists/*
 
-# Create a developer user in the wheel group for passwordless sudo testing
-RUN useradd -m -G wheel -s /bin/bash developer && \
-    echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel && \
-    chmod 440 /etc/sudoers.d/wheel
+COPY --from=node /usr/local/ /usr/local/
+COPY --from=uv /uv /uvx /usr/local/bin/
+COPY --from=ruff /ruff /usr/local/bin/ruff
+COPY --from=actionlint /usr/local/bin/actionlint /usr/local/bin/actionlint
+COPY --from=hadolint /bin/hadolint /usr/local/bin/hadolint
+COPY --from=golang /usr/local/go/ /usr/local/go/
+ENV PATH="/usr/local/go/bin:/home/vscode/go/bin:${PATH}"
 
-# Mock Steam / systemd user dirs for sandbox diagnostics and testing
-RUN mkdir -p /home/developer/.local/share/Steam/steamui/skins && \
-    mkdir -p /home/developer/.config/systemd/user && \
-    chown -R developer:developer /home/developer
-
-WORKDIR /workspaces/millennium-helpers
+RUN npm install --global corepack@0.36.0 markdownlint-cli2@0.23.2 \
+    && corepack enable \
+    && UV_TOOL_DIR=/opt/uv-tools UV_TOOL_BIN_DIR=/usr/local/bin uv tool install zizmor==1.30.0
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+COPY install-pwsh-linux.sh /tmp/install-pwsh-linux.sh
+RUN bash /tmp/install-pwsh-linux.sh && rm /tmp/install-pwsh-linux.sh
+ENV POWERSHELL_TELEMETRY_OPTOUT=1
+COPY install-nushell.sh /tmp/install-nushell.sh
+RUN bash /tmp/install-nushell.sh && rm /tmp/install-nushell.sh
+WORKDIR /workspace
