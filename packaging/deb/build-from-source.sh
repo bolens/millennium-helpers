@@ -36,6 +36,11 @@ install -m644 completions/fish/*.fish "$DEST/usr/share/fish/vendor_completions.d
 install -m644 completions/nushell/millennium-helpers.nu "$DEST/usr/share/nushell/completions/"
 install -m644 man/*.1 "$DEST/usr/share/man/man1/"
 install -m644 LICENSE "$DEST/usr/share/doc/millennium-helpers/copyright"
+for notice in THIRD_PARTY_LICENSES.txt THIRD_PARTY_NOTICES.md; do
+  if [[ -f "$notice" ]]; then
+    install -m644 "$notice" "$DEST/usr/share/doc/millennium-helpers/$notice"
+  fi
+done
 [[ -f third_party/MILLENNIUM-LICENSE.md ]] && \
   install -m644 third_party/MILLENNIUM-LICENSE.md "$DEST/usr/lib/millennium-helpers/"
 
