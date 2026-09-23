@@ -22,7 +22,7 @@ func chownTree(path string) error {
 	if err != nil {
 		return err
 	}
-	defer unix.Close(parent)
+	defer func() { _ = unix.Close(parent) }()
 	return chownEntry(parent, name, uid, gid)
 }
 
@@ -58,7 +58,7 @@ func walkOwnership(parent int, name string, uid, gid int, fix bool) error {
 		return err
 	}
 	f := os.NewFile(uintptr(fd), name)
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	info, err := f.Stat()
 	if err != nil {
 		return err
@@ -114,7 +114,7 @@ func clearCache(path string) error {
 	if err != nil {
 		return err
 	}
-	defer unix.Close(parent)
+	defer func() { _ = unix.Close(parent) }()
 	fd, err := unix.Openat(parent, name, unix.O_RDONLY|unix.O_DIRECTORY|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0)
 	if err != nil {
 		return err
@@ -125,7 +125,7 @@ func clearCache(path string) error {
 // removeCacheChildren owns and closes fd.
 func removeCacheChildren(fd int) error {
 	f := os.NewFile(uintptr(fd), "cache")
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	entries, err := f.ReadDir(-1)
 	if err != nil {
 		return err
@@ -162,6 +162,6 @@ func checkOwnership(path string) error {
 	if err != nil {
 		return err
 	}
-	defer unix.Close(fd)
+	defer func() { _ = unix.Close(fd) }()
 	return walkOwnership(fd, name, uid, gid, false)
 }

@@ -87,7 +87,7 @@ func digest(root, name string) (string, error) {
 		}
 		return "", fmt.Errorf("cannot read client file: %s", name)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	h := sha256.New()
 	if _, err = io.Copy(h, f); err != nil {
 		return "", fmt.Errorf("cannot hash client file: %s", name)

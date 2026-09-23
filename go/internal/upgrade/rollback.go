@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"time"
 
 	"github.com/bolens/millennium-helpers/internal/theme"
 )
@@ -72,8 +71,4 @@ func EffectiveBackupDir() string {
 // UnixBackupPath returns LibDir/name for a Unix backup basename.
 func UnixBackupPath(name string) string {
 	return filepath.Join(LibDir(), name)
-}
-
-func rollbackTimestamp() string {
-	return time.Now().Format("20060102150405")
 }

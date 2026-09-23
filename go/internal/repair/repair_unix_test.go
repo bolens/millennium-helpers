@@ -63,7 +63,7 @@ func TestOwnershipTraversalUsesOpenDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	if err := os.Rename(root, filepath.Join(base, "moved")); err != nil {
 		t.Fatal(err)
 	}
@@ -141,11 +141,11 @@ func TestCacheCleanupStaysWithOpenRoot(t *testing.T) {
 	// The opened tree is renamed and its old path replaced before deletion.
 	moved := filepath.Join(base, "moved")
 	if err := os.Rename(cache, moved); err != nil {
-		unix.Close(fd)
+		_ = unix.Close(fd)
 		t.Fatal(err)
 	}
 	if err := os.Symlink(base, cache); err != nil {
-		unix.Close(fd)
+		_ = unix.Close(fd)
 		t.Fatal(err)
 	}
 	if err := removeCacheChildren(fd); err != nil {
@@ -185,7 +185,7 @@ func TestOwnershipHealthAndFailurePropagation(t *testing.T) {
 	if err := walkOwnership(fd, name, os.Getuid()+1, os.Getgid(), false); err == nil {
 		t.Fatal("ownership mismatch not detected")
 	}
-	unix.Close(fd)
+	_ = unix.Close(fd)
 	link := filepath.Join(root, "alias")
 	if err := os.Symlink(cfg, link); err != nil {
 		t.Fatal(err)

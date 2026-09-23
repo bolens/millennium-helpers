@@ -29,7 +29,7 @@ func OpenDir(path string, create bool, mode os.FileMode, uid, gid int) (int, err
 			continue
 		}
 		next, err := OpenChildDir(fd, part, create, mode, uid, gid)
-		unix.Close(fd)
+		_ = unix.Close(fd)
 		if err != nil {
 			return -1, err
 		}
@@ -66,7 +66,7 @@ func OpenChildDir(parent int, name string, create bool, mode os.FileMode, uid, g
 	}
 	if created {
 		if err = unix.Fchown(fd, uid, gid); err != nil {
-			unix.Close(fd)
+			_ = unix.Close(fd)
 			return -1, err
 		}
 	}
@@ -93,7 +93,7 @@ func Symlink(parent int, name, target string) error {
 	if err = unix.Symlinkat(target, parent, tmp); err != nil {
 		return err
 	}
-	defer unix.Unlinkat(parent, tmp, 0)
+	defer func() { _ = unix.Unlinkat(parent, tmp, 0) }()
 	return unix.Renameat(parent, tmp, parent, name)
 }
 
@@ -111,8 +111,8 @@ func WriteFile(parent int, name string, data []byte, mode os.FileMode, uid, gid 
 		return err
 	}
 	f := os.NewFile(uintptr(fd), tmp)
-	defer f.Close()
-	defer unix.Unlinkat(parent, tmp, 0)
+	defer func() { _ = f.Close() }()
+	defer func() { _ = unix.Unlinkat(parent, tmp, 0) }()
 	if err = f.Chown(uid, gid); err != nil {
 		return err
 	}

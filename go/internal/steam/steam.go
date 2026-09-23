@@ -3,12 +3,13 @@ package steam
 
 import (
 	"fmt"
-	"github.com/bolens/millennium-helpers/internal/usercontext"
 	"os"
 	"os/user"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/bolens/millennium-helpers/internal/usercontext"
 )
 
 // EnvKeys captured from a running Steam process for relaunch.

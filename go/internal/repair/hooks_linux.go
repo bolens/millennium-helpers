@@ -16,11 +16,11 @@ func InstallHooksAt(steamRoot, libRoot string) error {
 	if err != nil {
 		return fmt.Errorf("cannot safely open Steam hook root: %w", err)
 	}
-	defer unix.Close(root)
+	defer func() { _ = unix.Close(root) }()
 	var dirs []int
 	defer func() {
 		for _, fd := range dirs {
-			unix.Close(fd)
+			_ = unix.Close(fd)
 		}
 	}()
 	targets := []string{"libmillennium_bootstrap_x86.so", "libmillennium_bootstrap_hhx64.so"}

@@ -1,11 +1,12 @@
 package repair
 
 import (
-	"github.com/bolens/millennium-helpers/internal/usercontext"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/bolens/millennium-helpers/internal/usercontext"
 )
 
 func TestPlanAndFormat(t *testing.T) {

@@ -37,7 +37,7 @@ func saveOwnedFile(path string, data []byte, uid, gid int, manageDir bool) error
 	if err != nil {
 		return err
 	}
-	defer unix.Close(dir)
+	defer func() { _ = unix.Close(dir) }()
 	// Only the default dedicated directory belongs to the helpers. An override
 	// may be inside a shared directory whose owner and mode must be preserved.
 	if manageDir {

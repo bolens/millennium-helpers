@@ -275,7 +275,7 @@ func TestDoctorRequiresReadableIntegrityBeforeReinstall(t *testing.T) {
 	if err := os.Chmod(lua, 0); err != nil {
 		t.Fatal(err)
 	}
-	defer os.Chmod(lua, 0o644)
+	defer func() { _ = os.Chmod(lua, 0o644) }()
 	ok, detail, err := checkBinaries()
 	if ok || !errors.Is(err, os.ErrPermission) || strings.Contains(detail, "Corrupted") {
 		t.Fatalf("incorrect access diagnosis: %v %s %v", ok, detail, err)

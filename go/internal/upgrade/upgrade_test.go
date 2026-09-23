@@ -11,8 +11,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bolens/millennium-helpers/internal/clientfiles"
 	"time"
+
+	"github.com/bolens/millennium-helpers/internal/clientfiles"
 )
 
 func TestParseChannel(t *testing.T) {
