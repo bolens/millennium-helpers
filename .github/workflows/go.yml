@@ -534,8 +534,11 @@ jobs:
             test -L "$steam/ubuntu12_32/libXtst.so.6"
             test -L "$steam/ubuntu12_64/libXtst.so.6"
           else
-            # macOS: dry-run assertions above are enough (no Steam hook symlinks).
-            echo "$out" | grep -F 'Would restore bootstrap hooks'
+            # macOS must not propose Linux bootstrap or runtime repairs.
+            if echo "$out" | grep -Eq 'bootstrap|runtime helpers'; then
+              echo 'Unexpected Linux repair in macOS preview' >&2
+              exit 1
+            fi
           fi
           rm -rf "$home"
 

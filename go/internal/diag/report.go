@@ -155,6 +155,7 @@ func Collect() Report {
 	r.BinariesOK, r.BinariesDetail, binariesErr = checkBinaries()
 	r.BinariesNeedPrivilege = errors.Is(binariesErr, os.ErrPermission)
 	r.RuntimeHelpersExecutable = repair.RuntimeHelpersExecutable()
+	r.PermissionsOK = repair.PermissionsOK()
 	if runtime.GOOS != "windows" {
 		r.HooksOK, r.FlatpakOK = checkHooks()
 		r.SudoersOK = checkSudoers()
@@ -259,6 +260,9 @@ func checkBinaries() (ok bool, detail string, checkErr error) {
 	root := repair.MillenniumLibRoot()
 	verFile := filepath.Join(root, "version.txt")
 	if _, err := os.Stat(verFile); err != nil {
+		if errors.Is(err, os.ErrPermission) {
+			return false, "Cannot verify client files: re-run with sudo", os.ErrPermission
+		}
 		return false, "Not Installed (missing version.txt)", nil
 	}
 	if err := clientfiles.Verify(root); err != nil {

@@ -80,24 +80,29 @@ func Load() (Data, error) {
 
 // Save writes config.json with indent and restrictive perms on Unix.
 func Save(data Data) error {
-	dir := Dir()
-	if dir == "" {
+	path := Path()
+	if path == "" {
 		return fmt.Errorf("cannot resolve configuration directory")
-	}
-	if err := os.MkdirAll(dir, 0o700); err != nil {
-		return err
 	}
 	b, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return err
 	}
 	b = append(b, '\n')
-	path := Path()
-	if err := atomicfile.WriteFile(path, b, 0o600); err != nil {
+	return saveFile(path, b)
+}
+
+func saveLocalFile(path string, data []byte) error {
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
-	_ = os.Chmod(path, 0o600)
-	_ = os.Chmod(dir, 0o700)
+	if err := atomicfile.WriteFile(path, data, 0o600); err != nil {
+		return err
+	}
+	if os.Getenv("MILLENNIUM_CONFIG_FILE") == "" && os.Getenv("MILLENNIUM_CONFIG_DIR") == "" {
+		return os.Chmod(dir, 0o700)
+	}
 	return nil
 }
 

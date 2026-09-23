@@ -1,6 +1,7 @@
 package diag
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -8,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/bolens/millennium-helpers/internal/repair"
+	"github.com/bolens/millennium-helpers/internal/steam"
 	"github.com/bolens/millennium-helpers/internal/theme"
 	"github.com/bolens/millennium-helpers/internal/usercontext"
 )
@@ -76,32 +78,24 @@ func RunDoctorLive(o Options) int {
 			break
 		}
 	}
-	relaunch := false
-	if needSteamClose && r.SteamRunning {
-		var err error
-		relaunch, err = doctorCloseSteam(o.Yes)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err.Error())
-			return 1
+	work := func() error {
+		var failures []error
+		for _, s := range steps {
+			fmt.Printf("\n[DOCTOR] %s...\n", s.Detail)
+			if err := applyDoctorStep(s, r, o); err != nil {
+				failures = append(failures, err)
+			}
 		}
+		return errors.Join(failures...)
 	}
-
-	failed := 0
-	for _, s := range steps {
-		fmt.Printf("\n[DOCTOR] %s...\n", s.Detail)
-		if err := applyDoctorStep(s, r, o); err != nil {
-			fmt.Fprintf(os.Stderr, "Warning: %v\n", err)
-			failed++
-		}
+	var err error
+	if needSteamClose && os.Getenv("MOCK_LIB_DIR") == "" {
+		err = steam.WithClosedClient(o.Yes, work)
+	} else {
+		err = work()
 	}
-
-	if relaunch {
-		fmt.Println("\nRelaunching Steam...")
-		doctorRelaunchSteam()
-	}
-
-	if failed > 0 {
-		fmt.Printf("\nDoctor finished with %d warning(s). Channel: %s. Re-run millennium diag to verify.\n", failed, r.UpdateChannel)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Doctor failed: %v\n", err)
 		return 1
 	}
 	fmt.Printf("\nDoctor repairs applied successfully.\nChannel: %s. Re-run millennium diag to verify, or millennium diag doctor again if issues remain.\n", r.UpdateChannel)
@@ -157,7 +151,13 @@ func applyDoctorStep(s DoctorStep, r Report, o Options) error {
 		if err != nil {
 			return err
 		}
-		return repair.Apply(targets, true)
+		var ownership []repair.Target
+		for _, target := range targets {
+			if target.Kind == "chown" {
+				ownership = append(ownership, target)
+			}
+		}
+		return repair.Apply(ownership, true)
 	case "skins_dir":
 		dir, err := theme.SkinsDir()
 		if err != nil || dir == "" {

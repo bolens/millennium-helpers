@@ -90,6 +90,9 @@ func FormatReportFromCollect(r Report) string {
 	if runtime.GOOS == "linux" {
 		row(r.RuntimeHelpersExecutable, "Runtime Helper Modes", fmt.Sprintf("executable=%v", r.RuntimeHelpersExecutable), false)
 	}
+	if runtime.GOOS != "windows" {
+		row(r.PermissionsOK, "User File Ownership", fmt.Sprintf("ok=%v", r.PermissionsOK), false)
+	}
 	row(r.SkinsDirOK, "Skins Directory", fmt.Sprintf("present=%v", r.SkinsDirOK), false)
 	schedOK := r.TimerActive || r.TaskScheduled
 	if schedOK {

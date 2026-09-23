@@ -363,6 +363,9 @@ func contains(s, sub string) bool {
 
 func writeRollbackClient(t *testing.T, root string) {
 	t.Helper()
+	if err := os.WriteFile(filepath.Join(root, "version.txt"), []byte("1.0.0"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	for _, name := range []string{"libmillennium_bootstrap_x86.so", "libmillennium_bootstrap_hhx64.so", "libmillennium_x86.so", "libmillennium_hhx64.so", "libmillennium_pvs64", "libmillennium_luavm_x86"} {
 		if err := os.WriteFile(filepath.Join(root, name), []byte(name), 0o644); err != nil {
 			t.Fatal(err)

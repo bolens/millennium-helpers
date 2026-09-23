@@ -158,3 +158,47 @@ func TestCacheCleanupStaysWithOpenRoot(t *testing.T) {
 		t.Fatal("followed link outside cache")
 	}
 }
+
+func TestOwnershipHealthAndFailurePropagation(t *testing.T) {
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	home := filepath.Join(root, "home")
+	cfg := filepath.Join(root, "cfg")
+	owned := filepath.Join(cfg, "millennium-helpers")
+	if err := os.MkdirAll(owned, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", cfg)
+	t.Setenv("XDG_DATA_HOME", filepath.Join(root, "data"))
+	t.Setenv("STEAM", filepath.Join(root, "Steam"))
+	t.Setenv("STEAM_PATH", "")
+	if !PermissionsOK() {
+		t.Fatal("caller-owned files unhealthy")
+	}
+	fd, name, err := openRepairParent(owned)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := walkOwnership(fd, name, os.Getuid()+1, os.Getgid(), false); err == nil {
+		t.Fatal("ownership mismatch not detected")
+	}
+	unix.Close(fd)
+	link := filepath.Join(root, "alias")
+	if err := os.Symlink(cfg, link); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("XDG_CONFIG_HOME", link)
+	if PermissionsOK() {
+		t.Fatal("unsafe ownership target reported healthy")
+	}
+	targets, err := Plan()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := Apply(targets, true); err == nil {
+		t.Fatal("failed ownership repair reported success")
+	}
+}

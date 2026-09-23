@@ -78,6 +78,8 @@ On Linux, the report also includes
 .BR runtime_helpers_executable ,
 which verifies that Millennium's pressure-vessel and Lua runtime
 helper binaries are regular files readable and executable by Steam.
+On Unix, permissions_ok checks ownership of discovered repair targets
+against the invoking user.
 .TP
 .BR \-l ", " \-\-follow
 Follow (tail \-f) real-time log output with

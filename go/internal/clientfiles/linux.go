@@ -34,6 +34,9 @@ func Linux() []File {
 func ValidateFiles(root string) error {
 	for _, f := range Linux() {
 		st, err := os.Lstat(filepath.Join(root, f.Name))
+		if errors.Is(err, os.ErrPermission) {
+			return fmt.Errorf("cannot inspect client file %s: %w", f.Name, os.ErrPermission)
+		}
 		if err != nil || !st.Mode().IsRegular() {
 			return fmt.Errorf("required client file missing or not regular: %s", f.Name)
 		}
@@ -113,6 +116,9 @@ func WriteChecksums(root string) error {
 
 // Verify requires complete, unambiguous checksums for the manifest's regular files.
 func Verify(root string) error {
+	if _, err := Version(root); err != nil {
+		return err
+	}
 	if err := ValidateFiles(root); err != nil {
 		return err
 	}

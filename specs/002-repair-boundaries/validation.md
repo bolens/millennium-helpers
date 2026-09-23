@@ -25,3 +25,26 @@ Read-only installed diagnostics correctly flagged the existing client's older
 checksum manifest, which omits Lua, and its non-executable Lua helper. Doctor
 selects a verified reinstall for that incomplete manifest. No live client
 reinstall or Steam restart was performed as part of this implementation.
+
+## Follow-up seam fixes
+
+- Directory-handle hook installation rejects symlinked architecture directories
+  in both repair and upgrade. Outside-file preservation regressions pass.
+- Rollback rejects missing or invalid version metadata before activation. Invalid
+  active metadata cannot form deletion paths, and backup collisions preserve the
+  earlier backup.
+- Elevated config writes preserve caller ownership. Unit tests and a rootless
+  container check confirm overrides preserve shared parent directory metadata.
+- Diagnostics check actual ownership. Doctor's ownership step preserves cache
+  files, and repair propagates ownership, hook, and theme errors.
+- Shared maintenance verifies shutdown and attempts relaunch after work failure.
+  Regressions cover graphical environment transfer, launcher failure, startup
+  timeout, recovery-state retention, and combined work/relaunch errors.
+- The final `make check-all` gate passed, including 259 Bash tests. All five
+  PowerShell tests passed. Affected packages cross-compiled for Darwin and Windows
+  with CGO disabled. Native platform execution remains a CI check.
+- Independent filesystem and lifecycle/config reviews completed. Three additional
+  findings were reproduced, fixed, and rechecked without remaining findings.
+- The final binary was installed atomically and its SHA-256 matched the build.
+  The original rollback backup remains intact. Installed read-only diagnostics
+  ran successfully without restarting Steam or modifying the client.

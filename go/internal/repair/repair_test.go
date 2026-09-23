@@ -145,12 +145,14 @@ func TestRepairCLIRestoresRuntimeModes(t *testing.T) {
 	lib := t.TempDir()
 	t.Setenv("MOCK_LIB_DIR", lib)
 	t.Setenv("HOME", t.TempDir())
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	t.Setenv("STEAM", t.TempDir())
 	root := filepath.Join(lib, "millennium")
 	if err := os.MkdirAll(root, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	for _, name := range []string{"libmillennium_pvs64", "libmillennium_luavm_x86"} {
+	for _, name := range []string{"libmillennium_pvs64", "libmillennium_luavm_x86", "libmillennium_bootstrap_x86.so", "libmillennium_bootstrap_hhx64.so"} {
 		if err := os.WriteFile(filepath.Join(root, name), []byte("helper"), 0o644); err != nil {
 			t.Fatal(err)
 		}

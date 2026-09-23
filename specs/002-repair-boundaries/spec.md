@@ -17,3 +17,14 @@ and required client files. These corrections preserve existing commands and cons
 - CI builds the default devcontainer, runs post-create/smoke as vscode, then native checks.
   CodeQL subactions update together. Existing required jobs retain their names.
 - The installed helpers are updated only after validation, with a recoverable previous binary.
+
+## Follow-up seam acceptance
+
+- Hook writes from repair and upgrade reject symlinked roots and architecture parents.
+- Invalid or missing candidate version metadata rejects rollback before activation.
+  Active metadata cannot escape the backup root, and name collisions retain earlier backups.
+- Elevated config writes remain readable and writable by the invoking user.
+- Ownership diagnostics inspect the actual repair targets. Failed repairs return failure.
+- Repairs do not start until Steam has exited. After a successful stop, both successful
+  and failed maintenance attempt relaunch using the captured graphical environment.
+  Failed relaunch retains recovery state and contributes to the command's failure status.

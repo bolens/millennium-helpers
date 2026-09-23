@@ -299,3 +299,32 @@ func TestDoctorRequiresReadableIntegrityBeforeReinstall(t *testing.T) {
 		}
 	}
 }
+
+func TestDoctorOwnershipPreservesCache(t *testing.T) {
+	home, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, ".config"))
+	t.Setenv("XDG_DATA_HOME", filepath.Join(home, ".local", "share"))
+	steam := filepath.Join(home, "Steam")
+	t.Setenv("STEAM", steam)
+	t.Setenv("STEAM_PATH", "")
+	cache := filepath.Join(steam, "config", "htmlcache")
+	for _, path := range []string{cache, filepath.Join(steam, "millennium")} {
+		if err := os.MkdirAll(path, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	sentinel := filepath.Join(cache, "live-cache")
+	if err := os.WriteFile(sentinel, []byte("keep"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := applyDoctorStep(DoctorStep{ID: "permissions"}, Report{}, Options{}); err != nil {
+		t.Fatal(err)
+	}
+	if b, err := os.ReadFile(sentinel); err != nil || string(b) != "keep" {
+		t.Fatal("ownership step cleared Steam cache")
+	}
+}

@@ -8,13 +8,16 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strings"
 
 	"github.com/bolens/millennium-helpers/internal/archive"
 	"github.com/bolens/millennium-helpers/internal/clientfiles"
+	"github.com/bolens/millennium-helpers/internal/repair"
 )
 
 func installPlatform(archivePath, version string, o Options) error {
+	if !clientfiles.ValidVersion(version) {
+		return fmt.Errorf("invalid client version label")
+	}
 	tmp, err := os.MkdirTemp("", "millennium-install-*")
 	if err != nil {
 		return err
@@ -51,19 +54,21 @@ func installPlatform(archivePath, version string, o Options) error {
 		}
 	}
 
-	oldVer := "unknown"
-	if b, err := os.ReadFile(filepath.Join(dest, "version.txt")); err == nil {
-		oldVer = strings.TrimSpace(string(b))
-	}
-	if oldVer == "" || oldVer == "unknown" {
-		oldVer = InferVersion(archivePath, version)
-	}
-	destBak := filepath.Join(filepath.Dir(dest), "millennium.bak_"+oldVer)
-	if st, err := os.Stat(dest); err == nil && st.IsDir() {
-		_ = os.RemoveAll(destBak)
-		if err := os.Rename(dest, destBak); err != nil {
+	destBak := ""
+	if st, err := os.Lstat(dest); err == nil {
+		if !st.IsDir() {
+			return fmt.Errorf("active client must be a real directory")
+		}
+		destBak, err = reserveBackup(filepath.Dir(dest), dest)
+		if err != nil {
 			return err
 		}
+		if err = os.Rename(dest, destBak); err != nil {
+			_ = os.Remove(destBak)
+			return err
+		}
+	} else if !os.IsNotExist(err) {
+		return err
 	}
 	if err := os.Rename(destTmp, dest); err != nil {
 		if st, e := os.Stat(destBak); e == nil && st.IsDir() {
@@ -152,22 +157,5 @@ func linkHooksForHome(home string) error {
 	if steam == "" {
 		return nil
 	}
-	root := InstallRoot()
-	if err := os.MkdirAll(filepath.Join(steam, "ubuntu12_32"), 0o755); err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Join(steam, "ubuntu12_64"), 0o755); err != nil {
-		return err
-	}
-	if err := forceSymlink(filepath.Join(root, "libmillennium_bootstrap_x86.so"), filepath.Join(steam, "ubuntu12_32", "libXtst.so.6")); err != nil {
-		return err
-	}
-	return forceSymlink(filepath.Join(root, "libmillennium_bootstrap_hhx64.so"), filepath.Join(steam, "ubuntu12_64", "libXtst.so.6"))
-}
-
-func forceSymlink(target, link string) error {
-	if err := os.Remove(link); err != nil && !os.IsNotExist(err) {
-		return err
-	}
-	return os.Symlink(target, link)
+	return repair.InstallHooksAt(steam, InstallRoot())
 }

@@ -7,9 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 
-	"github.com/bolens/millennium-helpers/internal/steam"
+	"github.com/bolens/millennium-helpers/internal/safefs"
 	"github.com/bolens/millennium-helpers/internal/usercontext"
 	"golang.org/x/sys/unix"
 )
@@ -33,27 +32,20 @@ func openRepairParent(path string) (int, string, error) {
 	if err != nil {
 		return -1, "", err
 	}
-	parts := strings.Split(strings.TrimPrefix(filepath.Clean(abs), "/"), "/")
-	fd, err := unix.Open("/", unix.O_RDONLY|unix.O_DIRECTORY|unix.O_CLOEXEC, 0)
+	fd, err := safefs.OpenDir(filepath.Dir(abs), false, 0, -1, -1)
 	if err != nil {
-		return -1, "", err
+		return -1, "", fmt.Errorf("repair refuses inaccessible or symlinked parent: %w", err)
 	}
-	// Protect the initial root as well as descendants. A user-controlled parent
-	// symlink must not redirect an elevated repair to a system directory.
-	for _, part := range parts[:len(parts)-1] {
-		next, openErr := unix.Openat(fd, part, unix.O_RDONLY|unix.O_DIRECTORY|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0)
-		unix.Close(fd)
-		if openErr != nil {
-			return -1, "", fmt.Errorf("repair refuses inaccessible or symlinked parent: %w", openErr)
-		}
-		fd = next
-	}
-	return fd, parts[len(parts)-1], nil
+	return fd, filepath.Base(abs), nil
 }
 
 // Anchor each descent to an open directory. Never follow symlinks supplied by
 // the user, including links substituted while a privileged repair is running.
 func chownEntry(parent int, name string, uid, gid int) error {
+	return walkOwnership(parent, name, uid, gid, true)
+}
+
+func walkOwnership(parent int, name string, uid, gid int, fix bool) error {
 	var st unix.Stat_t
 	if err := unix.Fstatat(parent, name, &st, unix.AT_SYMLINK_NOFOLLOW); err != nil {
 		return err
@@ -74,8 +66,17 @@ func chownEntry(parent int, name string, uid, gid int) error {
 	if !info.IsDir() && !info.Mode().IsRegular() {
 		return nil
 	}
-	if err := f.Chown(uid, gid); err != nil {
-		return err
+	if fix {
+		if err := f.Chown(uid, gid); err != nil {
+			return err
+		}
+	} else {
+		if err := unix.Fstat(fd, &st); err != nil {
+			return err
+		}
+		if int(st.Uid) != uid || int(st.Gid) != gid {
+			return fmt.Errorf("ownership differs from invoking user")
+		}
 	}
 	if !info.IsDir() {
 		return nil
@@ -85,7 +86,7 @@ func chownEntry(parent int, name string, uid, gid int) error {
 		return err
 	}
 	for _, entry := range entries {
-		if err := chownEntry(fd, entry.Name(), uid, gid); err != nil {
+		if err := walkOwnership(fd, entry.Name(), uid, gid, fix); err != nil {
 			return err
 		}
 	}
@@ -108,41 +109,6 @@ func repairOwnerIDs() (int, int, error) {
 	return uid, gid, nil
 }
 
-func ensureSteamClosedForRepair(yes bool) (relaunch bool, err error) {
-	// Offline / CI seam: do not touch a host Steam client under MOCK_LIB_DIR.
-	if os.Getenv("MOCK_LIB_DIR") != "" {
-		return false, nil
-	}
-	if !steam.IsSteamRunning() {
-		return false, nil
-	}
-	username, home, err := steam.TargetUser()
-	if err != nil {
-		return false, err
-	}
-	if err := steam.CaptureEnv(username, home); err != nil {
-		fmt.Fprintf(os.Stderr, "Warning: could not capture Steam environment: %v\n", err)
-	}
-	if err := steam.ConfirmClose(yes); err != nil {
-		return false, err
-	}
-	return true, nil
-}
-
-func relaunchSteamAfterRepair() {
-	if os.Getenv("MOCK_LIB_DIR") != "" {
-		return
-	}
-	username, home, err := steam.TargetUser()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return
-	}
-	_, _ = steam.RelaunchFromState(username, home)
-}
-
-// clearCache leaves the cache root in place and unlinks only entries reached
-// through its open descriptor. A symlinked root or ancestor is never followed.
 func clearCache(path string) error {
 	parent, name, err := openRepairParent(path)
 	if err != nil {
@@ -185,4 +151,17 @@ func removeCacheChildren(fd int) error {
 		}
 	}
 	return nil
+}
+
+func checkOwnership(path string) error {
+	uid, gid, err := repairOwnerIDs()
+	if err != nil {
+		return err
+	}
+	fd, name, err := openRepairParent(path)
+	if err != nil {
+		return err
+	}
+	defer unix.Close(fd)
+	return walkOwnership(fd, name, uid, gid, false)
 }

@@ -81,21 +81,20 @@ func InstallBootstrapHooks() error {
 	if len(plans) == 0 {
 		return fmt.Errorf("no Steam directories found to install hooks")
 	}
-	fixed := 0
+	seen := map[string]bool{}
 	for _, p := range plans {
-		if _, err := os.Stat(p.Target); err != nil {
-			return fmt.Errorf("bootstrap library missing at %s (run upgrade first)", p.Target)
+		key, err := filepath.EvalSymlinks(p.Steam)
+		if err != nil {
+			return fmt.Errorf("cannot resolve Steam hook directory")
 		}
-		_ = os.MkdirAll(filepath.Dir(p.Hook), 0o755)
-		_ = os.Remove(p.Hook)
-		if err := os.Symlink(p.Target, p.Hook); err != nil {
-			return fmt.Errorf("link %s: %w", p.Hook, err)
+		if seen[key] {
+			continue
 		}
-		fmt.Printf("Fixed hook: %s -> %s\n", p.Hook, p.Target)
-		fixed++
-	}
-	if fixed == 0 {
-		return fmt.Errorf("no Steam directories found to install hooks")
+		if err := InstallHooksAt(p.Steam, MillenniumLibRoot()); err != nil {
+			return err
+		}
+		seen[key] = true
+		fmt.Println("Restored Steam bootstrap hooks.")
 	}
 	return nil
 }
