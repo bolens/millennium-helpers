@@ -8,7 +8,7 @@ complete -c millennium -f -n "not __fish_seen_subcommand_from $__mh_cmds" -a 'sc
 complete -c millennium -f -n "not __fish_seen_subcommand_from $__mh_cmds" -a 'theme' -d 'Manage skins/themes'
 complete -c millennium -f -n "not __fish_seen_subcommand_from $__mh_cmds" -a 'config' -d 'Manage Millennium client settings without the Steam UI'
 complete -c millennium -f -n "not __fish_seen_subcommand_from $__mh_cmds" -a 'injection' -d 'Enable or disable Millennium injection'
-complete -c millennium -f -n "not __fish_seen_subcommand_from $__mh_cmds" -a 'repair' -d 'Repair hooks and ownership'
+complete -c millennium -f -n "not __fish_seen_subcommand_from $__mh_cmds" -a 'repair' -d 'Repair hooks, runtime permissions, and ownership'
 complete -c millennium -f -n "not __fish_seen_subcommand_from $__mh_cmds" -a 'purge' -d 'Uninstall Millennium'
 complete -c millennium -f -n "not __fish_seen_subcommand_from $__mh_cmds" -a 'mcp' -d 'Run / register MCP server'
 complete -c millennium -f -n "not __fish_seen_subcommand_from $__mh_cmds" -a 'install' -d 'Install helpers on this machine'

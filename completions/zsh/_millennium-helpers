@@ -44,7 +44,7 @@ _millennium_helpers() {
     'theme:Manage skins/themes'
     'config:Manage Millennium client settings without the Steam UI'
     'injection:Enable or disable Millennium injection'
-    'repair:Repair hooks and ownership'
+    'repair:Repair hooks, runtime permissions, and ownership'
     'purge:Uninstall Millennium'
     'mcp:Run / register MCP server'
     'install:Install helpers on this machine'

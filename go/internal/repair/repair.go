@@ -111,6 +111,9 @@ func FormatPlan(targets []Target, skipTheme bool) string {
 	if runtime.GOOS == "windows" {
 		fmt.Fprintf(&b, "[DRY RUN] Would run: millennium upgrade --force --channel %s\n", updateChannel())
 	} else {
+		if runtime.GOOS == "linux" {
+			b.WriteString("[DRY RUN] Would restore executable modes on Millennium runtime helpers.\n")
+		}
 		hooks := PlanHooks()
 		if len(hooks) == 0 {
 			b.WriteString("[DRY RUN] Would restore bootstrap hooks (no Steam tree found yet).\n")
@@ -261,6 +264,12 @@ func RunCLI(dryRun, skipTheme, quiet, yes bool) int {
 			return 1
 		}
 	} else {
+		if runtime.GOOS == "linux" {
+			if err := EnsureRuntimeHelpersExecutable(); err != nil {
+				fmt.Fprintf(os.Stderr, "Error: runtime helper permissions: %v\n", err)
+				return 1
+			}
+		}
 		if err := InstallBootstrapHooks(); err != nil {
 			fmt.Fprintf(os.Stderr, "Warning: hook reinstall: %v\n", err)
 		}

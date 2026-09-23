@@ -30,6 +30,19 @@ Arch packages grant `%wheel` passwordless access to the four privileged commands
 
 ## Troubleshooting & FAQ
 
+### Steam WebHelper fails with Permission denied
+
+If the error names `pressure-vessel-unruntime` under a `.millennium-pv-*`
+directory, check the runtime helper permissions with `millennium diag`.
+The `Runtime Helper Modes` check detects missing executable permissions on
+`libmillennium_pvs64` and `libmillennium_luavm_x86`.
+
+Preview recovery with `sudo millennium diag doctor --dry-run`, then run
+`sudo millennium diag doctor --yes`. Doctor restores mode `0755` when binary
+integrity is healthy. `sudo millennium repair --skip-theme --yes` also restores
+these modes. Upgrades normalize the helper permissions even if the archive
+contains them with mode `0644`.
+
 ### Steam shows a blank/black screen after upgrading Millennium
 This is usually caused by outdated CEF cached files. Run the repair utility to fix local permissions and clear Steam's htmlcache:
 ```bash
