@@ -485,6 +485,8 @@ jobs:
           set -euo pipefail
           home="$(mktemp -d)"
           export HOME="$home"
+          export XDG_CONFIG_HOME="$home/.config"
+          export XDG_DATA_HOME="$home/.local/share"
           export USERPROFILE="$home"
           export LOCALAPPDATA="$home/LocalAppData"
           export APPDATA="$home/AppData"
@@ -501,11 +503,20 @@ jobs:
             mkdir -p "$lib/millennium" "$steam/ubuntu12_32" "$steam/ubuntu12_64"
             printf 'stub\n' >"$lib/millennium/libmillennium_bootstrap_x86.so"
             printf 'stub\n' >"$lib/millennium/libmillennium_bootstrap_hhx64.so"
+            for helper in libmillennium_pvs64 libmillennium_luavm_x86; do
+              printf 'stub\n' >"$lib/millennium/$helper"
+              chmod 0644 "$lib/millennium/$helper"
+            done
             export STEAM="$steam"
             export MOCK_LIB_DIR="$lib"
             dry2="$(bin/millennium repair --dry-run --skip-theme)"
             echo "$dry2" | grep -F 'Would link hook'
+            echo "$dry2" | grep -F 'restore executable modes'
+            test ! -x "$lib/millennium/libmillennium_pvs64"
+            test ! -x "$lib/millennium/libmillennium_luavm_x86"
             bin/millennium repair --yes --skip-theme
+            test -x "$lib/millennium/libmillennium_pvs64"
+            test -x "$lib/millennium/libmillennium_luavm_x86"
             test -L "$steam/ubuntu12_32/libXtst.so.6"
             test -L "$steam/ubuntu12_64/libXtst.so.6"
           else
