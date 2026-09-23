@@ -250,7 +250,7 @@ func checkBinaries() (ok bool, detail string) {
 		return true, "v" + strings.TrimSpace(string(b)) + " - Present"
 	}
 
-	root := "/usr/lib/millennium"
+	root := repair.MillenniumLibRoot()
 	verFile := filepath.Join(root, "version.txt")
 	if _, err := os.Stat(verFile); err != nil {
 		return false, "Not Installed (missing /usr/lib/millennium/version.txt)"

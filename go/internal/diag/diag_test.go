@@ -1,7 +1,9 @@
 package diag
 
 import (
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -9,6 +11,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/bolens/millennium-helpers/internal/repair"
 )
 
 func TestRunReadOnly(t *testing.T) {
@@ -189,5 +193,67 @@ func TestVerifyChecksums(t *testing.T) {
 	}
 	if err := verifyChecksumsFile(dir, sumPath); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestDoctorRepairsRuntimePermissions(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Unix runtime helpers")
+	}
+	lib := t.TempDir()
+	t.Setenv("MOCK_LIB_DIR", lib)
+	t.Setenv("MILLENNIUM_CONFIG_DIR", t.TempDir())
+	root := filepath.Join(lib, "millennium")
+	if err := os.MkdirAll(root, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	names := []string{"libmillennium_bootstrap_x86.so", "libmillennium_bootstrap_hhx64.so", "libmillennium_x86.so", "libmillennium_hhx64.so", "libmillennium_pvs64", "libmillennium_luavm_x86", "version.txt"}
+	var sums strings.Builder
+	for _, name := range names {
+		data := []byte("fixture")
+		if err := os.WriteFile(filepath.Join(root, name), data, 0o644); err != nil {
+			t.Fatal(err)
+		}
+		fmt.Fprintf(&sums, "%x  %s\n", sha256.Sum256(data), name)
+	}
+	if err := os.WriteFile(filepath.Join(root, "checksums.txt"), []byte(sums.String()), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	ok, detail := checkBinaries()
+	if !ok {
+		t.Fatalf("fixture integrity failed: %s", detail)
+	}
+	if !strings.Contains(detail, "vfixture") {
+		t.Fatalf("diagnosis inspected the wrong install root: %s", detail)
+	}
+	r := Report{BinariesOK: ok, RuntimeHelpersExecutable: repair.RuntimeHelpersExecutable(), HooksOK: true, FlatpakOK: true, TimerActive: true, SudoersOK: true, LingerOK: true, PermissionsOK: true, SkinsDirOK: true}
+	if r.RuntimeHelpersExecutable {
+		t.Fatal("non-executable helpers reported healthy")
+	}
+	if !strings.Contains(FormatJSON(r), `"runtime_helpers_executable": false`) {
+		t.Fatal("JSON omitted failed permission check")
+	}
+	if !strings.Contains(FormatDoctorDryRun(r, false), "restore executable modes") {
+		t.Fatal("dry run omitted permission fix")
+	}
+	if repair.RuntimeHelpersExecutable() {
+		t.Fatal("diagnosis changed modes")
+	}
+	steps := DoctorPlan(r, false)
+	if len(steps) != 1 || steps[0].ID != "runtime_helpers" {
+		t.Fatalf("unexpected repairs: %#v", steps)
+	}
+	if err := applyDoctorStep(steps[0], r, Options{}); err != nil {
+		t.Fatal(err)
+	}
+	r.RuntimeHelpersExecutable = repair.RuntimeHelpersExecutable()
+	if !r.RuntimeHelpersExecutable {
+		t.Fatal("doctor did not restore executable permissions")
+	}
+	if steps := DoctorPlan(r, false); len(steps) != 0 {
+		t.Fatalf("repair not idempotent: %#v", steps)
+	}
+	if ok, detail := checkBinaries(); !ok {
+		t.Fatalf("repair changed file integrity: %s", detail)
 	}
 }

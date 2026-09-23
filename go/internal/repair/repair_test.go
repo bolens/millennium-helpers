@@ -130,3 +130,37 @@ func contains(s, sub string) bool {
 	}
 	return false
 }
+
+func TestRepairCLIRestoresRuntimeModes(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Unix runtime helpers")
+	}
+	lib := t.TempDir()
+	t.Setenv("MOCK_LIB_DIR", lib)
+	t.Setenv("HOME", t.TempDir())
+	t.Setenv("STEAM", t.TempDir())
+	root := filepath.Join(lib, "millennium")
+	if err := os.MkdirAll(root, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range runtimeHelperNames {
+		if err := os.WriteFile(filepath.Join(root, name), []byte("helper"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if !contains(FormatPlan(nil, true), "runtime helpers") {
+		t.Fatal("dry run omits runtime permission repair")
+	}
+	if code := RunCLI(true, true, true, true); code != 0 {
+		t.Fatalf("dry run: %d", code)
+	}
+	if RuntimeHelpersExecutable() {
+		t.Fatal("dry run changed permissions")
+	}
+	if code := RunCLI(false, true, true, true); code != 0 {
+		t.Fatalf("repair: %d", code)
+	}
+	if !RuntimeHelpersExecutable() {
+		t.Fatal("repair left runtime helpers non-executable")
+	}
+}

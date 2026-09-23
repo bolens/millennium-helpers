@@ -376,7 +376,7 @@ func newPurgeCmd() *cobra.Command {
 func newRepairCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:                "repair",
-		Short:              "Repair Millennium (hooks/force-upgrade, ownership, htmlcache, themes)",
+		Short:              "Repair Millennium (hooks/force-upgrade, runtime permissions, ownership, htmlcache, themes)",
 		DisableFlagParsing: true,
 		RunE: func(cmd *cobra.Command, a []string) error {
 			dry, yes, quiet, skip, help, ver, err := repair.ParseFlags(a)

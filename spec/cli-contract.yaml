@@ -482,7 +482,7 @@ commands:
         description: Update all themes (only applicable if action is 'update').
 
   repair:
-    short: "Repair hooks and ownership"
+    short: "Repair hooks, runtime permissions, and ownership"
     platforms: [linux, darwin, windows]
     man: millennium-repair.1
     mcp: millennium_repair
