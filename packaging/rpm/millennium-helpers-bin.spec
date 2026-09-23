@@ -47,9 +47,14 @@ install -m644 completions/fish/*.fish %{buildroot}%{_datadir}/fish/vendor_comple
 install -m644 completions/nushell/millennium-helpers.nu %{buildroot}%{_datadir}/nushell/completions/
 install -m644 man/*.1 %{buildroot}%{_mandir}/man1/
 install -m644 LICENSE %{buildroot}%{_licensedir}/%{name}/LICENSE
+for notice in THIRD_PARTY_LICENSES.txt THIRD_PARTY_NOTICES.md; do
+  if [ -f "$notice" ]; then
+    install -m644 "$notice" "%{buildroot}%{_licensedir}/%{name}/$notice"
+  fi
+done
 
 %files
-%license LICENSE
+%license %{_licensedir}/%{name}/
 %{_bindir}/millennium*
 %{_libdir}/millennium-helpers/
 %{_datadir}/bash-completion/completions/millennium*

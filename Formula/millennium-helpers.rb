@@ -32,6 +32,9 @@ class MillenniumHelpers < Formula
     man1.install Dir["man/*.1"]
     (lib/"millennium-helpers").install "VERSION"
 
+    %w[LICENSE THIRD_PARTY_LICENSES.txt THIRD_PARTY_NOTICES.md].each do |notice|
+      (lib/"millennium-helpers").install notice if File.exist?(notice)
+    end
     license_md = "third_party/MILLENNIUM-LICENSE.md"
     (lib/"millennium-helpers").install license_md if File.exist?(license_md)
   end

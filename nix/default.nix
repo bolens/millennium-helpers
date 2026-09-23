@@ -94,6 +94,11 @@ stdenv.mkDerivation ({
 
     mkdir -p $out/share/licenses/${pname}
     install -m644 LICENSE $out/share/licenses/${pname}/LICENSE
+    for notice in THIRD_PARTY_LICENSES.txt THIRD_PARTY_NOTICES.md; do
+      if [ -f "$notice" ]; then
+        install -m644 "$notice" "$out/share/licenses/${pname}/$notice"
+      fi
+    done
 
     runHook postInstall
   '';

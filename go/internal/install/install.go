@@ -202,6 +202,17 @@ func installUnixLibs(o Options, sourceRoot string, res *Result) error {
 			return err
 		}
 	}
+	for _, name := range []string{"LICENSE", "THIRD_PARTY_LICENSES.txt", "THIRD_PARTY_NOTICES.md"} {
+		src := filepath.Join(sourceRoot, name)
+		if _, err := os.Stat(src); os.IsNotExist(err) {
+			continue // Older release trees did not include every notice.
+		} else if err != nil {
+			return err
+		}
+		if err := planCopy(src, filepath.Join(o.LibDir, name), 0o644, o.DryRun, &res.Plan); err != nil {
+			return err
+		}
+	}
 	lic := filepath.Join(sourceRoot, "third_party", "MILLENNIUM-LICENSE.md")
 	if _, err := os.Stat(lic); err == nil {
 		if err := planCopy(lic, filepath.Join(o.LibDir, "MILLENNIUM-LICENSE.md"), 0o644, o.DryRun, &res.Plan); err != nil {

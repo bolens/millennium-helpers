@@ -240,6 +240,8 @@ jobs:
             install.sh
             VERSION
             LICENSE
+            THIRD_PARTY_LICENSES.txt
+            THIRD_PARTY_NOTICES.md
             README.md
             third_party/MILLENNIUM-LICENSE.md
             bin/millennium
@@ -272,6 +274,8 @@ jobs:
             completions/powershell/ \
             VERSION \
             LICENSE \
+            THIRD_PARTY_LICENSES.txt \
+            THIRD_PARTY_NOTICES.md \
             README.md \
             third_party/MILLENNIUM-LICENSE.md
           echo "Created $WIN_ZIP"
@@ -412,7 +416,7 @@ jobs:
             dist/millennium-v${{ steps.meta.outputs.version }}-*
 
       - name: Create GitHub Release Draft
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
           draft: true
@@ -445,6 +449,9 @@ jobs:
             sha256sum -c millennium-helpers-v${{ steps.meta.outputs.version }}-linux-amd64.tar.gz.sha256
             ```
           files: |
+            LICENSE
+            THIRD_PARTY_LICENSES.txt
+            THIRD_PARTY_NOTICES.md
             ${{ steps.assets.outputs.linux_amd64 }}
             ${{ steps.assets.outputs.linux_arm64 }}
             ${{ steps.assets.outputs.darwin_amd64 }}
