@@ -9,6 +9,7 @@ import (
 
 	"github.com/bolens/millennium-helpers/internal/repair"
 	"github.com/bolens/millennium-helpers/internal/theme"
+	"github.com/bolens/millennium-helpers/internal/usercontext"
 )
 
 // DoctorStep is one live repair action.
@@ -25,14 +26,24 @@ func DoctorPlan(r Report, force bool) []DoctorStep {
 			out = append(out, DoctorStep{ID: id, Detail: detail})
 		}
 	}
-	add(!r.BinariesOK, "upgrade_force", "millennium upgrade --force")
+	if r.BinariesNeedPrivilege {
+		out = append(out, DoctorStep{ID: "binaries_access", Detail: "re-run sudo millennium diag doctor to verify unreadable client files"})
+	} else if runtime.GOOS != "darwin" {
+		add(!r.BinariesOK, "upgrade_force", "millennium upgrade --force")
+	}
 	if runtime.GOOS != "windows" {
-		add(r.BinariesOK && !r.RuntimeHelpersExecutable, "runtime_helpers", "restore executable modes on Millennium runtime helpers")
-		add(!r.HooksOK, "repair_hooks", "restore bootstrap libXtst hooks")
-		add(!r.FlatpakOK, "flatpak", "flatpak override --user --filesystem=/usr/lib/millennium")
+		if runtime.GOOS == "linux" {
+			if !r.BinariesNeedPrivilege {
+				add(r.BinariesOK && !r.RuntimeHelpersExecutable, "runtime_helpers", "restore executable modes on Millennium runtime helpers")
+			}
+			add(!r.HooksOK, "repair_hooks", "restore bootstrap libXtst hooks")
+			add(!r.FlatpakOK, "flatpak", "flatpak override --user --filesystem=/usr/lib/millennium")
+		}
 		add(!r.TimerActive, "schedule_enable", "millennium schedule enable")
-		add(!r.SudoersOK, "sudoers_hint", "re-run installer for passwordless sudoers")
-		add(!r.LingerOK, "linger", "loginctl enable-linger")
+		if runtime.GOOS == "linux" {
+			add(!r.SudoersOK, "sudoers_hint", "re-run installer for passwordless sudoers")
+			add(!r.LingerOK, "linger", "loginctl enable-linger")
+		}
 		add(!r.PermissionsOK, "permissions", "fix ownership on user Millennium paths")
 	} else {
 		add(!r.TaskScheduled, "schedule_enable", "millennium schedule enable")
@@ -43,6 +54,10 @@ func DoctorPlan(r Report, force bool) []DoctorStep {
 
 // RunDoctorLive applies DoctorPlan repairs.
 func RunDoctorLive(o Options) int {
+	if _, err := usercontext.Resolve(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
 	fmt.Println("=== Running Millennium Doctor (native) ===")
 	r := Collect()
 	if o.Force {
@@ -98,6 +113,8 @@ func RunDoctorLive(o Options) int {
 
 func applyDoctorStep(s DoctorStep, r Report, o Options) error {
 	switch s.ID {
+	case "binaries_access":
+		return fmt.Errorf("client integrity could not be checked; re-run sudo millennium diag doctor before choosing a repair")
 	case "upgrade_force":
 		return runSelf("upgrade", "--channel", r.UpdateChannel, "--force", "--yes")
 	case "repair_hooks":
@@ -136,7 +153,11 @@ func applyDoctorStep(s DoctorStep, r Report, o Options) error {
 		}
 		return nil
 	case "permissions":
-		return repair.Apply(repair.Plan(), true)
+		targets, err := repair.Plan()
+		if err != nil {
+			return err
+		}
+		return repair.Apply(targets, true)
 	case "skins_dir":
 		dir, err := theme.SkinsDir()
 		if err != nil || dir == "" {

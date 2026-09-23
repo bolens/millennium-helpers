@@ -11,6 +11,9 @@ func TestRepairWithoutLinuxRuntimeHelpers(t *testing.T) {
 	if contains(FormatPlan(nil, true), "runtime helpers") {
 		t.Fatal("Darwin preview includes Linux runtime helpers")
 	}
+	if contains(FormatPlan(nil, true), "bootstrap") {
+		t.Fatal("Darwin preview includes Linux bootstrap hooks")
+	}
 	if code := RunCLI(false, true, true, true); code != 0 {
 		t.Fatalf("Darwin repair without Linux runtime helpers returned %d", code)
 	}

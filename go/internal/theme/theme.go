@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/bolens/millennium-helpers/internal/steam"
+	"github.com/bolens/millennium-helpers/internal/usercontext"
 )
 
 // Info describes one installed theme.
@@ -66,7 +67,11 @@ func ActiveThemeName() string {
 }
 
 func activeConfigCandidates() []string {
-	home, _ := os.UserHomeDir()
+	ctx, err := usercontext.Resolve()
+	if err != nil {
+		return nil
+	}
+	home := ctx.Home
 	var out []string
 	if runtime.GOOS == "windows" {
 		if app := os.Getenv("APPDATA"); app != "" {
@@ -76,10 +81,7 @@ func activeConfigCandidates() []string {
 			out = append(out, filepath.Join(loc, "millennium", "config.json"))
 		}
 	} else {
-		xdg := os.Getenv("XDG_CONFIG_HOME")
-		if xdg == "" {
-			xdg = filepath.Join(home, ".config")
-		}
+		xdg := ctx.ConfigHome
 		out = append(out,
 			filepath.Join(xdg, "millennium", "config.json"),
 			filepath.Join(home, ".config", "millennium", "config.json"),

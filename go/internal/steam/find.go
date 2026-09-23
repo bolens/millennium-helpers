@@ -3,6 +3,8 @@ package steam
 import (
 	"os"
 	"path/filepath"
+
+	"github.com/bolens/millennium-helpers/internal/usercontext"
 )
 
 // FindDir returns the first existing Steam install root, or "".
@@ -24,7 +26,14 @@ func DirCandidates() []string {
 }
 
 func dirCandidatesUnix() []string {
-	home, _ := os.UserHomeDir()
+	ctx, err := usercontext.Resolve()
+	if err != nil {
+		return nil
+	}
+	return dirCandidatesForHome(ctx.Home)
+}
+
+func dirCandidatesForHome(home string) []string {
 	return []string{
 		filepath.Join(home, ".local/share/Steam"),
 		filepath.Join(home, ".steam/steam"),

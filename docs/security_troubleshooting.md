@@ -41,7 +41,20 @@ Preview recovery with `sudo millennium diag doctor --dry-run`, then run
 `sudo millennium diag doctor --yes`. Doctor restores mode `0755` when binary
 integrity is healthy. `sudo millennium repair --skip-theme --yes` also restores
 these modes. Upgrades normalize the helper permissions even if the archive
-contains them with mode `0644`.
+contains them with mode `0644`. Private modes such as `0700` are also unhealthy
+for a shared install. If an unprivileged diagnosis cannot read a helper, it asks
+for a sudo check before deciding whether a reinstall is needed.
+
+Linux integrity checks require all six client components, including the Lua
+helper, in `checksums.txt`. Rollback rejects incomplete or corrupt backups before
+moving the active install and restores helper modes before activation. Older
+backups with incomplete manifests require a verified reinstall instead.
+
+Elevated repair resolves the sudo caller's home and default XDG directories.
+Ownership repair skips symlinks and rejects paths with symlinked parent
+directories. Cache cleanup also rejects symlinked roots or parents and removes
+children through open directory handles. Use the real Steam directory when an explicit `STEAM` override
+points through a symlink.
 
 ### Steam shows a blank/black screen after upgrading Millennium
 This is usually caused by outdated CEF cached files. Run the repair utility to fix local permissions and clear Steam's htmlcache:

@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
+
+	"github.com/bolens/millennium-helpers/internal/clientfiles"
 )
 
 func rollbackPlatform(backupName string, o Options) error {
@@ -15,6 +18,15 @@ func rollbackPlatform(backupName string, o Options) error {
 	dest := filepath.Join(lib, "millennium")
 	if st, err := os.Stat(backupPath); err != nil || !st.IsDir() {
 		return fmt.Errorf("Error: Backup '%s' not found.", backupName)
+	}
+
+	if runtime.GOOS == "linux" {
+		if err := clientfiles.Verify(backupPath); err != nil {
+			return fmt.Errorf("backup validation failed: %w", err)
+		}
+		if err := clientfiles.NormalizeHelpers(backupPath); err != nil {
+			return fmt.Errorf("backup permissions failed: %w", err)
+		}
 	}
 
 	rollbackTemp := filepath.Join(lib, "millennium.rolled_back_"+rollbackTimestamp())

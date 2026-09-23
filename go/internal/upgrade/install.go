@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bolens/millennium-helpers/internal/clientfiles"
 	"github.com/bolens/millennium-helpers/internal/config"
 	"github.com/bolens/millennium-helpers/internal/logging"
 	"github.com/bolens/millennium-helpers/internal/theme"
@@ -39,16 +40,10 @@ SOFTWARE.
 `
 
 func normalizeRuntimeHelperModes(root string) error {
-	for _, name := range []string{"libmillennium_pvs64", "libmillennium_luavm_x86"} {
-		path := filepath.Join(root, name)
-		if err := os.Chmod(path, 0o755); err != nil {
-			if os.IsNotExist(err) {
-				continue
-			}
-			return fmt.Errorf("set executable mode on %s: %w", name, err)
-		}
+	if runtime.GOOS != "linux" {
+		return nil
 	}
-	return nil
+	return clientfiles.NormalizeHelpers(root)
 }
 
 // CanNativeInstall reports whether this process can write the install root.

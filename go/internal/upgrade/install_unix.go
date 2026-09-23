@@ -3,8 +3,6 @@
 package upgrade
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
@@ -13,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/bolens/millennium-helpers/internal/archive"
+	"github.com/bolens/millennium-helpers/internal/clientfiles"
 )
 
 func installPlatform(archivePath, version string, o Options) error {
@@ -46,7 +45,11 @@ func installPlatform(archivePath, version string, o Options) error {
 		return err
 	}
 	InstallLicense(destTmp)
-	writeChecksums(destTmp)
+	if runtime.GOOS == "linux" {
+		if err := clientfiles.WriteChecksums(destTmp); err != nil {
+			return err
+		}
+	}
 
 	oldVer := "unknown"
 	if b, err := os.ReadFile(filepath.Join(dest, "version.txt")); err == nil {
@@ -115,34 +118,6 @@ func copyTreeFiles(src, dst string) error {
 		}
 		return closeErr
 	})
-}
-
-func writeChecksums(dir string) {
-	names := []string{
-		"libmillennium_bootstrap_x86.so",
-		"libmillennium_bootstrap_hhx64.so",
-		"libmillennium_x86.so",
-		"libmillennium_hhx64.so",
-		"libmillennium_pvs64",
-	}
-	var b strings.Builder
-	for _, n := range names {
-		p := filepath.Join(dir, n)
-		f, err := os.Open(p)
-		if err != nil {
-			continue
-		}
-		h := sha256.New()
-		_, _ = io.Copy(h, f)
-		_ = f.Close()
-		b.WriteString(hex.EncodeToString(h.Sum(nil)))
-		b.WriteString("  ")
-		b.WriteString(n)
-		b.WriteByte('\n')
-	}
-	if b.Len() > 0 {
-		_ = os.WriteFile(filepath.Join(dir, "checksums.txt"), []byte(b.String()), 0o644)
-	}
 }
 
 func linkHooksCurrentUser(allUsers bool) error {

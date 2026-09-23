@@ -8,45 +8,23 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/bolens/millennium-helpers/internal/clientfiles"
 	"github.com/bolens/millennium-helpers/internal/config"
 	"github.com/bolens/millennium-helpers/internal/theme"
+	"github.com/bolens/millennium-helpers/internal/usercontext"
 )
 
-var runtimeHelperNames = []string{
-	"libmillennium_pvs64",
-	"libmillennium_luavm_x86",
-}
-
-// RuntimeHelpersExecutable reports whether Unix runtime helper binaries exist
-// and have at least one executable mode bit. Windows does not use these files.
+// RuntimeHelpersExecutable reports shared-install helper access on Linux.
 func RuntimeHelpersExecutable() bool {
-	if runtime.GOOS == "windows" {
-		return true
-	}
-	root := MillenniumLibRoot()
-	for _, name := range runtimeHelperNames {
-		st, err := os.Stat(filepath.Join(root, name))
-		if err != nil || !st.Mode().IsRegular() || st.Mode().Perm()&0o111 == 0 {
-			return false
-		}
-	}
-	return true
+	return runtime.GOOS != "linux" || clientfiles.HelpersExecutable(MillenniumLibRoot())
 }
 
-// EnsureRuntimeHelpersExecutable restores the canonical executable mode used
-// by Millennium's pressure-vessel and Lua runtime helpers.
+// EnsureRuntimeHelpersExecutable restores Linux helper permissions.
 func EnsureRuntimeHelpersExecutable() error {
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS != "linux" {
 		return nil
 	}
-	root := MillenniumLibRoot()
-	for _, name := range runtimeHelperNames {
-		path := filepath.Join(root, name)
-		if err := os.Chmod(path, 0o755); err != nil {
-			return fmt.Errorf("chmod 0755 %s: %w", name, err)
-		}
-	}
-	return nil
+	return clientfiles.NormalizeHelpers(MillenniumLibRoot())
 }
 
 // Target is a path that repair would chown / touch.
@@ -56,16 +34,17 @@ type Target struct {
 }
 
 // Plan lists ownership/cache repair targets for the current user (read-only).
-func Plan() []Target {
-	home, _ := os.UserHomeDir()
-	xdgConfig := os.Getenv("XDG_CONFIG_HOME")
-	if xdgConfig == "" {
-		xdgConfig = filepath.Join(home, ".config")
+func Plan() ([]Target, error) {
+	ctx, err := usercontext.Resolve()
+	if err != nil {
+		return nil, err
 	}
-	xdgData := os.Getenv("XDG_DATA_HOME")
-	if xdgData == "" {
-		xdgData = filepath.Join(home, ".local", "share")
-	}
+	return planFor(ctx), nil
+}
+
+func planFor(ctx usercontext.Context) []Target {
+	home := ctx.Home
+	xdgConfig, xdgData := ctx.ConfigHome, ctx.DataHome
 	steam := theme.FindSteamDir()
 	candidates := []string{
 		filepath.Join(xdgData, "millennium"),
@@ -110,10 +89,8 @@ func FormatPlan(targets []Target, skipTheme bool) string {
 	b.WriteString("[DRY RUN] Would capture Steam's environment and close it if running.\n")
 	if runtime.GOOS == "windows" {
 		fmt.Fprintf(&b, "[DRY RUN] Would run: millennium upgrade --force --channel %s\n", updateChannel())
-	} else {
-		if runtime.GOOS == "linux" {
-			b.WriteString("[DRY RUN] Would restore executable modes on Millennium runtime helpers.\n")
-		}
+	} else if runtime.GOOS == "linux" {
+		b.WriteString("[DRY RUN] Would restore executable modes on Millennium runtime helpers.\n")
 		hooks := PlanHooks()
 		if len(hooks) == 0 {
 			b.WriteString("[DRY RUN] Would restore bootstrap hooks (no Steam tree found yet).\n")
@@ -144,15 +121,10 @@ func Apply(targets []Target, skipTheme bool) error {
 		switch t.Kind {
 		case "htmlcache":
 			fmt.Printf("Clearing Steam htmlcache: %s\n", t.Path)
-			entries, err := os.ReadDir(t.Path)
-			if err != nil {
+			if err := clearCache(t.Path); err != nil {
 				return err
 			}
-			for _, e := range entries {
-				if err := os.RemoveAll(filepath.Join(t.Path, e.Name())); err != nil {
-					return err
-				}
-			}
+
 		case "chown":
 			fmt.Printf("Fixing ownership: %s\n", t.Path)
 			if err := chownTree(t.Path); err != nil {
@@ -245,7 +217,11 @@ func ParseFlags(args []string) (dryRun, yes, quiet, skipTheme, help, version boo
 
 // RunCLI runs dry-run or live native repair (hooks/binary + ownership/cache/theme).
 func RunCLI(dryRun, skipTheme, quiet, yes bool) int {
-	targets := Plan()
+	targets, err := Plan()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
 	if dryRun {
 		fmt.Print(FormatPlan(targets, skipTheme))
 		return 0

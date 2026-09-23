@@ -1,0 +1,42 @@
+name: Devcontainer
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: devcontainer-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Build default development image
+        run: docker build --tag millennium-devcontainer-ci --file .devcontainer/Dockerfile .devcontainer
+      - name: Run post-create and repository checks as vscode
+        run: |
+          docker run --rm --init \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/workspace" \
+            --env "WORKSPACE_UID=$(id -u)" \
+            millennium-devcontainer-ci bash -euc '
+              # Match updateRemoteUserUID from devcontainer.json.
+              if [ "$(id -u vscode)" != "$WORKSPACE_UID" ]; then
+                usermod --uid "$WORKSPACE_UID" vscode
+              fi
+              exec runuser -u vscode -- bash -euc "
+                cd /workspace
+                bash .devcontainer/post-create.sh
+                make check-all
+                make test-windows
+              "
+            '

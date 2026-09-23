@@ -4,6 +4,7 @@ package repair
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/bolens/millennium-helpers/internal/steam"
 )
@@ -31,4 +32,17 @@ func relaunchSteamAfterRepair() {
 		return
 	}
 	steam.RelaunchBestEffort()
+}
+
+func clearCache(path string) error {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if err := os.RemoveAll(filepath.Join(path, entry.Name())); err != nil {
+			return err
+		}
+	}
+	return nil
 }

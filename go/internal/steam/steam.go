@@ -3,6 +3,7 @@ package steam
 
 import (
 	"fmt"
+	"github.com/bolens/millennium-helpers/internal/usercontext"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -18,19 +19,8 @@ var EnvKeys = []string{
 
 // TargetUser resolves SUDO_USER when elevated, else the current account.
 func TargetUser() (name, home string, err error) {
-	sudo := os.Getenv("SUDO_USER")
-	if sudo != "" && effectiveUID() == 0 {
-		u, err := user.Lookup(sudo)
-		if err != nil {
-			return "", "", fmt.Errorf("cannot resolve SUDO_USER %q: %w", sudo, err)
-		}
-		return u.Username, u.HomeDir, nil
-	}
-	u, err := user.Current()
-	if err != nil {
-		return "", "", err
-	}
-	return u.Username, u.HomeDir, nil
+	ctx, err := usercontext.Resolve()
+	return ctx.Name, ctx.Home, err
 }
 
 // RelaunchStateFile returns ~/.local/state/millennium-helpers/relaunch.env for the user.

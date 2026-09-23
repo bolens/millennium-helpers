@@ -179,10 +179,10 @@ commands:
           (Millennium client channel),
           and
           .BR unmanaged_files_ok .
-          On Unix, the report also includes
+          On Linux, the report also includes
           .BR runtime_helpers_executable ,
           which verifies that Millennium's pressure-vessel and Lua runtime
-          helper binaries can be executed.
+          helper binaries are regular files readable and executable by Steam.
       - name: follow
         long: --follow
         short: -l
@@ -277,6 +277,8 @@ commands:
           Roll back to a previous backup, or pass
           .B list
           to list backups.
+          Linux backups must contain all required client files and matching
+          checksums. Runtime helper modes are restored before activation.
       - name: file
         long: --file
         aliases_windows: [-File]

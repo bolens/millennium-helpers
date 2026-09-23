@@ -35,10 +35,10 @@ test-windows:
 		exit 1; \
 	fi; \
 	if ! pwsh -NoProfile -Command 'if (Get-Command Invoke-Pester -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }'; then \
-		echo "Pester not installed; skip Windows Pester suite locally (CI Windows job still runs it)." >&2; \
-		exit 0; \
+		echo "Pester not installed; install it before running the Windows suite." >&2; \
+		exit 1; \
 	fi; \
-	pwsh -NoProfile -Command "Invoke-Pester -Path tests/windows -Output Detailed"
+	pwsh -NoProfile -Command '$$ErrorActionPreference = "Stop"; $$result = Invoke-Pester -Path tests/windows -Output Detailed -PassThru; if ($$result.Result -ne "Passed") { exit 1 }'
 
 test-go:
 	@command -v $(GO) >/dev/null 2>&1 || (echo "go not found; install Go 1.22+ (see CONTRIBUTING.md)." >&2; exit 1)

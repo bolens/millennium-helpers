@@ -7,6 +7,7 @@ import (
 	"runtime"
 
 	"github.com/bolens/millennium-helpers/internal/theme"
+	"github.com/bolens/millennium-helpers/internal/usercontext"
 )
 
 // HookPlan is one planned bootstrap hook symlink.
@@ -34,7 +35,11 @@ func PlanHooks() []HookPlan {
 		return nil
 	}
 	root := MillenniumLibRoot()
-	home, _ := os.UserHomeDir()
+	ctx, err := usercontext.Resolve()
+	if err != nil {
+		return nil
+	}
+	home := ctx.Home
 	cands := []string{
 		filepath.Join(home, ".local/share/Steam"),
 		filepath.Join(home, ".steam/steam"),

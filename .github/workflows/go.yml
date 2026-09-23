@@ -287,11 +287,25 @@ jobs:
             printf 'new\n' >"$lib/millennium/marker"
             printf '1.0.0\n' >"$lib/millennium.bak_1.0.0/version.txt"
             printf 'old\n' >"$lib/millennium.bak_1.0.0/marker"
+            if [[ "$RUNNER_OS" == Linux ]]; then
+              (
+                cd "$lib/millennium.bak_1.0.0"
+                for name in libmillennium_bootstrap_x86.so libmillennium_bootstrap_hhx64.so libmillennium_x86.so libmillennium_hhx64.so libmillennium_pvs64 libmillennium_luavm_x86; do
+                  printf 'fixture\n' > "$name"
+                  chmod 644 "$name"
+                  sha256sum "$name" >> checksums.txt
+                done
+              )
+            fi
             export MOCK_LIB_DIR="$lib"
             export MILLENNIUM_LIB_DIR="$lib"
             out="$(bin/millennium upgrade --rollback 1.0.0)"
             echo "$out" | grep -F 'Rollback successful'
             test "$(cat "$lib/millennium/marker")" = "old"
+            if [[ "$RUNNER_OS" == Linux ]]; then
+              test -x "$lib/millennium/libmillennium_pvs64"
+              test -x "$lib/millennium/libmillennium_luavm_x86"
+            fi
           fi
           rm -rf "$home"
 
