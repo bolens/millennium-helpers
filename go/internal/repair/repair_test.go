@@ -132,8 +132,8 @@ func contains(s, sub string) bool {
 }
 
 func TestRepairCLIRestoresRuntimeModes(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("Unix runtime helpers")
+	if runtime.GOOS != "linux" {
+		t.Skip("Linux runtime helpers")
 	}
 	lib := t.TempDir()
 	t.Setenv("MOCK_LIB_DIR", lib)
