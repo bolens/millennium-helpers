@@ -95,3 +95,13 @@ Thumbs.db
 
 # Embedded Windows Go binary from release/local build (not a source file)
 /scripts/windows/millennium.exe
+
+# Shared VS Code configuration; keep personal editor state ignored.
+!/.vscode/
+/.vscode/*
+!/.vscode/settings.json
+!/.vscode/extensions.json
+!/.vscode/tasks.json
+!/.vscode/launch.json
+!/.vscode/*.code-snippets
+!/.vscode/README.md

@@ -1,0 +1,16 @@
+{
+    "recommendations": [
+        "EditorConfig.EditorConfig",
+        "redhat.vscode-yaml",
+        "GitHub.vscode-github-actions",
+        "timonwong.shellcheck",
+        "mads-hartmann.bash-ide-vscode",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "jnoortheen.nix-ide",
+        "ms-azuretools.vscode-containers",
+        "ms-vscode-remote.remote-containers",
+        "golang.go",
+        "charliermarsh.ruff"
+    ]
+}

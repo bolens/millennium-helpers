@@ -1,0 +1,90 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "make build",
+            "type": "process",
+            "command": "make",
+            "args": [
+                "build"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "make test-go",
+            "type": "process",
+            "command": "make",
+            "args": [
+                "test-go"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "make check-cli-contract",
+            "type": "process",
+            "command": "make",
+            "args": [
+                "check-cli-contract"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "test"
+        },
+        {
+            "label": "make lint",
+            "type": "process",
+            "command": "make",
+            "args": [
+                "lint"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "test"
+        },
+        {
+            "label": "make check-all",
+            "type": "process",
+            "command": "make",
+            "args": [
+                "check-all"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "test"
+        },
+        {
+            "label": "Check diff whitespace",
+            "type": "process",
+            "command": "git",
+            "args": [
+                "diff",
+                "--check"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": "test"
+        }
+    ]
+}
