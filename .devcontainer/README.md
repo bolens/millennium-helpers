@@ -7,7 +7,7 @@ packages. Setup installs dependencies from this checkout's lockfiles and runs
 `smoke.sh`. Rebuild the container after Dockerfile changes. Rerun
 `bash .devcontainer/post-create.sh` after changing dependency lockfiles.
 
-Includes the Go 1.25 toolchain, Python/Ruff, ShellCheck, Fish, mandoc and
+Includes the Go toolchain, Python/Ruff, ShellCheck, Fish, mandoc and
 PowerShell. `make check-all` is the broader Linux gate. PowerShell modules
 install only in the container user account. Windows scheduling, Steam
 integration and distribution packaging require their owning platforms.
@@ -40,3 +40,8 @@ The host Docker socket
 is never mounted. The default variant provides the native Go, shell,
 PowerShell and completion toolchains, including CI-pinned Nushell 0.114.0.
 Feature digests and Nushell checksums require reviewed updates alongside CI.
+
+The `Devcontainer` workflow builds the default Dockerfile on pull requests and
+main pushes. It adjusts the `vscode` UID for the checkout, runs the post-create
+script and smoke check, then runs `make check-all` and `make test-windows`.
+The Docker and Nix variant still needs separate validation on a compatible host.

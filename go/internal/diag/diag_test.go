@@ -3,6 +3,7 @@ package diag
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -12,6 +13,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/bolens/millennium-helpers/internal/clientfiles"
 	"github.com/bolens/millennium-helpers/internal/repair"
 )
 
@@ -65,10 +67,10 @@ func TestDoctorPlan(t *testing.T) {
 	for _, s := range steps {
 		ids[s.ID] = true
 	}
-	if !ids["upgrade_force"] || !ids["skins_dir"] {
+	if ids["upgrade_force"] != (runtime.GOOS != "darwin") || !ids["skins_dir"] {
 		t.Fatalf("%#v", steps)
 	}
-	if runtime.GOOS != "windows" && ids["runtime_helpers"] {
+	if runtime.GOOS == "linux" && ids["runtime_helpers"] {
 		t.Fatalf("runtime helper repair should wait for healthy binaries: %#v", steps)
 	}
 	r.BinariesOK = true
@@ -77,10 +79,10 @@ func TestDoctorPlan(t *testing.T) {
 	for _, s := range steps {
 		ids[s.ID] = true
 	}
-	if runtime.GOOS != "windows" && !ids["runtime_helpers"] {
+	if runtime.GOOS == "linux" && !ids["runtime_helpers"] {
 		t.Fatalf("missing runtime helper repair: %#v", steps)
 	}
-	if runtime.GOOS == "windows" && ids["runtime_helpers"] {
+	if runtime.GOOS != "linux" && ids["runtime_helpers"] {
 		t.Fatalf("unexpected Windows runtime helper repair: %#v", steps)
 	}
 }
@@ -103,7 +105,7 @@ func TestFormatJSON(t *testing.T) {
 		t.Fatalf("%v", m)
 	}
 	_, hasRuntimeHelpers := m["runtime_helpers_executable"]
-	if (runtime.GOOS != "windows") != hasRuntimeHelpers {
+	if (runtime.GOOS == "linux") != hasRuntimeHelpers {
 		t.Fatalf("runtime helper field mismatch on %s: %v", runtime.GOOS, m)
 	}
 }
@@ -111,7 +113,7 @@ func TestFormatJSON(t *testing.T) {
 func TestDoctorDryRun(t *testing.T) {
 	r := Report{BinariesOK: false, HooksOK: false, SkinsDirOK: true}
 	out := FormatDoctorDryRun(r, false)
-	if !strings.Contains(out, "DRY RUN") || !strings.Contains(out, "upgrade") {
+	if !strings.Contains(out, "DRY RUN") || (runtime.GOOS != "darwin" && !strings.Contains(out, "upgrade")) {
 		t.Fatalf("%s", out)
 	}
 }
@@ -180,25 +182,9 @@ func TestKeepFailedShareDoesNotOverwriteEarlierReport(t *testing.T) {
 	}
 }
 
-func TestVerifyChecksums(t *testing.T) {
-	dir := t.TempDir()
-	content := []byte("hello")
-	if err := os.WriteFile(filepath.Join(dir, "a.so"), content, 0o644); err != nil {
-		t.Fatal(err)
-	}
-	sum := "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824  a.so\n"
-	sumPath := filepath.Join(dir, "checksums.txt")
-	if err := os.WriteFile(sumPath, []byte(sum), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	if err := verifyChecksumsFile(dir, sumPath); err != nil {
-		t.Fatal(err)
-	}
-}
-
 func TestDoctorRepairsRuntimePermissions(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("Unix runtime helpers")
+	if runtime.GOOS != "linux" {
+		t.Skip("Linux runtime helpers")
 	}
 	lib := t.TempDir()
 	t.Setenv("MOCK_LIB_DIR", lib)
@@ -219,7 +205,7 @@ func TestDoctorRepairsRuntimePermissions(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "checksums.txt"), []byte(sums.String()), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	ok, detail := checkBinaries()
+	ok, detail, _ := checkBinaries()
 	if !ok {
 		t.Fatalf("fixture integrity failed: %s", detail)
 	}
@@ -253,7 +239,92 @@ func TestDoctorRepairsRuntimePermissions(t *testing.T) {
 	if steps := DoctorPlan(r, false); len(steps) != 0 {
 		t.Fatalf("repair not idempotent: %#v", steps)
 	}
-	if ok, detail := checkBinaries(); !ok {
+	if ok, detail, _ := checkBinaries(); !ok {
 		t.Fatalf("repair changed file integrity: %s", detail)
+	}
+	if err := os.Remove(filepath.Join(root, "libmillennium_luavm_x86")); err != nil {
+		t.Fatal(err)
+	}
+	r.BinariesOK, _, _ = checkBinaries()
+	r.RuntimeHelpersExecutable = repair.RuntimeHelpersExecutable()
+	steps = DoctorPlan(r, false)
+	if len(steps) != 1 || steps[0].ID != "upgrade_force" {
+		t.Fatalf("missing Lua must select reinstall: %#v", steps)
+	}
+}
+
+func TestDoctorRequiresReadableIntegrityBeforeReinstall(t *testing.T) {
+	if runtime.GOOS != "linux" || os.Geteuid() == 0 {
+		t.Skip("unprivileged Linux access check")
+	}
+	lib := t.TempDir()
+	t.Setenv("MOCK_LIB_DIR", lib)
+	root := filepath.Join(lib, "millennium")
+	if err := os.Mkdir(root, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"version.txt", "libmillennium_bootstrap_x86.so", "libmillennium_bootstrap_hhx64.so", "libmillennium_x86.so", "libmillennium_hhx64.so", "libmillennium_pvs64", "libmillennium_luavm_x86"} {
+		if err := os.WriteFile(filepath.Join(root, name), []byte("fixture"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := clientfiles.WriteChecksums(root); err != nil {
+		t.Fatal(err)
+	}
+	lua := filepath.Join(root, "libmillennium_luavm_x86")
+	if err := os.Chmod(lua, 0); err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = os.Chmod(lua, 0o644) }()
+	ok, detail, err := checkBinaries()
+	if ok || !errors.Is(err, os.ErrPermission) || strings.Contains(detail, "Corrupted") {
+		t.Fatalf("incorrect access diagnosis: %v %s %v", ok, detail, err)
+	}
+	for _, force := range []bool{false, true} {
+		steps := DoctorPlan(Report{BinariesNeedPrivilege: true}, force)
+		found := false
+		for _, step := range steps {
+			if step.ID == "upgrade_force" || step.ID == "runtime_helpers" {
+				t.Fatalf("unverified integrity selects %s", step.ID)
+			}
+			if step.ID == "binaries_access" {
+				found = true
+				if applyDoctorStep(step, Report{}, Options{}) == nil {
+					t.Fatal("access error reported success")
+				}
+			}
+		}
+		if !found {
+			t.Fatal("missing privileged verification instruction")
+		}
+	}
+}
+
+func TestDoctorOwnershipPreservesCache(t *testing.T) {
+	home, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, ".config"))
+	t.Setenv("XDG_DATA_HOME", filepath.Join(home, ".local", "share"))
+	steam := filepath.Join(home, "Steam")
+	t.Setenv("STEAM", steam)
+	t.Setenv("STEAM_PATH", "")
+	cache := filepath.Join(steam, "config", "htmlcache")
+	for _, path := range []string{cache, filepath.Join(steam, "millennium")} {
+		if err := os.MkdirAll(path, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	sentinel := filepath.Join(cache, "live-cache")
+	if err := os.WriteFile(sentinel, []byte("keep"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := applyDoctorStep(DoctorStep{ID: "permissions"}, Report{}, Options{}); err != nil {
+		t.Fatal(err)
+	}
+	if b, err := os.ReadFile(sentinel); err != nil || string(b) != "keep" {
+		t.Fatal("ownership step cleared Steam cache")
 	}
 }

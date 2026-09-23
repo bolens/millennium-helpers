@@ -6,45 +6,59 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
+
+	"github.com/bolens/millennium-helpers/internal/clientfiles"
 )
 
 func rollbackPlatform(backupName string, o Options) error {
 	lib := LibDir()
 	backupPath := filepath.Join(lib, backupName)
 	dest := filepath.Join(lib, "millennium")
-	if st, err := os.Stat(backupPath); err != nil || !st.IsDir() {
+	if st, err := os.Lstat(backupPath); err != nil || !st.IsDir() {
 		return fmt.Errorf("Error: Backup '%s' not found.", backupName)
 	}
 
-	rollbackTemp := filepath.Join(lib, "millennium.rolled_back_"+rollbackTimestamp())
-	movedActive := false
-	if st, err := os.Stat(dest); err == nil && st.IsDir() {
-		if err := os.Rename(dest, rollbackTemp); err != nil {
-			return fmt.Errorf("Error: Failed to move active install aside: %w", err)
+	if runtime.GOOS == "linux" {
+		if err := clientfiles.Verify(backupPath); err != nil {
+			return fmt.Errorf("backup validation failed: %w", err)
 		}
-		movedActive = true
+		if err := clientfiles.NormalizeHelpers(backupPath); err != nil {
+			return fmt.Errorf("backup permissions failed: %w", err)
+		}
+	}
+
+	saved := ""
+	if st, err := os.Lstat(dest); err == nil {
+		if !st.IsDir() {
+			return fmt.Errorf("active client must be a real directory")
+		}
+		saved, err = reserveBackup(lib, dest)
+		if err != nil {
+			return err
+		}
+		if err = os.Rename(dest, saved); err != nil {
+			_ = os.Remove(saved)
+			return err
+		}
+	} else if !os.IsNotExist(err) {
+		return err
 	}
 	if err := os.Rename(backupPath, dest); err != nil {
-		if movedActive {
-			_ = os.Rename(rollbackTemp, dest)
+		if saved != "" {
+			if restoreErr := os.Rename(saved, dest); restoreErr != nil {
+				return fmt.Errorf("activation and recovery failed: %w", restoreErr)
+			}
 		}
-		return fmt.Errorf("Error: Failed to swap backup: %w", err)
+		return fmt.Errorf("failed to activate backup: %w", err)
 	}
 	label := strings.TrimPrefix(backupName, "millennium.bak_")
 	if !o.Quiet {
 		fmt.Printf("Rollback successful! Backup %s is now active.\n", label)
 	}
-	if movedActive {
-		oldVer := readVersionFile(rollbackTemp)
-		movedBak := filepath.Join(lib, "millennium.bak_"+oldVer)
-		_ = os.RemoveAll(movedBak)
-		if err := os.Rename(rollbackTemp, movedBak); err != nil {
-			return fmt.Errorf("Error: Rollback active but failed to save previous install: %w", err)
-		}
-		if !o.Quiet {
-			fmt.Printf("Saved rolled back version to %s\n", filepath.Base(movedBak))
-		}
+	if saved != "" && !o.Quiet {
+		fmt.Printf("Saved previous installation to %s\n", filepath.Base(saved))
 	}
 	return nil
 }

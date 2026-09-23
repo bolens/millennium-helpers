@@ -129,19 +129,30 @@ func CloseGracefully(username, home string) error {
 	}
 	if IsSteamRunning() {
 		_ = exec.Command("taskkill", "/F", "/IM", "steam.exe").Run()
+		deadline := time.Now().Add(5 * time.Second)
+		for IsSteamRunning() && time.Now().Before(deadline) {
+			time.Sleep(100 * time.Millisecond)
+		}
+	}
+	if IsSteamRunning() {
+		return fmt.Errorf("Steam is still running after shutdown attempt")
 	}
 	fmt.Println("Steam closed successfully.")
 	return nil
 }
 
-func RelaunchFromState(username, home string) (bool, error) {
+func RelaunchFromState(username, home string) (attempted bool, err error) {
 	_, _ = username, home
 	stateFile := RelaunchStateFileWindows()
 	b, err := os.ReadFile(stateFile)
 	if err != nil {
 		return false, nil
 	}
-	defer func() { _ = os.Remove(stateFile) }()
+	defer func() {
+		if attempted && err == nil {
+			_ = os.Remove(stateFile)
+		}
+	}()
 
 	var state winRelaunchState
 	if err := json.Unmarshal(b, &state); err != nil {

@@ -10,7 +10,10 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
 	"time"
+
+	"github.com/bolens/millennium-helpers/internal/clientfiles"
 )
 
 func TestParseChannel(t *testing.T) {
@@ -88,8 +91,8 @@ func TestInferVersion(t *testing.T) {
 }
 
 func TestNativeInstallUnix(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("unix install test")
+	if runtime.GOOS != "linux" {
+		t.Skip("Linux client install test")
 	}
 	lib := t.TempDir()
 	t.Setenv("MOCK_LIB_DIR", lib)
@@ -128,21 +131,24 @@ func TestNativeInstallUnix(t *testing.T) {
 	}
 }
 
-func TestNormalizeRuntimeHelperModesAllowsLegacyArchive(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("unix executable modes are not meaningful on Windows")
+func TestNormalizeRuntimeHelperModesRejectsIncompleteArchive(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("Linux runtime helpers")
 	}
 	root := t.TempDir()
 	helper := filepath.Join(root, "libmillennium_pvs64")
 	if err := os.WriteFile(helper, []byte("helper"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := normalizeRuntimeHelperModes(root); err != nil {
-		t.Fatal(err)
+	if err := normalizeRuntimeHelperModes(root); err == nil {
+		t.Fatal("accepted archive missing Lua helper")
 	}
 	st, err := os.Stat(helper)
-	if err != nil || st.Mode().Perm() != 0o755 {
-		t.Fatalf("mode = %o, err = %v", st.Mode().Perm(), err)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Mode().Perm() != 0o644 {
+		t.Fatal("failed preflight changed modes")
 	}
 }
 
@@ -292,6 +298,9 @@ func TestApplyRollbackUnix(t *testing.T) {
 	_ = os.WriteFile(filepath.Join(bak, "version.txt"), []byte("1.0.0\n"), 0o644)
 	_ = os.WriteFile(filepath.Join(bak, "marker"), []byte("old"), 0o644)
 
+	if runtime.GOOS == "linux" {
+		writeRollbackClient(t, bak)
+	}
 	o := Options{Rollback: true, RollbackTarget: "1.0.0", Quiet: true}
 	handled, code := RunNative(o)
 	if !handled || code != 0 {
@@ -300,6 +309,9 @@ func TestApplyRollbackUnix(t *testing.T) {
 	marker, err := os.ReadFile(filepath.Join(lib, "millennium", "marker"))
 	if err != nil || string(marker) != "old" {
 		t.Fatalf("marker=%s err=%v", marker, err)
+	}
+	if runtime.GOOS == "linux" && !clientfiles.HelpersExecutable(active) {
+		t.Fatal("rollback left helpers unusable")
 	}
 	saved := filepath.Join(lib, "millennium.bak_2.0.0")
 	if st, err := os.Stat(saved); err != nil || !st.IsDir() {
@@ -348,4 +360,70 @@ func contains(s, sub string) bool {
 		}
 	}
 	return false
+}
+
+func writeRollbackClient(t *testing.T, root string) {
+	t.Helper()
+	if err := os.WriteFile(filepath.Join(root, "version.txt"), []byte("1.0.0"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"libmillennium_bootstrap_x86.so", "libmillennium_bootstrap_hhx64.so", "libmillennium_x86.so", "libmillennium_hhx64.so", "libmillennium_pvs64", "libmillennium_luavm_x86"} {
+		if err := os.WriteFile(filepath.Join(root, name), []byte(name), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := clientfiles.WriteChecksums(root); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestRollbackRejectsDamagedBackupBeforeSwap(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("Linux validation")
+	}
+	for _, damage := range []string{"missing-lua", "corrupt", "empty-manifest"} {
+		t.Run(damage, func(t *testing.T) {
+			lib := t.TempDir()
+			t.Setenv("MOCK_LIB_DIR", lib)
+			t.Setenv("MILLENNIUM_LIB_DIR", lib)
+			active, backup := filepath.Join(lib, "millennium"), filepath.Join(lib, "millennium.bak_1.0.0")
+			for _, root := range []string{active, backup} {
+				if err := os.Mkdir(root, 0o755); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := os.WriteFile(filepath.Join(active, "marker"), []byte("active"), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			writeRollbackClient(t, backup)
+			var err error
+			switch damage {
+			case "missing-lua":
+				err = os.Remove(filepath.Join(backup, "libmillennium_luavm_x86"))
+			case "corrupt":
+				err = os.WriteFile(filepath.Join(backup, "libmillennium_x86.so"), []byte("damaged"), 0o644)
+			case "empty-manifest":
+				err = os.WriteFile(filepath.Join(backup, "checksums.txt"), nil, 0o644)
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			handled, code := RunNative(Options{Rollback: true, RollbackTarget: "1.0.0", Quiet: true})
+			if !handled || code == 0 {
+				t.Fatal("accepted damaged backup")
+			}
+			b, err := os.ReadFile(filepath.Join(active, "marker"))
+			if err != nil || string(b) != "active" {
+				t.Fatal("active installation changed")
+			}
+			st, err := os.Stat(filepath.Join(backup, "libmillennium_pvs64"))
+			if err != nil || st.Mode().Perm() != 0o644 {
+				t.Fatal("backup mutated before validation")
+			}
+			entries, err := os.ReadDir(lib)
+			if err != nil || len(entries) != 2 {
+				t.Fatal("failed rollback moved installation")
+			}
+		})
+	}
 }

@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -186,13 +187,7 @@ func CloseGracefully(username, home string) error {
 		} else {
 			_ = exec.Command("runuser", "-l", username, "-c", `osascript -e 'quit app "Steam"'`).Run()
 		}
-		waitSteamGone(30 * time.Second)
-		if IsSteamRunning() {
-			fmt.Fprintln(os.Stderr, "Steam did not close gracefully. Force killing...")
-			_ = exec.Command("killall", "-9", "Steam").Run()
-		}
-		fmt.Println("Steam closed successfully.")
-		return nil
+		return finishShutdown(IsSteamRunning, waitSteamGone, func() error { return exec.Command("killall", "-9", "Steam").Run() })
 	}
 
 	wasFlatpak := flatpakSteamRunning(username)
@@ -206,16 +201,24 @@ func CloseGracefully(username, home string) error {
 	default:
 		local := filepath.Join(home, ".local", "bin", "steam")
 		if st, err := os.Stat(local); err == nil && !st.IsDir() && st.Mode()&0o111 != 0 {
-			shutdown = local + " -shutdown"
+			shutdown = shellQuote(local) + " -shutdown"
 		}
 	}
 	if shutdown != "" {
 		_ = runSteamCmd(username, shutdown, state)
 	}
-	waitSteamGone(30 * time.Second)
-	if IsSteamRunning() {
+	return finishShutdown(IsSteamRunning, waitSteamGone, func() error { return exec.Command("killall", "-9", "steam", "steamwebhelper").Run() })
+}
+
+func finishShutdown(running func() bool, wait func(time.Duration), force func() error) error {
+	wait(30 * time.Second)
+	if running() {
 		fmt.Fprintln(os.Stderr, "Steam did not close gracefully. Force killing...")
-		_ = exec.Command("killall", "-9", "steam", "steamwebhelper").Run()
+		killErr := force()
+		wait(5 * time.Second)
+		if running() {
+			return fmt.Errorf("Steam is still running after shutdown attempt (force-stop error: %v)", killErr)
+		}
 	}
 	fmt.Println("Steam closed successfully.")
 	return nil
@@ -234,24 +237,32 @@ func lookPath(name string) bool {
 }
 
 func runSteamCmd(username, cmd, stateFile string) error {
-	envPrefix := ""
+	vals := map[string]string{}
 	if stateFile != "" {
-		if st, err := os.Stat(stateFile); err == nil && st.Mode().IsRegular() {
-			vals, err := ParseRelaunchEnv(stateFile)
-			if err == nil {
-				var parts []string
-				for _, k := range EnvKeys {
-					if v := vals[k]; v != "" {
-						parts = append(parts, fmt.Sprintf("%s=%s", k, shellQuote(v)))
-					}
-				}
-				if len(parts) > 0 {
-					envPrefix = "env " + strings.Join(parts, " ") + " "
-				}
-			}
+		var err error
+		vals, err = ParseRelaunchEnv(stateFile)
+		if err != nil {
+			return err
 		}
 	}
-	full := envPrefix + cmd
+	return runSteamCmdWithEnv(username, cmd, vals)
+}
+
+func steamCommand(cmd string, vals map[string]string) string {
+	var parts []string
+	for _, k := range EnvKeys {
+		if v := vals[k]; v != "" {
+			parts = append(parts, fmt.Sprintf("%s=%s", k, shellQuote(v)))
+		}
+	}
+	if len(parts) == 0 {
+		return cmd
+	}
+	return "env " + strings.Join(parts, " ") + " " + cmd
+}
+
+func runSteamCmdWithEnv(username, cmd string, vals map[string]string) error {
+	full := steamCommand(cmd, vals)
 	if testSuite() {
 		if mock := os.Getenv("MOCK_BIN"); mock != "" {
 			if _, err := os.Stat(filepath.Join(mock, "runuser")); err == nil {
@@ -268,7 +279,11 @@ func runSteamCmd(username, cmd, stateFile string) error {
 }
 
 // RelaunchFromState starts Steam using relaunch.env and deletes the file.
-func RelaunchFromState(username, home string) (attempted bool, err error) {
+func RelaunchFromState(username, home string) (bool, error) {
+	return relaunchFromState(username, home, startSteamCommand)
+}
+
+func relaunchFromState(username, home string, launch func(string, string, map[string]string) error) (attempted bool, err error) {
 	state := RelaunchStateFile(username, home)
 	if !IsSafeRelaunchStateFile(username, state) {
 		return false, nil
@@ -283,7 +298,11 @@ func RelaunchFromState(username, home string) (attempted bool, err error) {
 	}
 	wasFlatpak := vals["WAS_FLATPAK"] == "true"
 	fmt.Printf("Relaunching Steam client with arguments: %s (Flatpak: %v)...\n", argDisplay, wasFlatpak)
-	_ = os.Remove(state)
+	defer func() {
+		if attempted && err == nil {
+			_ = os.Remove(state)
+		}
+	}()
 
 	if testSuite() {
 		fmt.Println("[TEST] Bypassing real Steam relaunch in test suite.")
@@ -292,28 +311,76 @@ func RelaunchFromState(username, home string) (attempted bool, err error) {
 
 	if runtime.GOOS == "darwin" {
 		if currentUsername() == username {
-			_ = exec.Command("open", "-a", "Steam").Start()
+			return true, exec.Command("open", "-a", "Steam").Start()
 		} else {
-			_ = exec.Command("runuser", "-l", username, "-c", "open -a Steam >/dev/null 2>&1 &").Start()
+			return true, exec.Command("runuser", "-l", username, "-c", "open -a Steam >/dev/null 2>&1 &").Start()
 		}
-		return true, nil
 	}
 
 	steamArgs := vals["STEAM_ARGS"]
 	var cmd string
 	switch {
 	case wasFlatpak:
-		cmd = "flatpak run com.valvesoftware.Steam " + steamArgs + " >/dev/null 2>&1 &"
+		cmd = "flatpak run com.valvesoftware.Steam " + steamArgs
 	case lookPath("steam"):
-		cmd = "steam " + steamArgs + " >/dev/null 2>&1 &"
+		cmd = "steam " + steamArgs
 	default:
 		local := filepath.Join(home, ".local", "bin", "steam")
 		if st, err := os.Stat(local); err == nil && !st.IsDir() {
-			cmd = local + " " + steamArgs + " >/dev/null 2>&1 &"
+			cmd = shellQuote(local) + " " + steamArgs
 		}
 	}
 	if cmd == "" {
-		return true, nil
+		return false, fmt.Errorf("Steam executable not found for relaunch")
 	}
-	return true, runSteamCmd(username, cmd, "")
+	return true, launch(username, cmd, vals)
+}
+
+// startSteamCommand detaches the launcher from the maintenance process, but waits
+// for observable startup before allowing relaunch state to be discarded.
+func startSteamCommand(username, command string, env map[string]string) error {
+	full := "exec " + steamCommand(command, env)
+	var cmd *exec.Cmd
+	if effectiveUID() == 0 {
+		cmd = exec.Command("runuser", username, "-c", full)
+	} else {
+		cmd = exec.Command("sh", "-c", full)
+	}
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	done := make(chan error, 1)
+	go func() { done <- cmd.Wait() }()
+	return waitForSteamStart(done, IsSteamRunning, 10*time.Second)
+}
+
+func waitForSteamStart(done <-chan error, running func() bool, timeout time.Duration) error {
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+	tick := time.NewTicker(50 * time.Millisecond)
+	defer tick.Stop()
+	for {
+		select {
+		case err := <-done:
+			if err != nil {
+				return fmt.Errorf("Steam launcher failed: %w", err)
+			}
+			done = nil // A launcher may exit successfully before its child is visible.
+		default:
+		}
+		if running() {
+			return nil
+		}
+		select {
+		case err := <-done:
+			if err != nil {
+				return fmt.Errorf("Steam launcher failed: %w", err)
+			}
+			done = nil
+		case <-tick.C:
+		case <-timer.C:
+			return fmt.Errorf("Steam did not start before the startup timeout")
+		}
+	}
 }

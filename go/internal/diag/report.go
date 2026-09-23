@@ -1,11 +1,9 @@
 package diag
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,9 +11,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bolens/millennium-helpers/internal/clientfiles"
 	"github.com/bolens/millennium-helpers/internal/config"
 	"github.com/bolens/millennium-helpers/internal/repair"
 	"github.com/bolens/millennium-helpers/internal/schedule"
+	"github.com/bolens/millennium-helpers/internal/steam"
 	"github.com/bolens/millennium-helpers/internal/theme"
 	"github.com/bolens/millennium-helpers/internal/version"
 )
@@ -23,6 +23,7 @@ import (
 // Report is the structured diagnostic snapshot (JSON + doctor plan).
 type Report struct {
 	SteamRunning             bool   `json:"steam_running"`
+	BinariesNeedPrivilege    bool   `json:"-"`
 	BinariesOK               bool   `json:"binaries_ok"`
 	RuntimeHelpersExecutable bool   `json:"runtime_helpers_executable"`
 	HooksOK                  bool   `json:"hooks_ok,omitempty"`
@@ -150,8 +151,11 @@ func Collect() Report {
 		r.SteamDetail = "Not Running"
 	}
 
-	r.BinariesOK, r.BinariesDetail = checkBinaries()
+	var binariesErr error
+	r.BinariesOK, r.BinariesDetail, binariesErr = checkBinaries()
+	r.BinariesNeedPrivilege = errors.Is(binariesErr, os.ErrPermission)
 	r.RuntimeHelpersExecutable = repair.RuntimeHelpersExecutable()
+	r.PermissionsOK = repair.PermissionsOK()
 	if runtime.GOOS != "windows" {
 		r.HooksOK, r.FlatpakOK = checkHooks()
 		r.SudoersOK = checkSudoers()
@@ -184,7 +188,7 @@ func resolveChannel() string {
 			return ch
 		}
 	}
-	if b, err := os.ReadFile("/usr/lib/millennium/version.txt"); err == nil {
+	if b, err := os.ReadFile(filepath.Join(repair.MillenniumLibRoot(), "version.txt")); err == nil {
 		if strings.Contains(strings.ToLower(string(b)), "beta") {
 			return "beta"
 		}
@@ -205,7 +209,7 @@ func millenniumVersion() string {
 		}
 		return strings.TrimSpace(string(b))
 	}
-	b, err := os.ReadFile("/usr/lib/millennium/version.txt")
+	b, err := os.ReadFile(filepath.Join(repair.MillenniumLibRoot(), "version.txt"))
 	if err != nil {
 		return "Not Installed"
 	}
@@ -224,16 +228,19 @@ func isSteamRunning() bool {
 	return err == nil && len(strings.TrimSpace(string(out))) > 0
 }
 
-func checkBinaries() (ok bool, detail string) {
+func checkBinaries() (ok bool, detail string, checkErr error) {
+	if runtime.GOOS == "darwin" {
+		return true, "Not applicable (Linux client runtime)", nil
+	}
 	if runtime.GOOS == "windows" {
 		steam := theme.FindSteamDir()
 		if steam == "" {
-			return false, "Not Installed (Steam not found)"
+			return false, "Not Installed (Steam not found)", nil
 		}
 		root := filepath.Join(steam, "millennium")
 		ver := filepath.Join(root, "version.txt")
 		if _, err := os.Stat(ver); err != nil {
-			return false, "Not Installed (missing version.txt)"
+			return false, "Not Installed (missing version.txt)", nil
 		}
 		needed := []string{
 			filepath.Join(root, "lib", "millennium.dll"),
@@ -243,73 +250,29 @@ func checkBinaries() (ok bool, detail string) {
 		}
 		for _, p := range needed {
 			if _, err := os.Stat(p); err != nil {
-				return false, "Corrupted (core libraries or wrapper binaries are missing)"
+				return false, "Corrupted (core libraries or wrapper binaries are missing)", nil
 			}
 		}
 		b, _ := os.ReadFile(ver)
-		return true, "v" + strings.TrimSpace(string(b)) + " - Present"
+		return true, "v" + strings.TrimSpace(string(b)) + " - Present", nil
 	}
 
 	root := repair.MillenniumLibRoot()
 	verFile := filepath.Join(root, "version.txt")
 	if _, err := os.Stat(verFile); err != nil {
-		return false, "Not Installed (missing /usr/lib/millennium/version.txt)"
-	}
-	needed := []string{
-		"libmillennium_bootstrap_x86.so",
-		"libmillennium_bootstrap_hhx64.so",
-		"libmillennium_x86.so",
-		"libmillennium_hhx64.so",
-		"libmillennium_pvs64",
-	}
-	for _, n := range needed {
-		if _, err := os.Stat(filepath.Join(root, n)); err != nil {
-			return false, "Corrupted (core libraries or wrapper binaries are missing)"
+		if errors.Is(err, os.ErrPermission) {
+			return false, "Cannot verify client files: re-run with sudo", os.ErrPermission
 		}
+		return false, "Not Installed (missing version.txt)", nil
 	}
-	sumPath := filepath.Join(root, "checksums.txt")
-	if _, err := os.Stat(sumPath); err != nil {
-		return false, "Corrupted (missing integrity manifest /usr/lib/millennium/checksums.txt)"
-	}
-	if err := verifyChecksumsFile(root, sumPath); err != nil {
-		return false, "Corrupted (cryptographic checksum verification failed!)"
+	if err := clientfiles.Verify(root); err != nil {
+		if errors.Is(err, os.ErrPermission) {
+			return false, "Cannot verify client files: re-run with sudo", err
+		}
+		return false, "Corrupted (" + err.Error() + ")", err
 	}
 	b, _ := os.ReadFile(verFile)
-	return true, fmt.Sprintf("v%s (%s channel) - Verified Healthy", strings.TrimSpace(string(b)), resolveChannel())
-}
-
-func verifyChecksumsFile(root, sumPath string) error {
-	b, err := os.ReadFile(sumPath)
-	if err != nil {
-		return err
-	}
-	for _, line := range strings.Split(string(b), "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-		fields := strings.Fields(line)
-		if len(fields) < 2 {
-			continue
-		}
-		want, name := strings.ToLower(fields[0]), fields[1]
-		name = strings.TrimPrefix(name, "*")
-		f, err := os.Open(filepath.Join(root, name))
-		if err != nil {
-			return err
-		}
-		h := sha256.New()
-		_, err = io.Copy(h, f)
-		_ = f.Close()
-		if err != nil {
-			return err
-		}
-		got := hex.EncodeToString(h.Sum(nil))
-		if got != want {
-			return fmt.Errorf("mismatch %s", name)
-		}
-	}
-	return nil
+	return true, fmt.Sprintf("v%s (%s channel) - Verified Healthy", strings.TrimSpace(string(b)), resolveChannel()), nil
 }
 
 func checkHooks() (hooksOK, flatpakOK bool) {
@@ -317,13 +280,7 @@ func checkHooks() (hooksOK, flatpakOK bool) {
 	if runtime.GOOS == "darwin" {
 		return true, true
 	}
-	home, _ := os.UserHomeDir()
-	cands := []string{
-		filepath.Join(home, ".local/share/Steam"),
-		filepath.Join(home, ".steam/steam"),
-		filepath.Join(home, ".steam/root"),
-		filepath.Join(home, ".var/app/com.valvesoftware.Steam/.local/share/Steam"),
-	}
+	cands := steam.DirCandidates()
 	found := false
 	for _, steam := range cands {
 		if st, err := os.Stat(steam); err != nil || !st.IsDir() {
@@ -401,8 +358,9 @@ func scheduleConfiguredWindows() bool {
 func FormatJSON(r Report) string {
 	type unixJSON struct {
 		SteamRunning             bool   `json:"steam_running"`
+		BinariesNeedPrivilege    bool   `json:"-"`
 		BinariesOK               bool   `json:"binaries_ok"`
-		RuntimeHelpersExecutable bool   `json:"runtime_helpers_executable"`
+		RuntimeHelpersExecutable *bool  `json:"runtime_helpers_executable,omitempty"`
 		HooksOK                  bool   `json:"hooks_ok"`
 		FlatpakOK                bool   `json:"flatpak_ok"`
 		SudoersOK                bool   `json:"sudoers_ok"`
@@ -442,6 +400,10 @@ func FormatJSON(r Report) string {
 	}
 	var b []byte
 	var err error
+	var helperModes *bool
+	if runtime.GOOS == "linux" {
+		helperModes = &r.RuntimeHelpersExecutable
+	}
 	if runtime.GOOS == "windows" {
 		b, err = json.MarshalIndent(winJSON{
 			SteamRunning: r.SteamRunning, BinariesOK: r.BinariesOK, PermissionsOK: r.PermissionsOK,
@@ -454,7 +416,7 @@ func FormatJSON(r Report) string {
 	} else {
 		b, err = json.MarshalIndent(unixJSON{
 			SteamRunning: r.SteamRunning, BinariesOK: r.BinariesOK, HooksOK: r.HooksOK, FlatpakOK: r.FlatpakOK,
-			RuntimeHelpersExecutable: r.RuntimeHelpersExecutable,
+			RuntimeHelpersExecutable: helperModes,
 			SudoersOK:                r.SudoersOK, TimerActive: r.TimerActive, LingerOK: r.LingerOK,
 			ScriptsUpToDate: r.ScriptsUpToDate, PermissionsOK: r.PermissionsOK, SkinsDirOK: r.SkinsDirOK,
 			CompletionsOK: r.CompletionsOK, CleanOfObsolete: r.CleanOfObsolete, UnmanagedFilesOK: r.UnmanagedFilesOK,
@@ -521,7 +483,6 @@ func PrintLogs() int {
 }
 
 func newestSteamLog() string {
-	home, _ := os.UserHomeDir()
 	cands := theme.SteamCandidates()
 	var files []string
 	names := []string{"webhelper.txt", "webhelper-linux.txt", "console.txt", "console-linux.txt"}
@@ -540,7 +501,6 @@ func newestSteamLog() string {
 			}
 		}
 	}
-	_ = home
 	var best string
 	var bestT time.Time
 	for _, f := range files {

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/bolens/millennium-helpers/internal/atomicfile"
+	"github.com/bolens/millennium-helpers/internal/usercontext"
 )
 
 // KnownKeys mirrors Bash/PowerShell schedule config.
@@ -29,6 +30,9 @@ func Path() string {
 		return p
 	}
 	dir := Dir()
+	if dir == "" {
+		return ""
+	}
 	return filepath.Join(dir, "config.json")
 }
 
@@ -44,17 +48,19 @@ func Dir() string {
 		}
 		return filepath.Join(base, "millennium-helpers")
 	}
-	xdg := os.Getenv("XDG_CONFIG_HOME")
-	if xdg == "" {
-		home, _ := os.UserHomeDir()
-		xdg = filepath.Join(home, ".config")
+	ctx, err := usercontext.Resolve()
+	if err != nil {
+		return ""
 	}
-	return filepath.Join(xdg, "millennium-helpers")
+	return filepath.Join(ctx.ConfigHome, "millennium-helpers")
 }
 
 // Load reads config.json (empty map if missing; error if unreadable or invalid).
 func Load() (Data, error) {
 	path := Path()
+	if path == "" {
+		return nil, fmt.Errorf("cannot resolve configuration directory")
+	}
 	b, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -74,21 +80,29 @@ func Load() (Data, error) {
 
 // Save writes config.json with indent and restrictive perms on Unix.
 func Save(data Data) error {
-	dir := Dir()
-	if err := os.MkdirAll(dir, 0o700); err != nil {
-		return err
+	path := Path()
+	if path == "" {
+		return fmt.Errorf("cannot resolve configuration directory")
 	}
 	b, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return err
 	}
 	b = append(b, '\n')
-	path := Path()
-	if err := atomicfile.WriteFile(path, b, 0o600); err != nil {
+	return saveFile(path, b)
+}
+
+func saveLocalFile(path string, data []byte) error {
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
-	_ = os.Chmod(path, 0o600)
-	_ = os.Chmod(dir, 0o700)
+	if err := atomicfile.WriteFile(path, data, 0o600); err != nil {
+		return err
+	}
+	if os.Getenv("MILLENNIUM_CONFIG_FILE") == "" && os.Getenv("MILLENNIUM_CONFIG_DIR") == "" {
+		return os.Chmod(dir, 0o700)
+	}
 	return nil
 }
 

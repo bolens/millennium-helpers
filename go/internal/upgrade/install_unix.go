@@ -3,19 +3,21 @@
 package upgrade
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"runtime"
-	"strings"
 
 	"github.com/bolens/millennium-helpers/internal/archive"
+	"github.com/bolens/millennium-helpers/internal/clientfiles"
+	"github.com/bolens/millennium-helpers/internal/repair"
 )
 
 func installPlatform(archivePath, version string, o Options) error {
+	if !clientfiles.ValidVersion(version) {
+		return fmt.Errorf("invalid client version label")
+	}
 	tmp, err := os.MkdirTemp("", "millennium-install-*")
 	if err != nil {
 		return err
@@ -46,21 +48,27 @@ func installPlatform(archivePath, version string, o Options) error {
 		return err
 	}
 	InstallLicense(destTmp)
-	writeChecksums(destTmp)
-
-	oldVer := "unknown"
-	if b, err := os.ReadFile(filepath.Join(dest, "version.txt")); err == nil {
-		oldVer = strings.TrimSpace(string(b))
-	}
-	if oldVer == "" || oldVer == "unknown" {
-		oldVer = InferVersion(archivePath, version)
-	}
-	destBak := filepath.Join(filepath.Dir(dest), "millennium.bak_"+oldVer)
-	if st, err := os.Stat(dest); err == nil && st.IsDir() {
-		_ = os.RemoveAll(destBak)
-		if err := os.Rename(dest, destBak); err != nil {
+	if runtime.GOOS == "linux" {
+		if err := clientfiles.WriteChecksums(destTmp); err != nil {
 			return err
 		}
+	}
+
+	destBak := ""
+	if st, err := os.Lstat(dest); err == nil {
+		if !st.IsDir() {
+			return fmt.Errorf("active client must be a real directory")
+		}
+		destBak, err = reserveBackup(filepath.Dir(dest), dest)
+		if err != nil {
+			return err
+		}
+		if err = os.Rename(dest, destBak); err != nil {
+			_ = os.Remove(destBak)
+			return err
+		}
+	} else if !os.IsNotExist(err) {
+		return err
 	}
 	if err := os.Rename(destTmp, dest); err != nil {
 		if st, e := os.Stat(destBak); e == nil && st.IsDir() {
@@ -117,34 +125,6 @@ func copyTreeFiles(src, dst string) error {
 	})
 }
 
-func writeChecksums(dir string) {
-	names := []string{
-		"libmillennium_bootstrap_x86.so",
-		"libmillennium_bootstrap_hhx64.so",
-		"libmillennium_x86.so",
-		"libmillennium_hhx64.so",
-		"libmillennium_pvs64",
-	}
-	var b strings.Builder
-	for _, n := range names {
-		p := filepath.Join(dir, n)
-		f, err := os.Open(p)
-		if err != nil {
-			continue
-		}
-		h := sha256.New()
-		_, _ = io.Copy(h, f)
-		_ = f.Close()
-		b.WriteString(hex.EncodeToString(h.Sum(nil)))
-		b.WriteString("  ")
-		b.WriteString(n)
-		b.WriteByte('\n')
-	}
-	if b.Len() > 0 {
-		_ = os.WriteFile(filepath.Join(dir, "checksums.txt"), []byte(b.String()), 0o644)
-	}
-}
-
 func linkHooksCurrentUser(allUsers bool) error {
 	if runtime.GOOS == "darwin" {
 		return nil
@@ -177,22 +157,5 @@ func linkHooksForHome(home string) error {
 	if steam == "" {
 		return nil
 	}
-	root := InstallRoot()
-	if err := os.MkdirAll(filepath.Join(steam, "ubuntu12_32"), 0o755); err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Join(steam, "ubuntu12_64"), 0o755); err != nil {
-		return err
-	}
-	if err := forceSymlink(filepath.Join(root, "libmillennium_bootstrap_x86.so"), filepath.Join(steam, "ubuntu12_32", "libXtst.so.6")); err != nil {
-		return err
-	}
-	return forceSymlink(filepath.Join(root, "libmillennium_bootstrap_hhx64.so"), filepath.Join(steam, "ubuntu12_64", "libXtst.so.6"))
-}
-
-func forceSymlink(target, link string) error {
-	if err := os.Remove(link); err != nil && !os.IsNotExist(err) {
-		return err
-	}
-	return os.Symlink(target, link)
+	return repair.InstallHooksAt(steam, InstallRoot())
 }

@@ -43,6 +43,9 @@ Alias for
 Roll back to a previous backup, or pass
 .B list
 to list backups.
+Linux backups must contain all required client files and matching
+checksums and valid version metadata. Existing backups are preserved
+on name collisions. Runtime helper modes are restored before activation.
 .TP
 .BR \-\-file " " \fIPATH\fR
 Install from a local archive instead of downloading.

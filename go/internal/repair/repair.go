@@ -1,6 +1,7 @@
 package repair
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -8,45 +9,24 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/bolens/millennium-helpers/internal/clientfiles"
 	"github.com/bolens/millennium-helpers/internal/config"
+	"github.com/bolens/millennium-helpers/internal/steam"
 	"github.com/bolens/millennium-helpers/internal/theme"
+	"github.com/bolens/millennium-helpers/internal/usercontext"
 )
 
-var runtimeHelperNames = []string{
-	"libmillennium_pvs64",
-	"libmillennium_luavm_x86",
-}
-
-// RuntimeHelpersExecutable reports whether Unix runtime helper binaries exist
-// and have at least one executable mode bit. Windows does not use these files.
+// RuntimeHelpersExecutable reports shared-install helper access on Linux.
 func RuntimeHelpersExecutable() bool {
-	if runtime.GOOS == "windows" {
-		return true
-	}
-	root := MillenniumLibRoot()
-	for _, name := range runtimeHelperNames {
-		st, err := os.Stat(filepath.Join(root, name))
-		if err != nil || !st.Mode().IsRegular() || st.Mode().Perm()&0o111 == 0 {
-			return false
-		}
-	}
-	return true
+	return runtime.GOOS != "linux" || clientfiles.HelpersExecutable(MillenniumLibRoot())
 }
 
-// EnsureRuntimeHelpersExecutable restores the canonical executable mode used
-// by Millennium's pressure-vessel and Lua runtime helpers.
+// EnsureRuntimeHelpersExecutable restores Linux helper permissions.
 func EnsureRuntimeHelpersExecutable() error {
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS != "linux" {
 		return nil
 	}
-	root := MillenniumLibRoot()
-	for _, name := range runtimeHelperNames {
-		path := filepath.Join(root, name)
-		if err := os.Chmod(path, 0o755); err != nil {
-			return fmt.Errorf("chmod 0755 %s: %w", name, err)
-		}
-	}
-	return nil
+	return clientfiles.NormalizeHelpers(MillenniumLibRoot())
 }
 
 // Target is a path that repair would chown / touch.
@@ -56,21 +36,23 @@ type Target struct {
 }
 
 // Plan lists ownership/cache repair targets for the current user (read-only).
-func Plan() []Target {
-	home, _ := os.UserHomeDir()
-	xdgConfig := os.Getenv("XDG_CONFIG_HOME")
-	if xdgConfig == "" {
-		xdgConfig = filepath.Join(home, ".config")
+func Plan() ([]Target, error) {
+	ctx, err := usercontext.Resolve()
+	if err != nil {
+		return nil, err
 	}
-	xdgData := os.Getenv("XDG_DATA_HOME")
-	if xdgData == "" {
-		xdgData = filepath.Join(home, ".local", "share")
-	}
+	return planFor(ctx), nil
+}
+
+func planFor(ctx usercontext.Context) []Target {
+	home := ctx.Home
+	xdgConfig, xdgData := ctx.ConfigHome, ctx.DataHome
 	steam := theme.FindSteamDir()
 	candidates := []string{
 		filepath.Join(xdgData, "millennium"),
 		filepath.Join(home, ".local", "share", "millennium"),
 		filepath.Join(xdgConfig, "millennium"),
+		filepath.Join(xdgConfig, "millennium-helpers"),
 		filepath.Join(home, ".config", "millennium"),
 		filepath.Join(home, ".var", "app", "com.valvesoftware.Steam", "config", "millennium"),
 		filepath.Join(home, ".var", "app", "com.valvesoftware.Steam", ".config", "millennium"),
@@ -89,7 +71,7 @@ func Plan() []Target {
 		if seen[p] {
 			continue
 		}
-		if st, err := os.Stat(p); err == nil && (st.IsDir() || st.Mode().IsRegular()) {
+		if st, err := os.Stat(p); os.IsPermission(err) || (err == nil && (st.IsDir() || st.Mode().IsRegular())) {
 			seen[p] = true
 			out = append(out, Target{Path: p, Kind: "chown"})
 		}
@@ -110,10 +92,8 @@ func FormatPlan(targets []Target, skipTheme bool) string {
 	b.WriteString("[DRY RUN] Would capture Steam's environment and close it if running.\n")
 	if runtime.GOOS == "windows" {
 		fmt.Fprintf(&b, "[DRY RUN] Would run: millennium upgrade --force --channel %s\n", updateChannel())
-	} else {
-		if runtime.GOOS == "linux" {
-			b.WriteString("[DRY RUN] Would restore executable modes on Millennium runtime helpers.\n")
-		}
+	} else if runtime.GOOS == "linux" {
+		b.WriteString("[DRY RUN] Would restore executable modes on Millennium runtime helpers.\n")
 		hooks := PlanHooks()
 		if len(hooks) == 0 {
 			b.WriteString("[DRY RUN] Would restore bootstrap hooks (no Steam tree found yet).\n")
@@ -140,32 +120,28 @@ func FormatPlan(targets []Target, skipTheme bool) string {
 
 // Apply performs live ownership/cache repairs and theme refresh.
 func Apply(targets []Target, skipTheme bool) error {
+	var failures []error
 	for _, t := range targets {
 		switch t.Kind {
 		case "htmlcache":
 			fmt.Printf("Clearing Steam htmlcache: %s\n", t.Path)
-			entries, err := os.ReadDir(t.Path)
-			if err != nil {
+			if err := clearCache(t.Path); err != nil {
 				return err
 			}
-			for _, e := range entries {
-				if err := os.RemoveAll(filepath.Join(t.Path, e.Name())); err != nil {
-					return err
-				}
-			}
+
 		case "chown":
 			fmt.Printf("Fixing ownership: %s\n", t.Path)
 			if err := chownTree(t.Path); err != nil {
-				fmt.Fprintf(os.Stderr, "Warning: chown incomplete for %s: %v\n", t.Path, err)
+				failures = append(failures, fmt.Errorf("ownership repair failed: %w", err))
 			}
 		}
 	}
 	if skipTheme {
 		fmt.Println("Skipping theme refresh (--skip-theme).")
 	} else if err := refreshThemes(); err != nil {
-		fmt.Fprintf(os.Stderr, "Warning: theme refresh: %v\n", err)
+		failures = append(failures, fmt.Errorf("theme refresh failed: %w", err))
 	}
-	return nil
+	return errors.Join(failures...)
 }
 
 func refreshThemes() error {
@@ -245,44 +221,40 @@ func ParseFlags(args []string) (dryRun, yes, quiet, skipTheme, help, version boo
 
 // RunCLI runs dry-run or live native repair (hooks/binary + ownership/cache/theme).
 func RunCLI(dryRun, skipTheme, quiet, yes bool) int {
-	targets := Plan()
+	targets, err := Plan()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
 	if dryRun {
 		fmt.Print(FormatPlan(targets, skipTheme))
 		return 0
 	}
 
 	fmt.Println("=== Initiating Millennium Repair ===")
-	relaunch, err := ensureSteamClosedForRepair(yes)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		return 1
-	}
-
-	if runtime.GOOS == "windows" {
-		if err := forceReinstallWindows(yes); err != nil {
-			fmt.Fprintf(os.Stderr, "Error: force upgrade failed: %v\n", err)
-			return 1
-		}
-	} else {
-		if runtime.GOOS == "linux" {
+	work := func() error {
+		if runtime.GOOS == "windows" {
+			if err := forceReinstallWindows(yes); err != nil {
+				return err
+			}
+		} else if runtime.GOOS == "linux" {
 			if err := EnsureRuntimeHelpersExecutable(); err != nil {
-				fmt.Fprintf(os.Stderr, "Error: runtime helper permissions: %v\n", err)
-				return 1
+				return err
+			}
+			if err := InstallBootstrapHooks(); err != nil {
+				return err
 			}
 		}
-		if err := InstallBootstrapHooks(); err != nil {
-			fmt.Fprintf(os.Stderr, "Warning: hook reinstall: %v\n", err)
-		}
+		return Apply(targets, skipTheme)
 	}
-
-	if err := Apply(targets, skipTheme); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+	if os.Getenv("MOCK_LIB_DIR") != "" {
+		err = work()
+	} else {
+		err = steam.WithClosedClient(yes, work)
+	}
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Repair failed: %v\n", err)
 		return 1
-	}
-
-	if relaunch {
-		fmt.Println("Relaunching Steam...")
-		relaunchSteamAfterRepair()
 	}
 
 	if !quiet {
@@ -299,4 +271,20 @@ func RunCLI(dryRun, skipTheme, quiet, yes bool) int {
 // RunDryRunCLI prints a native repair plan.
 func RunDryRunCLI(skipTheme bool) int {
 	return RunCLI(true, skipTheme, false, false)
+}
+
+// PermissionsOK checks the ownership of the same paths repair would change.
+func PermissionsOK() bool {
+	targets, err := Plan()
+	if err != nil {
+		return false
+	}
+	for _, target := range targets {
+		if target.Kind == "chown" {
+			if err := checkOwnership(target.Path); err != nil {
+				return false
+			}
+		}
+	}
+	return true
 }
