@@ -96,6 +96,14 @@ Thumbs.db
 # Embedded Windows Go binary from release/local build (not a source file)
 /scripts/windows/millennium.exe
 
+# Local tooling and runtime artifacts
+__pycache__/
+*.py[cod]
+.ruff_cache/
+
+# Copy .mcp.json.example locally and set explicit checkout/resource paths.
+/.mcp.json
+
 # Shared VS Code configuration; keep personal editor state ignored.
 !/.vscode/
 /.vscode/*

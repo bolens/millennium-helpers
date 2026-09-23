@@ -75,7 +75,7 @@ jobs:
 
           # Match release.yml Windows payload: Go exe under scripts/windows/ + PowerShell completions.
           Copy-Item -Recurse completions\powershell (Join-Path $stage "completions\powershell")
-          Copy-Item VERSION, LICENSE, README.md $stage\
+          Copy-Item VERSION, LICENSE, README.md, THIRD_PARTY_LICENSES.txt, THIRD_PARTY_NOTICES.md $stage\
           New-Item -ItemType Directory -Force -Path (Join-Path $stage "third_party") | Out-Null
           Copy-Item third_party\MILLENNIUM-LICENSE.md (Join-Path $stage "third_party\MILLENNIUM-LICENSE.md")
 

@@ -18,3 +18,8 @@ if [[ ${#workflows[@]} -eq 0 ]]; then
 fi
 
 actionlint "${workflows[@]}"
+if command -v zizmor >/dev/null 2>&1; then
+  zizmor --offline --min-severity medium --min-confidence medium .github
+else
+  echo "skip: zizmor not installed (see CONTRIBUTING.md)"
+fi

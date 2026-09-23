@@ -94,12 +94,17 @@ def main() -> int:
         if not (site / route).is_file():
             errors.append(f"missing route: {route}")
     for asset in (
+        "robots.txt",
+        "sitemap.xml",
+        "llms.txt",
         "site.webmanifest",
         "assets/favicon.png",
         "assets/apple-touch-icon.png",
         "assets/icon-192.png",
         "assets/icon-512.png",
         "assets/social-card.png",
+        "assets/syntax-highlight.css",
+        "assets/syntax-highlight.js",
     ):
         if not (site / asset).is_file():
             errors.append(f"missing discovery asset: {asset}")
@@ -122,6 +127,12 @@ def main() -> int:
             errors.append(f"{rel}: missing favicon")
         if not any(src.endswith("site.js") for src in parsed.scripts):
             errors.append(f"{rel}: missing shared site.js")
+        page_source = page.read_text(encoding="utf-8")
+        if "<pre" in page_source:
+            if not any(src.endswith("syntax-highlight.js") for src in parsed.scripts):
+                errors.append(f"{rel}: code blocks missing syntax highlighter")
+            if not any(href.endswith("syntax-highlight.css") for href in parsed.styles):
+                errors.append(f"{rel}: code blocks missing syntax palette")
         for href in parsed.links:
             if "docs/architecture/" in href and args.architecture.is_file():
                 continue
@@ -130,6 +141,22 @@ def main() -> int:
                 errors.append(f"{rel}: broken internal link {href}")
 
     home = (site / "index.html").read_text(encoding="utf-8")
+    sitemap = (site / "sitemap.xml").read_text(encoding="utf-8")
+    llms = (site / "llms.txt").read_text(encoding="utf-8")
+    for route in (
+        "",
+        "install/",
+        "guide/",
+        "help/",
+        "search/",
+        "architecture/",
+        "changelog/",
+    ):
+        url = f"https://bolens.github.io/millennium-helpers/{route}"
+        if f"<loc>{url}</loc>" not in sitemap:
+            errors.append(f"sitemap.xml: missing {url}")
+        if url not in llms:
+            errors.append(f"llms.txt: missing {url}")
     home_parser = PageParser()
     home_parser.feed(home)
     social_url = home_parser.meta.get("og:image", "")
@@ -201,6 +228,18 @@ def main() -> int:
             if behavior not in source:
                 errors.append(f"assets/site.js: missing {behavior} behavior")
 
+    syntax_source = (site / "assets/syntax-highlight.js").read_text(encoding="utf-8")
+    for contract in (
+        "createTextNode",
+        "replaceChildren",
+        "token.className",
+        "querySelectorAll",
+    ):
+        if contract not in syntax_source:
+            errors.append(f"syntax highlighter: missing {contract}")
+    if "innerHTML" in syntax_source:
+        errors.append("syntax highlighter must not inject command text as HTML")
+
     css = site / "assets/site.css"
     if not css.is_file():
         errors.append("missing assets/site.css")
@@ -247,6 +286,24 @@ def main() -> int:
                     )
         except (OSError, json.JSONDecodeError) as exc:
             errors.append(f"architecture source: {exc}")
+
+    theme_source = (site / "assets/theme.js").read_text(encoding="utf-8")
+    for behavior in (
+        "prefers-color-scheme: light",
+        "prefers-color-scheme: dark",
+        "new Date().getHours()",
+        'return "dark"',
+        "localStorage.setItem",
+    ):
+        if behavior not in theme_source:
+            errors.append(
+                f"assets/theme.js: missing {behavior} adaptive-theme behavior"
+            )
+    if any(
+        "data-color-mode-storage" not in page.read_text(encoding="utf-8")
+        for page in pages
+    ):
+        errors.append("all pages must initialize the adaptive theme before paint")
 
     if errors:
         print("\n".join(f"ERROR: {error}" for error in errors), file=sys.stderr)

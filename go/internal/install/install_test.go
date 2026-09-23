@@ -87,6 +87,20 @@ func TestInstallUninstallFixture(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(o.TargetDir, binName)); err != nil {
 		t.Fatal(err)
 	}
+	noticeDir := o.LibDir
+	if runtime.GOOS == "windows" {
+		noticeDir = o.TargetDir
+	}
+	for _, name := range []string{"LICENSE", "THIRD_PARTY_LICENSES.txt", "THIRD_PARTY_NOTICES.md"} {
+		want, err := os.ReadFile(filepath.Join(root, name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := os.ReadFile(filepath.Join(noticeDir, name))
+		if err != nil || string(got) != string(want) {
+			t.Fatalf("installed notice %s differs or is missing: %v", name, err)
+		}
+	}
 	if runtime.GOOS != "windows" {
 		if _, err := os.Stat(filepath.Join(o.TargetDir, "millennium-upgrade")); !os.IsNotExist(err) {
 			t.Fatal("PATH twin should not be installed:", filepath.Join(o.TargetDir, "millennium-upgrade"))

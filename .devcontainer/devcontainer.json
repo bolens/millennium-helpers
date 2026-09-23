@@ -1,52 +1,50 @@
 {
-  "name": "Millennium Helpers Dev Sandbox",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-  "features": {
-    "ghcr.io/devcontainers/features/go:1": {
-      "version": "1.22"
+    "name": "millennium-helpers development",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "."
     },
-    "ghcr.io/devcontainers/features/powershell:1": {},
-    "ghcr.io/devcontainers/features/nix:1": {
-      "multiUser": true,
-      "extraNixConfig": "experimental-features = nix-command flakes"
-    },
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "moby": true
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+    "workspaceFolder": "/workspace",
+    "remoteUser": "vscode",
+    "updateRemoteUserUID": true,
+    "init": true,
+    "postCreateCommand": [
+        "bash",
+        ".devcontainer/post-create.sh"
+    ],
+    "waitFor": "postCreateCommand",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "editorconfig.editorconfig",
+                "timonwong.shellcheck",
+                "ms-python.python",
+                "charliermarsh.ruff",
+                "redhat.vscode-yaml",
+                "github.vscode-github-actions",
+                "golang.go",
+                "ms-vscode.powershell",
+                "ms-plugins.nushell",
+                "themisanthrope.fish-lsp"
+            ],
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "terminal.integrated.profiles.linux": {
+                    "bash": {
+                        "path": "/bin/bash"
+                    },
+                    "pwsh": {
+                        "path": "/usr/local/bin/pwsh",
+                        "args": [
+                            "-NoLogo",
+                            "-NoProfile"
+                        ]
+                    }
+                },
+                "python.defaultInterpreterPath": "/usr/bin/python3",
+                "files.eol": "\n"
+            }
+        }
     }
-  },
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "timonwong.shellcheck",
-        "charliermarsh.ruff",
-        "ms-vscode.powershell",
-        "jnoortheen.nix-ide",
-        "themisanthrope.fish-lsp",
-        "ms-plugins.nushell",
-        "ms-azuretools.vscode-docker",
-        "github.vscode-github-actions",
-        "golang.go"
-      ],
-      "settings": {
-        "editor.formatOnSave": true,
-        "files.eol": "\n",
-        "shellcheck.enable": true,
-        "shellcheck.executablePath": "shellcheck",
-        "[python]": {
-          "editor.defaultFormatter": "charliermarsh.ruff",
-          "editor.codeActionsOnSave": {
-            "source.fixAll.ruff": "explicit",
-            "source.organizeImports.ruff": "explicit"
-          }
-        },
-        "powershell.powerShellDefaultVersion": "PowerShell",
-        "nix.enableLanguageServer": true
-      }
-    }
-  },
-  "remoteUser": "developer",
-  "postCreateCommand": "bash .devcontainer/post-create.sh"
 }
