@@ -61,7 +61,7 @@ Tools fall into three tiers. Install what matches the work you are doing.
 | Environment | Core lint/test | `pwsh` + Pester | Docker distro matrix | Go CLI | Extra shells (zsh/fish/nu) |
 | --- | --- | --- | --- | --- | --- |
 | Host + `make setup` | Yes (after deps) | Manual | Manual | Manual (`go`) | Manual |
-| **Dev Container** (`.devcontainer/`) | Yes | Yes | Full variant (DinD) | Yes (Go 1.25) | Yes |
+| **Dev Container** (`.devcontainer/`) | Yes | Yes | Full variant (DinD) | Yes (Go 1.27) | Yes |
 | **`nix develop`** | Yes (shellcheck/ruff + Go) | No | No | Yes | No |
 
 Before a release, follow [docs/release_runbook.md](docs/release_runbook.md): at minimum `make check-all` (lint + test-go + test) and `make test-windows`; use `make test-all-distros` when Docker is available.
