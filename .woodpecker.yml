@@ -1,0 +1,29 @@
+labels:
+  platform: linux/amd64
+  backend: docker
+clone:
+  git:
+    image: docker.io/woodpeckerci/plugin-git@sha256:9802cb7852dcf31f9c5c1d1ddeadfb9002d4fae85751f7b6a792eedb267bcc59
+    settings:
+      depth: 0
+      partial: false
+when:
+  - event: push
+    branch: main
+  - event: [pull_request, manual]
+steps:
+  - name: core
+    image: docker.io/library/golang:1.26.10-trixie@sha256:fd9a91f0ece5664556f4851d06dce5e5b505a71166dffd385a03ba9d200b6983
+    environment:
+      DEBIAN_FRONTEND: noninteractive
+      GOTOOLCHAIN: local
+    commands:
+      - apt-get update
+      - apt-get install -y --no-install-recommends curl fish git jq make mandoc python3 python3-venv shellcheck unzip zsh
+      - python3 -m venv /opt/ci-python
+      - /opt/ci-python/bin/pip install --disable-pip-version-check ruff==0.15.20 PyYAML==6.0.3
+      - useradd --uid 1000 --create-home ci
+      - chown -R ci:ci "$CI_WORKSPACE"
+      - runuser -u ci -- env PATH=/opt/ci-python/bin:/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin GOTOOLCHAIN=local GOCACHE=/tmp/ci-go-cache GOPATH=/tmp/ci-gopath GOMODCACHE=/tmp/ci-go-modules make check-all
+      - runuser -u ci -- env PATH=/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin GOTOOLCHAIN=local GOCACHE=/tmp/ci-go-cache GOPATH=/tmp/ci-gopath GOMODCACHE=/tmp/ci-go-modules make build
+      - runuser -u ci -- env PATH=/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin GOTOOLCHAIN=local GOCACHE=/tmp/ci-go-cache GOPATH=/tmp/ci-gopath GOMODCACHE=/tmp/ci-go-modules CGO_ENABLED=1 sh -c 'cd go && go test -buildvcs=false -race ./...'

@@ -339,6 +339,7 @@ deactivated together; apply that preview with `disable-errors --yes`. Add
 | Packaging matrix (from-source / bin / git) | [packaging/README.md](packaging/README.md) |
 | Dry-run & manual uninstall | [docs/uninstall_dryrun.md](docs/uninstall_dryrun.md) |
 | Release runbook | [docs/release_runbook.md](docs/release_runbook.md) |
+| Woodpecker validation | [docs/woodpecker-transition.md](docs/woodpecker-transition.md) |
 | Interactive architecture map | [docs/architecture/millennium-helpers.html](docs/architecture/millennium-helpers.html) |
 | Pages accessibility evidence | [docs/site-evidence/README.md](docs/site-evidence/README.md) |
 | MCP server setup & tools | [docs/mcp.md](docs/mcp.md) |

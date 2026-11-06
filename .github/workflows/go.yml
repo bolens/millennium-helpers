@@ -26,8 +26,8 @@ permissions:
   contents: read
 
 env:
-  # Exact patch: stdlib CVEs need ≥1.25.13; golangci-lint must be built with ≥ that Go.
-  GO_VERSION: "1.25.13"
+  # Exact patch: stdlib CVEs need ≥1.26.10; golangci-lint must support the Go 1.26 compiler.
+  GO_VERSION: "1.26.10"
 
 jobs:
   quality:
