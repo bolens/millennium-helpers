@@ -13,7 +13,7 @@ when:
   - event: [pull_request, manual]
 steps:
   - name: core
-    image: docker.io/library/golang:1.25.13-trixie@sha256:9044d290beebfb6bb1d1f38d94f6c0f5a217fadff3497c73a760e5c577b24476
+    image: docker.io/library/golang:1.26.10-trixie@sha256:fd9a91f0ece5664556f4851d06dce5e5b505a71166dffd385a03ba9d200b6983
     environment:
       DEBIAN_FRONTEND: noninteractive
       GOTOOLCHAIN: local

@@ -1,6 +1,6 @@
 # Portable Woodpecker validation
 
-Run the existing make check-all and make build gates with pinned Go 1.25.13, then the existing Linux Go race suite as an isolated non-root user.
+Run the existing make check-all and make build gates with pinned Go 1.26.10, then the existing Linux Go race suite as an isolated non-root user.
 
 Run on PR heads, main pushes and manual validation in immutable, ordinary Docker
 containers. Supply no publishing credentials, host mounts or Docker socket.
