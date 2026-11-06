@@ -8,7 +8,10 @@ packages. Setup installs dependencies from this checkout's lockfiles and runs
 `bash .devcontainer/post-create.sh` after changing dependency lockfiles.
 
 Includes the Go toolchain, Python/Ruff, ShellCheck, Fish, mandoc and
-PowerShell. `make check-all` is the broader Linux gate. PowerShell modules
+PowerShell. The refreshed editor uses Node 26.13.0, UV 0.13.7 and Ruff 0.16.9.
+Zizmor uses the image system Python explicitly, independent of UV’s downloadable
+Python default. The existing Python 3.9 lint target remains unchanged.
+`make check-all` is the broader Linux gate. PowerShell modules
 install only in the container user account. Windows scheduling, Steam
 integration and distribution packaging require their owning platforms.
 
