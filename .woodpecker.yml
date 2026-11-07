@@ -35,6 +35,6 @@ steps:
     commands:
       - apt-get update
       - apt-get install -y --no-install-recommends ca-certificates git python3 python3-venv shellcheck
-      - useradd --uid 1000 --create-home ci
+      - test "$(id -u node)" -eq 1000
       - test "$(stat -c %u "$CI_WORKSPACE")" -eq 1000
-      - runuser -u ci -- sh -c 'test "$(id -u)" -eq 1000 && test "$(git rev-parse HEAD)" = "$CI_COMMIT_SHA" && exec bash scripts/ci/check-policy.sh'
+      - runuser -u node -- sh -c 'test "$(id -u)" -eq 1000 && test "$(git rev-parse HEAD)" = "$CI_COMMIT_SHA" && exec bash scripts/ci/check-policy.sh'
