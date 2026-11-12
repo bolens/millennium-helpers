@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Explicit light mode keeps its light palette when the operating system prefers dark mode.
 
+### Security
+
+- Release builds use Go 1.26.11 to include the net/http fix for CVE-2026-97054.
+
 ## [4.0.0] - 2026-08-31
 
 ### Changed
