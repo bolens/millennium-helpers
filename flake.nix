@@ -3,13 +3,17 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-darwin.url = "github:NixOS/nixpkgs/nixpkgs-26.05-darwin";
     utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, utils }:
+  outputs = { self, nixpkgs, nixpkgs-darwin, utils }:
     utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs { inherit system; };
+        # The main input no longer supports the declared Intel macOS shell.
+        pkgs = import (if system == "x86_64-darwin" then nixpkgs-darwin else nixpkgs) { inherit system; };
+        isLinux = pkgs.stdenv.hostPlatform.isLinux;
+        hasBinary = system == "x86_64-linux";
         releaseInfo = import ./nix/release-info.nix;
         goToolchain = import ./nix/go.nix { inherit pkgs; };
         mkPackage = args: pkgs.callPackage ./nix/default.nix ({
@@ -50,23 +54,29 @@
         };
       in
       {
-        packages = {
-          inherit millennium-helpers millennium-helpers-bin millennium-helpers-git;
+        packages = pkgs.lib.optionalAttrs isLinux ({
+          inherit millennium-helpers millennium-helpers-git;
           default = millennium-helpers;
-        };
+        } // pkgs.lib.optionalAttrs hasBinary {
+          inherit millennium-helpers-bin;
+        });
 
-        apps = {
+        apps = pkgs.lib.optionalAttrs isLinux {
           default = {
             type = "app";
             program = "${millennium-helpers}/bin/millennium";
-          };
-          millennium-helpers-bin = {
-            type = "app";
-            program = "${millennium-helpers-bin}/bin/millennium";
+            meta.description = millennium-helpers.meta.description;
           };
           millennium-helpers-git = {
             type = "app";
             program = "${millennium-helpers-git}/bin/millennium";
+            meta.description = millennium-helpers-git.meta.description;
+          };
+        } // pkgs.lib.optionalAttrs hasBinary {
+          millennium-helpers-bin = {
+            type = "app";
+            program = "${millennium-helpers-bin}/bin/millennium";
+            meta.description = millennium-helpers-bin.meta.description;
           };
         };
 

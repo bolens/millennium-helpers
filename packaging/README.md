@@ -31,3 +31,17 @@ library security patch to the locked nixpkgs compiler. Update it alongside the
 native and hosted compiler pins and verify both source variants and the shell.
 Prebuilt `-bin` packages retain the compiler embedded in the published asset;
 changing the Nix compiler cannot patch an existing binary release.
+
+The flake exposes source packages and CLI apps on x86_64-linux and
+aarch64-linux. The published Nix binary asset is linux-amd64, so `-bin` is
+available only on x86_64-linux. Darwin package outputs are not advertised by
+the Linux packaging contract. Development shells remain declared on both Linux
+architectures and both Darwin architectures. Intel Darwin uses a separate
+maintained `nixpkgs-26.05-darwin` input because the main nixpkgs input removed
+that system; its compiler uses the same reviewed Go patch. Check all declared
+outputs when updating either input. Derivation evaluation checks configuration
+and platform admission; it does not establish native execution or cross-build
+coverage.
+
+Run `nix flake check --all-systems --no-build --no-write-lock-file` before the
+native package builds; the existing Nix CI job enforces this admission check.
