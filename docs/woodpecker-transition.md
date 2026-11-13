@@ -57,6 +57,8 @@ CI, vulnerability scans, and release builds use Go 1.26.11 for current standard-
 library security fixes. The module language minimum remains Go 1.22. The hosted
 quality job uses golangci-lint 2.12.2, which supports this compiler. Keep the
 module toolchain, native image, hosted compiler, and scan default aligned.
+Nix source packages and the development shell share that security patch through
+[`nix/go.nix`](../nix/go.nix); binary packages require a newly built release asset.
 
 
 ## Related

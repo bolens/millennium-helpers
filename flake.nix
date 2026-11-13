@@ -11,9 +11,14 @@
       let
         pkgs = import nixpkgs { inherit system; };
         releaseInfo = import ./nix/release-info.nix;
+        goToolchain = import ./nix/go.nix { inherit pkgs; };
+        mkPackage = args: pkgs.callPackage ./nix/default.nix ({
+          go = goToolchain;
+          buildGoModule = pkgs.buildGoModule.override { go = goToolchain; };
+        } // args);
 
         # From-source tagged release (default): build Go from controlled -src.tar.gz.
-        millennium-helpers = pkgs.callPackage ./nix/default.nix {
+        millennium-helpers = mkPackage {
           version = releaseInfo.version;
           src = pkgs.fetchurl {
             url = "https://github.com/bolens/millennium-helpers/releases/download/v${releaseInfo.version}/millennium-helpers-v${releaseInfo.version}-src.tar.gz";
@@ -23,7 +28,7 @@
         };
 
         # Prebuilt release assets (scripts tarball; Go binary when embedded).
-        millennium-helpers-bin = pkgs.callPackage ./nix/default.nix {
+        millennium-helpers-bin = mkPackage {
           pname = "millennium-helpers-bin";
           version = releaseInfo.version;
           src = pkgs.fetchurl {
@@ -34,7 +39,7 @@
           buildGoDispatcher = false;
         };
 
-        millennium-helpers-git = pkgs.callPackage ./nix/default.nix {
+        millennium-helpers-git = mkPackage {
           pname = "millennium-helpers-git";
           version =
             if self ? shortRev then "unstable-${self.shortRev}"
@@ -75,7 +80,7 @@
             git
             shellcheck
             ruff
-            go
+            goToolchain
             gnumake
           ];
         };

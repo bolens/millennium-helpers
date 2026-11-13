@@ -24,3 +24,10 @@ Release CD publishes versioned, OS/arch-trimmed bin packs (each embeds the
 matching Go dispatcher), controlled `-src.tar.gz` / `-src.zip` trees for
 from-source packaging, and standalone `millennium-v{VER}-{os}-{arch}` binaries.
 There are no legacy unversioned asset aliases.
+
+Nix source packages and `nix develop` share the reviewed compiler in
+[`nix/go.nix`](../nix/go.nix). Its Go 1.26.11 source and hash apply the standard-
+library security patch to the locked nixpkgs compiler. Update it alongside the
+native and hosted compiler pins and verify both source variants and the shell.
+Prebuilt `-bin` packages retain the compiler embedded in the published asset;
+changing the Nix compiler cannot patch an existing binary release.
