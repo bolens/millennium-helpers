@@ -107,7 +107,7 @@ stdenv.mkDerivation ({
     description = "Cross-platform utility scripts and Model Context Protocol (MCP) server for managing, upgrading, diagnosing, and controlling Millennium on Linux";
     homepage = "https://github.com/bolens/millennium-helpers";
     license = licenses.mit;
-    platforms = platforms.linux;
+    platforms = if buildGoDispatcher then platforms.linux else [ "x86_64-linux" ];
     mainProgram = "millennium";
   };
 } // lib.optionalAttrs unpackFlat {
