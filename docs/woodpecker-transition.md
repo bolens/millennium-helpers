@@ -12,7 +12,7 @@ entrypoints into that same contract.
 | Phase | Check group / canonical local command | Native workflow / step | Retained hosted owner / boundary |
 | --- | --- | --- | --- |
 | `validate` | Source, CLI, packaging and docs contracts: `make lint`; focused docs: `make check-docs` | `woodpecker` / `core` | PR, main push and native manual validation; no installation or publisher secrets |
-| `validate` | Shared source and changelog policy: `bash scripts/ci/check-policy.sh` | `woodpecker` / `source-and-changelog-policy` | Same full shared selectors and changelog checker; required `ci/woodpecker/pr/woodpecker` replaces the disabled hosted duplicates |
+| `validate` | Shared source and changelog policy: `bash scripts/ci/check-policy.sh` | `woodpecker` / `source-and-changelog-policy` | Same full shared selectors and changelog checker. Required `ci/woodpecker/pr/woodpecker` replaces the disabled hosted duplicates |
 | `test` | Go and Bash suites: `make check-all`; focused Go: `make test-go` | `woodpecker` / `core` | Existing macOS, Windows/Pester, distro and development-image coverage remains hosted |
 | `test` | Linux race suite: `(cd go && CGO_ENABLED=1 go test -buildvcs=false -race ./...)` with a C toolchain | `woodpecker` / `core` | Runs as an isolated non-root user; it does not replace other platform checks |
 | `validate` | CLI build: `make build` | `woodpecker` / `core` | Generated output remains a build result, not a published package |
@@ -31,7 +31,7 @@ Exact-head PR and genuine-main acceptance are complete. The duplicate hosted
 Source lint and Changelog workflows are disabled, and the native
 `ci/woodpecker/pr/woodpecker` check is required. The seven existing Go, CLI and
 workflow-security requirements remain. Other hosted workflows and triggers
-retain their roles; the release gate still waits for its eleven GitHub workflow
+retain their roles. The release gate still waits for its eleven GitHub workflow
 filenames at the exact tag SHA.
 This native lane has no tag trigger and cannot satisfy those release waits.
 Native completion tests still skip Nushell when absent; PowerShell, actual
@@ -61,7 +61,7 @@ library security fixes. The module language minimum remains Go 1.22. The hosted
 quality job uses golangci-lint 2.12.2, which supports this compiler. Keep the
 module toolchain, native image, hosted compiler, and scan default aligned.
 Nix source packages and the development shell share that security patch through
-[`nix/go.nix`](../nix/go.nix); binary packages require a newly built release asset.
+[`nix/go.nix`](../nix/go.nix). Binary packages require a newly built release asset.
 
 
 ## Related

@@ -37,7 +37,7 @@ The native `source-and-changelog-policy` step checks maintained JavaScript and
 CSS files selected by
 [`.github/source-lint.json`](.github/source-lint.json) on every pull request
 and push to `main`, using the shared selectors and existing changelog checker through
-`bash scripts/ci/check-policy.sh`; see the [CI index](docs/woodpecker-transition.md#ci-organization).
+`bash scripts/ci/check-policy.sh`. See the [CI index](docs/woodpecker-transition.md#ci-organization).
 The duplicate hosted Source lint and Changelog workflows are disabled after
 exact-source native PR and main acceptance. Require the native
 `ci/woodpecker/pr/woodpecker` check alongside the seven retained Go, CLI and
