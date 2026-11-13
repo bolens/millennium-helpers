@@ -34,7 +34,10 @@ cancellations. Update the protection settings when renaming required jobs.
 
 The Source lint workflow checks maintained javascript, css files selected by
 [`.github/source-lint.json`](.github/source-lint.json) on every pull request
-and push to `main`. Existing native checks remain part of the merge gate.
+and push to `main`. The native `source-and-changelog-policy` step also runs the
+same shared selectors and existing changelog checker through
+`bash scripts/ci/check-policy.sh`; see the [CI index](docs/woodpecker-transition.md#ci-organization).
+Both hosted workflows remain in place pending native PR/main acceptance.
 Use the [shared local reproduction instructions](https://github.com/bolens/.github/blob/7603518f305fb76f7bb1b9979f2692521f633b82/docs/source-lint.md)
 with the same tooling revision pinned in
 [the workflow](.github/workflows/source-lint.yml). Review exclusions when adding
