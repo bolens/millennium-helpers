@@ -51,6 +51,9 @@ jobs:
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Evaluate declared Nix platforms
+        run: nix flake check --all-systems --no-build --no-write-lock-file
+
       - name: Build Flake (from-source / bin / git)
         run: |
           set -euo pipefail
