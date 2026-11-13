@@ -1,6 +1,6 @@
 # Woodpecker validation
 
-Run the existing make check-all and make build gates with pinned Go 1.26.10, then the existing Linux Go race suite as an isolated non-root user.
+Run the existing make check-all and make build gates with pinned Go 1.26.11, then the existing Linux Go race suite as an isolated non-root user.
 
 ## CI organization
 
@@ -53,7 +53,7 @@ Review image digests monthly and after security releases. Existing Dockerfile
 updaters do not monitor these Woodpecker YAML references. Direct tool pins and
 image updates require a reviewed PR and successful native execution.
 
-CI, vulnerability scans, and release builds use Go 1.26.10 for current standard-
+CI, vulnerability scans, and release builds use Go 1.26.11 for current standard-
 library security fixes. The module language minimum remains Go 1.22. The hosted
 quality job uses golangci-lint 2.12.2, which supports this compiler. Keep the
 module toolchain, native image, hosted compiler, and scan default aligned.
