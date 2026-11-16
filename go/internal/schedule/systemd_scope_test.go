@@ -90,6 +90,7 @@ func TestDisableSystemdAllRemovesBothScopes(t *testing.T) {
 	if runtime.GOOS != "linux" {
 		t.Skip("linux only")
 	}
+	calls := isolateSystemctl(t)
 	sysDir := t.TempDir()
 	t.Setenv("MILLENNIUM_SYSTEMD_SYSTEM_DIR", sysDir)
 	home := t.TempDir()
@@ -119,12 +120,25 @@ func TestDisableSystemdAllRemovesBothScopes(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(userDir, TimerName)); !os.IsNotExist(err) {
 		t.Fatal("user timer still present")
 	}
+	b, err := os.ReadFile(calls)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"disable --now millennium-update.timer", "--user disable --now millennium-update.timer", "stop millennium-update.service", "--user stop millennium-update.service"} {
+		if !strings.Contains(string(b), want+"\n") {
+			t.Fatalf("missing scoped command %q in %q", want, b)
+		}
+	}
+
 }
 
 func TestDisableSystemdAllDryRun(t *testing.T) {
 	if runtime.GOOS != "linux" {
 		t.Skip("linux only")
 	}
+	calls := isolateSystemctl(t)
+	t.Setenv("HOME", t.TempDir())
+	t.Setenv("SUDO_USER", "")
 	sysDir := t.TempDir()
 	t.Setenv("MILLENNIUM_SYSTEMD_SYSTEM_DIR", sysDir)
 	if err := os.WriteFile(filepath.Join(sysDir, TimerName), []byte("x"), 0o644); err != nil {
@@ -136,4 +150,20 @@ func TestDisableSystemdAllDryRun(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(sysDir, TimerName)); err != nil {
 		t.Fatal("dry-run removed system timer")
 	}
+	if _, err := os.Stat(calls); !os.IsNotExist(err) {
+		t.Fatal("dry-run invoked systemctl", err)
+	}
+
+}
+
+func isolateSystemctl(t *testing.T) string {
+	t.Helper()
+	bin := t.TempDir()
+	calls := filepath.Join(bin, "calls")
+	t.Setenv("MILLENNIUM_TEST_SYSTEMCTL_LOG", calls)
+	if err := os.WriteFile(filepath.Join(bin, "systemctl"), []byte("#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$MILLENNIUM_TEST_SYSTEMCTL_LOG\"\n"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", bin)
+	return calls
 }

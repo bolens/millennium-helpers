@@ -6,6 +6,8 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+
+	"github.com/bolens/millennium-helpers/internal/usercontext"
 )
 
 // SystemdScope selects Linux systemd unit installation scope.
@@ -87,23 +89,15 @@ func ResolveSystemdScope(force SystemdScope) (SystemdScope, error) {
 
 // ResolveTargetUser returns the user account for User= / state paths.
 func ResolveTargetUser() (TargetUser, error) {
-	name := os.Getenv("SUDO_USER")
-	if name == "" || effectiveUID() != 0 {
-		u, err := user.Current()
-		if err != nil {
-			return TargetUser{}, err
-		}
-		return TargetUser{Name: u.Username, Home: u.HomeDir, UID: u.Uid, GID: u.Gid, Group: u.Username}, nil
-	}
-	u, err := user.Lookup(name)
+	ctx, err := usercontext.Resolve()
 	if err != nil {
-		return TargetUser{}, fmt.Errorf("Error: cannot resolve SUDO_USER %q: %w", name, err)
+		return TargetUser{}, err
 	}
-	group := name
-	if g, err := user.LookupGroupId(u.Gid); err == nil {
+	group := ctx.Name
+	if g, err := user.LookupGroupId(ctx.GID); err == nil {
 		group = g.Name
 	}
-	return TargetUser{Name: u.Username, Home: u.HomeDir, UID: u.Uid, GID: u.Gid, Group: group}, nil
+	return TargetUser{Name: ctx.Name, Home: ctx.Home, UID: ctx.UID, GID: ctx.GID, Group: group}, nil
 }
 
 func fileExists(p string) bool {

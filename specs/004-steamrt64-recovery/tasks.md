@@ -31,3 +31,24 @@ includes beta/main channels resolving to an older beta. Tests cover active and
 hook preservation, untouched backup permissions, compatible components, custom
 Steam roots, and all-users detection. Existing rollback fixtures isolate HOME
 so they do not depend on the developer's installed Steam version.
+
+Live verification on 2026-11-16 confirmed that the Steam game guard refuses
+maintenance while an app is running and that the beta activation guard keeps
+the working v3.6.3 runtime intact. A verified reinstall of that same client
+version updated all nine integrity entries; doctor then reported no issues
+among measured checks. The user timer was enabled for beta.
+
+Live relaunch exposed a nested shell-quote decoding defect. Publication of the
+v4.1.0 draft was cancelled, its signed tag was preserved, and its packaging PR
+was closed. The v4.1.1 candidate decodes generated single-quote escapes,
+preserves empty captured arguments, and does not retry a failed sudo mutation.
+Shell-execution tests cover exact argument/environment preservation and refuse
+accidental command execution. An error-exit test proves sudo runs once.
+Further live tests are deferred at the user's request while a Steam app is in
+use; final release/package verification must not restart Steam.
+
+The local gate exposed an existing scheduler test depending on the host account
+home. Scheduler target resolution now shares usercontext's HOME/sudo boundary,
+and disable tests stub systemctl while checking both scopes and dry-run
+non-execution. The test-created beta timer is no longer installed; the original
+unscheduled state is preserved while beta remains the selected channel.

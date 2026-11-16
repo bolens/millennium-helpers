@@ -7,19 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [4.1.0] - 2026-11-16
-
-### Added
-
-- Pages code examples use theme-aware shell syntax highlighting without changing copied commands.
+## [4.1.1] - 2026-11-16
 
 ### Changed
 
+- Pages uses theme-aware shell syntax highlighting and keeps explicit light mode when the operating system prefers dark mode.
 - JSON diagnostics list unmeasured checks in `unverified_checks` while preserving boolean field types.
 
 ### Fixed
 
-- Concurrent helper configuration changes and install/rollback operations reject contention before overwriting state.
+- Configuration changes and install/rollback operations reject contention; failed privileged operations preserve their status without being retried.
 - Log following handles rotation, partial lines, and appends during initial output without dropping entries.
 - MCP preserves large request IDs and returns protocol errors for malformed requests without executing notifications.
 - Configuration edits and MCP registration preserve unrelated large integers and refuse to overwrite invalid host documents.
@@ -28,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Linux diagnostics and repair support SteamRT3’s x64 components. Upgrades and rollbacks reject incompatible clients before activation, including older betas. Recovery instructions also cover installations without the helper.
 - Repair restores executable permissions on runtime helpers and refuses unsafe file and ownership targets.
 
-- Explicit light mode keeps its light palette when the operating system prefers dark mode.
+- Steam relaunch preserves quoted arguments and environment values. The v4.1.0 draft was withdrawn before publication when live verification found this defect.
 
 ### Security
 

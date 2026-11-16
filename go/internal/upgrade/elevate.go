@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+
+	"golang.org/x/term"
 )
 
 // Test seams
@@ -127,9 +129,6 @@ func TrySudoInstallHandoff(o Options, archivePath, sha string) (handled bool, co
 		fmt.Println("Install requires root; elevating with sudo…")
 	}
 	code = sudoRun(args)
-	if code != 0 {
-		fmt.Fprint(os.Stderr, FormatSudoInstallHint(archivePath, sha, o))
-	}
 	return true, code
 }
 
@@ -154,16 +153,12 @@ func TrySudoRollbackHandoff(o Options) (handled bool, code int) {
 }
 
 func runSudo(args []string) int {
-	// Prefer passwordless; fall back to interactive sudo (prompts on TTY).
-	nonInteractive := append([]string{"-n"}, args...)
-	cmd := exec.Command("sudo", nonInteractive...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err == nil {
-		return 0
+	// Choose authentication mode before executing: a child failure must never
+	// cause the same privileged mutation to run a second time.
+	if !term.IsTerminal(int(os.Stdin.Fd())) {
+		args = append([]string{"-n"}, args...)
 	}
-	cmd = exec.Command("sudo", args...)
+	cmd := exec.Command("sudo", args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -171,6 +166,7 @@ func runSudo(args []string) int {
 		if ee, ok := err.(*exec.ExitError); ok {
 			return ee.ExitCode()
 		}
+		fmt.Fprintln(os.Stderr, "sudo execution failed:", err)
 		return 1
 	}
 	return 0
