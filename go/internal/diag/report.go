@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"time"
 
@@ -22,33 +23,34 @@ import (
 
 // Report is the structured diagnostic snapshot (JSON + doctor plan).
 type Report struct {
-	SteamRunning             bool   `json:"steam_running"`
-	BinariesNeedPrivilege    bool   `json:"-"`
-	BinariesOK               bool   `json:"binaries_ok"`
-	RuntimeHelpersExecutable bool   `json:"runtime_helpers_executable"`
-	HooksOK                  bool   `json:"hooks_ok"`
-	SteamRT3                 bool   `json:"steamrt3,omitempty"`
-	SteamRT3Compatible       bool   `json:"steamrt3_compatible,omitempty"`
-	SteamRT3Detail           string `json:"steamrt3_detail,omitempty"`
-	FlatpakOK                bool   `json:"flatpak_ok,omitempty"`
-	SudoersOK                bool   `json:"sudoers_ok,omitempty"`
-	TimerActive              bool   `json:"timer_active,omitempty"`
-	LingerOK                 bool   `json:"linger_ok,omitempty"`
-	TaskScheduled            bool   `json:"task_scheduled,omitempty"`
-	ScriptsUpToDate          bool   `json:"scripts_up_to_date"`
-	PermissionsOK            bool   `json:"permissions_ok"`
-	SkinsDirOK               bool   `json:"skins_dir_ok"`
-	CompletionsOK            bool   `json:"completions_ok"`
-	CleanOfObsolete          bool   `json:"clean_of_obsolete"`
-	UnmanagedFilesOK         bool   `json:"unmanaged_files_ok,omitempty"`
-	MixedInstallOK           bool   `json:"mixed_install_ok"`
-	InstallMethod            string `json:"install_method"`
-	HelpersCheckout          string `json:"helpers_checkout"`
-	HelpersTrack             string `json:"helpers_track"`
-	HelpersRef               string `json:"helpers_ref"`
-	LatestReleaseTag         string `json:"latest_release_tag"`
-	UpdateChannel            string `json:"update_channel"`
-	Version                  string `json:"version,omitempty"`
+	UnverifiedChecks         []string `json:"unverified_checks,omitempty"`
+	SteamRunning             bool     `json:"steam_running"`
+	BinariesNeedPrivilege    bool     `json:"-"`
+	BinariesOK               bool     `json:"binaries_ok"`
+	RuntimeHelpersExecutable bool     `json:"runtime_helpers_executable"`
+	HooksOK                  bool     `json:"hooks_ok"`
+	SteamRT3                 bool     `json:"steamrt3,omitempty"`
+	SteamRT3Compatible       bool     `json:"steamrt3_compatible,omitempty"`
+	SteamRT3Detail           string   `json:"steamrt3_detail,omitempty"`
+	FlatpakOK                bool     `json:"flatpak_ok,omitempty"`
+	SudoersOK                bool     `json:"sudoers_ok,omitempty"`
+	TimerActive              bool     `json:"timer_active,omitempty"`
+	LingerOK                 bool     `json:"linger_ok,omitempty"`
+	TaskScheduled            bool     `json:"task_scheduled,omitempty"`
+	ScriptsUpToDate          bool     `json:"scripts_up_to_date"`
+	PermissionsOK            bool     `json:"permissions_ok"`
+	SkinsDirOK               bool     `json:"skins_dir_ok"`
+	CompletionsOK            bool     `json:"completions_ok"`
+	CleanOfObsolete          bool     `json:"clean_of_obsolete"`
+	UnmanagedFilesOK         bool     `json:"unmanaged_files_ok,omitempty"`
+	MixedInstallOK           bool     `json:"mixed_install_ok"`
+	InstallMethod            string   `json:"install_method"`
+	HelpersCheckout          string   `json:"helpers_checkout"`
+	HelpersTrack             string   `json:"helpers_track"`
+	HelpersRef               string   `json:"helpers_ref"`
+	LatestReleaseTag         string   `json:"latest_release_tag"`
+	UpdateChannel            string   `json:"update_channel"`
+	Version                  string   `json:"version,omitempty"`
 
 	// Human details (not always in JSON)
 	BinariesDetail string `json:"-"`
@@ -104,19 +106,33 @@ func ParseArgs(args []string) (Options, error) {
 			return o, fmt.Errorf("Error: unknown diag argument %s", a)
 		}
 	}
+	if !o.Help && !o.Version {
+		modes := 0
+		for _, selected := range []bool{o.Doctor, o.Logs, o.Share} {
+			if selected {
+				modes++
+			}
+		}
+		if modes > 1 {
+			return o, fmt.Errorf("doctor, logs, and --share cannot be combined")
+		}
+		if o.JSON && (o.Doctor || o.Logs) {
+			return o, fmt.Errorf("--json is only valid for diagnostic reports")
+		}
+		if (o.Force || o.DryRun || o.Yes) && !o.Doctor {
+			return o, fmt.Errorf("--force, --dry-run, and --yes require doctor")
+		}
+		if o.Follow && !o.Logs {
+			return o, fmt.Errorf("--follow requires logs")
+		}
+	}
 	return o, nil
-}
-
-// NeedsLegacy is reserved for remaining shell/PS-only diag surfaces (none today).
-func NeedsLegacy(args []string) bool {
-	_, err := ParseArgs(args)
-	return err != nil
 }
 
 // Collect builds a full read-only report.
 func Collect() Report {
 	r := Report{
-		ScriptsUpToDate:  true, // detailed package freshness stays legacy
+		ScriptsUpToDate:  true, // legacy value; exposed as unknown until verified
 		PermissionsOK:    true,
 		CompletionsOK:    true,
 		CleanOfObsolete:  true,
@@ -145,6 +161,13 @@ func Collect() Report {
 		return r
 	}
 
+	r.UnverifiedChecks = []string{"scripts_up_to_date", "completions_ok", "clean_of_obsolete", "mixed_install_ok"}
+	if runtime.GOOS != "windows" {
+		r.UnverifiedChecks = append(r.UnverifiedChecks, "unmanaged_files_ok")
+	}
+	if runtime.GOOS == "linux" {
+		r.UnverifiedChecks = append(r.UnverifiedChecks, "linger_ok")
+	}
 	r.UpdateChannel = resolveChannel()
 	r.Version = millenniumVersion()
 	r.SteamRunning = isSteamRunning()
@@ -368,49 +391,57 @@ func scheduleConfiguredWindows() bool {
 // FormatJSON emits contract-shaped JSON for the current OS.
 func FormatJSON(r Report) string {
 	type unixJSON struct {
-		SteamRunning             bool   `json:"steam_running"`
-		BinariesNeedPrivilege    bool   `json:"-"`
-		BinariesOK               bool   `json:"binaries_ok"`
-		RuntimeHelpersExecutable *bool  `json:"runtime_helpers_executable,omitempty"`
-		HooksOK                  bool   `json:"hooks_ok"`
-		SteamRT3                 *bool  `json:"steamrt3,omitempty"`
-		SteamRT3Compatible       *bool  `json:"steamrt3_compatible,omitempty"`
-		SteamRT3Detail           string `json:"steamrt3_detail,omitempty"`
-		FlatpakOK                bool   `json:"flatpak_ok"`
-		SudoersOK                bool   `json:"sudoers_ok"`
-		TimerActive              bool   `json:"timer_active"`
-		LingerOK                 bool   `json:"linger_ok"`
-		ScriptsUpToDate          bool   `json:"scripts_up_to_date"`
-		PermissionsOK            bool   `json:"permissions_ok"`
-		SkinsDirOK               bool   `json:"skins_dir_ok"`
-		CompletionsOK            bool   `json:"completions_ok"`
-		CleanOfObsolete          bool   `json:"clean_of_obsolete"`
-		UnmanagedFilesOK         bool   `json:"unmanaged_files_ok"`
-		MixedInstallOK           bool   `json:"mixed_install_ok"`
-		InstallMethod            string `json:"install_method"`
-		HelpersCheckout          string `json:"helpers_checkout"`
-		HelpersTrack             string `json:"helpers_track"`
-		HelpersRef               string `json:"helpers_ref"`
-		LatestReleaseTag         string `json:"latest_release_tag"`
-		UpdateChannel            string `json:"update_channel"`
+		UnverifiedChecks         []string `json:"unverified_checks,omitempty"`
+		SteamRunning             bool     `json:"steam_running"`
+		BinariesNeedPrivilege    bool     `json:"-"`
+		BinariesOK               bool     `json:"binaries_ok"`
+		RuntimeHelpersExecutable *bool    `json:"runtime_helpers_executable,omitempty"`
+		HooksOK                  bool     `json:"hooks_ok"`
+		SteamRT3                 *bool    `json:"steamrt3,omitempty"`
+		SteamRT3Compatible       *bool    `json:"steamrt3_compatible,omitempty"`
+		SteamRT3Detail           string   `json:"steamrt3_detail,omitempty"`
+		FlatpakOK                bool     `json:"flatpak_ok"`
+		SudoersOK                bool     `json:"sudoers_ok"`
+		TimerActive              bool     `json:"timer_active"`
+		LingerOK                 bool     `json:"linger_ok"`
+		ScriptsUpToDate          bool     `json:"scripts_up_to_date"`
+		PermissionsOK            bool     `json:"permissions_ok"`
+		SkinsDirOK               bool     `json:"skins_dir_ok"`
+		CompletionsOK            bool     `json:"completions_ok"`
+		CleanOfObsolete          bool     `json:"clean_of_obsolete"`
+		UnmanagedFilesOK         bool     `json:"unmanaged_files_ok"`
+		MixedInstallOK           bool     `json:"mixed_install_ok"`
+		InstallMethod            string   `json:"install_method"`
+		HelpersCheckout          string   `json:"helpers_checkout"`
+		HelpersTrack             string   `json:"helpers_track"`
+		HelpersRef               string   `json:"helpers_ref"`
+		LatestReleaseTag         string   `json:"latest_release_tag"`
+		UpdateChannel            string   `json:"update_channel"`
 	}
 	type winJSON struct {
-		SteamRunning     bool   `json:"steam_running"`
-		BinariesOK       bool   `json:"binaries_ok"`
-		PermissionsOK    bool   `json:"permissions_ok"`
-		SkinsDirOK       bool   `json:"skins_dir_ok"`
-		TaskScheduled    bool   `json:"task_scheduled"`
-		CleanOfObsolete  bool   `json:"clean_of_obsolete"`
-		CompletionsOK    bool   `json:"completions_ok"`
-		ScriptsUpToDate  bool   `json:"scripts_up_to_date"`
-		InstallMethod    string `json:"install_method"`
-		MixedInstallOK   bool   `json:"mixed_install_ok"`
-		HelpersCheckout  string `json:"helpers_checkout"`
-		HelpersTrack     string `json:"helpers_track"`
-		HelpersRef       string `json:"helpers_ref"`
-		LatestReleaseTag string `json:"latest_release_tag"`
-		UpdateChannel    string `json:"update_channel"`
-		Version          string `json:"version"`
+		UnverifiedChecks []string `json:"unverified_checks,omitempty"`
+		SteamRunning     bool     `json:"steam_running"`
+		BinariesOK       bool     `json:"binaries_ok"`
+		PermissionsOK    bool     `json:"permissions_ok"`
+		SkinsDirOK       bool     `json:"skins_dir_ok"`
+		TaskScheduled    bool     `json:"task_scheduled"`
+		CleanOfObsolete  bool     `json:"clean_of_obsolete"`
+		CompletionsOK    bool     `json:"completions_ok"`
+		ScriptsUpToDate  bool     `json:"scripts_up_to_date"`
+		InstallMethod    string   `json:"install_method"`
+		MixedInstallOK   bool     `json:"mixed_install_ok"`
+		HelpersCheckout  string   `json:"helpers_checkout"`
+		HelpersTrack     string   `json:"helpers_track"`
+		HelpersRef       string   `json:"helpers_ref"`
+		LatestReleaseTag string   `json:"latest_release_tag"`
+		UpdateChannel    string   `json:"update_channel"`
+		Version          string   `json:"version"`
+	}
+	measured := func(name string, value bool) bool {
+		if slices.Contains(r.UnverifiedChecks, name) {
+			return false
+		}
+		return value
 	}
 	var b []byte
 	var err error
@@ -424,22 +455,24 @@ func FormatJSON(r Report) string {
 	}
 	if runtime.GOOS == "windows" {
 		b, err = json.MarshalIndent(winJSON{
-			SteamRunning: r.SteamRunning, BinariesOK: r.BinariesOK, PermissionsOK: r.PermissionsOK,
-			SkinsDirOK: r.SkinsDirOK, TaskScheduled: r.TaskScheduled, CleanOfObsolete: r.CleanOfObsolete,
-			CompletionsOK: r.CompletionsOK, ScriptsUpToDate: r.ScriptsUpToDate, InstallMethod: r.InstallMethod,
-			MixedInstallOK: r.MixedInstallOK, HelpersCheckout: r.HelpersCheckout, HelpersTrack: r.HelpersTrack,
+			UnverifiedChecks: r.UnverifiedChecks,
+			SteamRunning:     r.SteamRunning, BinariesOK: r.BinariesOK, PermissionsOK: r.PermissionsOK,
+			SkinsDirOK: r.SkinsDirOK, TaskScheduled: r.TaskScheduled, CleanOfObsolete: measured("clean_of_obsolete", r.CleanOfObsolete),
+			CompletionsOK: measured("completions_ok", r.CompletionsOK), ScriptsUpToDate: measured("scripts_up_to_date", r.ScriptsUpToDate), InstallMethod: r.InstallMethod,
+			MixedInstallOK: measured("mixed_install_ok", r.MixedInstallOK), HelpersCheckout: r.HelpersCheckout, HelpersTrack: r.HelpersTrack,
 			HelpersRef: r.HelpersRef, LatestReleaseTag: r.LatestReleaseTag, UpdateChannel: r.UpdateChannel,
 			Version: r.Version,
 		}, "", "  ")
 	} else {
 		b, err = json.MarshalIndent(unixJSON{
-			SteamRunning: r.SteamRunning, BinariesOK: r.BinariesOK, HooksOK: r.HooksOK, FlatpakOK: r.FlatpakOK,
+			UnverifiedChecks: r.UnverifiedChecks,
+			SteamRunning:     r.SteamRunning, BinariesOK: r.BinariesOK, HooksOK: r.HooksOK, FlatpakOK: r.FlatpakOK,
 			RuntimeHelpersExecutable: helperModes,
 			SteamRT3:                 rt3, SteamRT3Compatible: compatible, SteamRT3Detail: r.SteamRT3Detail,
-			SudoersOK: r.SudoersOK, TimerActive: r.TimerActive, LingerOK: r.LingerOK,
-			ScriptsUpToDate: r.ScriptsUpToDate, PermissionsOK: r.PermissionsOK, SkinsDirOK: r.SkinsDirOK,
-			CompletionsOK: r.CompletionsOK, CleanOfObsolete: r.CleanOfObsolete, UnmanagedFilesOK: r.UnmanagedFilesOK,
-			MixedInstallOK: r.MixedInstallOK, InstallMethod: r.InstallMethod, HelpersCheckout: r.HelpersCheckout,
+			SudoersOK: r.SudoersOK, TimerActive: r.TimerActive, LingerOK: measured("linger_ok", r.LingerOK),
+			ScriptsUpToDate: measured("scripts_up_to_date", r.ScriptsUpToDate), PermissionsOK: r.PermissionsOK, SkinsDirOK: r.SkinsDirOK,
+			CompletionsOK: measured("completions_ok", r.CompletionsOK), CleanOfObsolete: measured("clean_of_obsolete", r.CleanOfObsolete), UnmanagedFilesOK: measured("unmanaged_files_ok", r.UnmanagedFilesOK),
+			MixedInstallOK: measured("mixed_install_ok", r.MixedInstallOK), InstallMethod: r.InstallMethod, HelpersCheckout: r.HelpersCheckout,
 			HelpersTrack: r.HelpersTrack, HelpersRef: r.HelpersRef, LatestReleaseTag: r.LatestReleaseTag,
 			UpdateChannel: r.UpdateChannel,
 		}, "", "  ")
@@ -457,7 +490,10 @@ func FormatDoctorDryRun(r Report, force bool) string {
 	b.WriteString("=== Millennium Doctor plan (native) ===\n")
 	steps := DoctorPlan(r, force)
 	if len(steps) == 0 {
-		b.WriteString("No issues detected. Your Millennium installation looks healthy!\n")
+		b.WriteString("No issues detected among the completed checks.\n")
+		if len(r.UnverifiedChecks) > 0 {
+			b.WriteString("Some checks remain unverified; see millennium diag for details.\n")
+		}
 		return b.String()
 	}
 	for _, s := range steps {
@@ -544,19 +580,4 @@ func printTail(path string, n int) error {
 		fmt.Println(line)
 	}
 	return nil
-}
-
-func tailLines(path string, n int) ([]string, error) {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	lines := strings.Split(strings.ReplaceAll(string(b), "\r\n", "\n"), "\n")
-	if len(lines) > 0 && lines[len(lines)-1] == "" {
-		lines = lines[:len(lines)-1]
-	}
-	if len(lines) > n {
-		lines = lines[len(lines)-n:]
-	}
-	return lines, nil
 }

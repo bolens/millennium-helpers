@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -32,7 +33,7 @@ func TestGetSetListRoundTrip(t *testing.T) {
 		t.Fatalf("limit=%q", got)
 	}
 	out := FormatList(loaded)
-	if !contains(out, "update_channel") || !contains(out, "beta") {
+	if !strings.Contains(out, "update_channel") || !strings.Contains(out, "beta") {
 		t.Fatalf("list output: %s", out)
 	}
 }
@@ -56,7 +57,7 @@ func TestRunCLI(t *testing.T) {
 		t.Fatalf("get exit %d", code)
 	}
 	b, _ := os.ReadFile(filepath.Join(dir, "config.json"))
-	if !contains(string(b), "main") {
+	if !strings.Contains(string(b), "main") {
 		t.Fatalf("file: %s", b)
 	}
 	if code := RunCLI([]string{"set", "update_channel", "bad"}); code == 0 {
@@ -75,16 +76,4 @@ func TestLoadRejectsInvalidJSON(t *testing.T) {
 	if _, err := Load(); err == nil {
 		t.Fatal("expected invalid JSON error")
 	}
-}
-
-func contains(s, sub string) bool {
-	return len(s) >= len(sub) && (s == sub || len(sub) == 0 ||
-		(func() bool {
-			for i := 0; i+len(sub) <= len(s); i++ {
-				if s[i:i+len(sub)] == sub {
-					return true
-				}
-			}
-			return false
-		})())
 }

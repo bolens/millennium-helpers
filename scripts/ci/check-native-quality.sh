@@ -22,6 +22,7 @@ ruff check scripts
 make check-packaging check-winget
 # The remaining hosted Go matrix still runs native Linux/Windows/macOS tests.
 # Compile Windows packages here as well, matching the migrated quality job.
+echo "Cross-compiling Windows test binaries (Unix-only packages may have no tests)."
 (cd go
 packages=$(go list -buildvcs=false ./...)
 for pkg in $packages; do

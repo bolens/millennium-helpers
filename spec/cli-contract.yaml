@@ -150,6 +150,7 @@ commands:
       update timers, configurations, and Linux SteamRT3 bootstrap compatibility.
       Can optionally run in doctor mode to
       apply auto-repairs.
+    notes: "Report, doctor, logs, and share are mutually exclusive modes. Flags must apply to the selected mode. JSON diagnostic checks preserve boolean types; unverified checks return false and are named in unverified_checks."
     subcommands: [doctor, logs]
     flags:
       - name: fix
@@ -356,6 +357,7 @@ commands:
       Configure the background update scheduler (enable systemd daily timer or
       cron job). On Linux, systemd prefers system units when privileged.
     mcp_required: [action]
+    notes: "Config get accepts exactly one key; set requires a key and explicit value. Unknown flags are rejected, and credentials are redacted from mutation output."
     subcommands: [enable, disable, status, setup, config]
     # internal hooks not in MCP: pre-update, post-update
     flags:

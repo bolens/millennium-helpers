@@ -12,7 +12,7 @@ import (
 	"github.com/bolens/millennium-helpers/internal/clientfiles"
 )
 
-func rollbackPlatform(backupName string, o Options) error {
+func rollbackPlatformLocked(backupName string, o Options) error {
 	lib := LibDir()
 	backupPath := filepath.Join(lib, backupName)
 	dest := filepath.Join(lib, "millennium")

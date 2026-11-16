@@ -11,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/bolens/millennium-helpers/internal/atomicfile"
+	"github.com/bolens/millennium-helpers/internal/dirlock"
+	"github.com/bolens/millennium-helpers/internal/jsonobject"
 	"github.com/bolens/millennium-helpers/internal/steam"
 )
 
@@ -153,11 +155,11 @@ func load() (document, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not read Millennium client config at %s: %w", path, err)
 	}
-	var data document
-	if err := json.Unmarshal(b, &data); err != nil {
+	object, err := jsonobject.Decode(b)
+	if err != nil {
 		return nil, fmt.Errorf("invalid Millennium client config at %s: %w", path, err)
 	}
-	return data, nil
+	return document(object), nil
 }
 
 func object(data document, key string) (map[string]any, error) {
@@ -319,6 +321,10 @@ func save(data document) error {
 
 // SetPlugins enables or disables installed plugins and atomically saves the config.
 func SetPlugins(names []string, enable, dryRun bool) error {
+	return withMutation(dryRun, func() error { return setPlugins(names, enable, dryRun) })
+}
+
+func setPlugins(names []string, enable, dryRun bool) error {
 	if err := validateNames(names); err != nil {
 		return err
 	}
@@ -366,10 +372,14 @@ func SetPlugins(names []string, enable, dryRun bool) error {
 
 // SetTheme selects an installed client theme and atomically saves the config.
 func SetTheme(name string, dryRun bool) error {
+	return withMutation(dryRun, func() error { return setTheme(name, dryRun) })
+}
+
+func setTheme(name string, dryRun bool) error {
 	if err := validateNames([]string{name}); err != nil {
 		return err
 	}
-	if info, err := os.Stat(filepath.Join(ThemesDir(), name)); err != nil || !info.IsDir() {
+	if info, err := os.Stat(filepath.Join(ThemesDir(), name)); name != "Steam" && (err != nil || !info.IsDir()) {
 		return fmt.Errorf("unknown theme %q", name)
 	}
 	data, err := load()
@@ -385,4 +395,16 @@ func SetTheme(name string, dryRun bool) error {
 		return nil
 	}
 	return save(data)
+}
+
+func withMutation(dryRun bool, work func() error) error {
+	if dryRun {
+		return work()
+	}
+	lock, err := dirlock.Acquire(filepath.Dir(Path()))
+	if err != nil {
+		return err
+	}
+	defer func() { _ = lock.Close() }()
+	return work()
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/bolens/millennium-helpers/internal/theme"
 )
 
-func rollbackPlatform(backupName string, o Options) error {
+func rollbackPlatformLocked(backupName string, o Options) error {
 	steamDir := theme.FindSteamDir()
 	if steamDir == "" {
 		return fmt.Errorf("Error: Steam directory not found.")

@@ -14,7 +14,7 @@ import (
 	"github.com/bolens/millennium-helpers/internal/repair"
 )
 
-func installPlatform(archivePath, version string, o Options) error {
+func installPlatformLocked(archivePath, version string, o Options) error {
 	if !clientfiles.ValidVersion(version) {
 		return fmt.Errorf("invalid client version label")
 	}

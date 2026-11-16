@@ -50,3 +50,26 @@ func saveOwnedFile(path string, data []byte, uid, gid int, manageDir bool) error
 	}
 	return safefs.WriteFile(dir, filepath.Base(path), data, 0o600, uid, gid)
 }
+
+func prepareDirectory(path string) error {
+	if os.Geteuid() != 0 || os.Getenv("SUDO_USER") == "" {
+		return os.MkdirAll(filepath.Dir(path), 0700)
+	}
+	ctx, err := usercontext.Resolve()
+	if err != nil {
+		return err
+	}
+	uid, err := strconv.Atoi(ctx.UID)
+	if err != nil {
+		return err
+	}
+	gid, err := strconv.Atoi(ctx.GID)
+	if err != nil {
+		return err
+	}
+	fd, err := safefs.OpenDir(filepath.Dir(path), true, 0700, uid, gid)
+	if err != nil {
+		return err
+	}
+	return unix.Close(fd)
+}

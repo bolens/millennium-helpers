@@ -2,6 +2,7 @@ package diag
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -55,17 +56,125 @@ func TestFollowFilteredAppend(t *testing.T) {
 	}
 }
 
-func TestFollowLogsMissing(t *testing.T) {
-	home := t.TempDir()
-	t.Setenv("HOME", home)
-	t.Setenv("USERPROFILE", home)
-	t.Setenv("STEAM", filepath.Join(home, "nosteam"))
-	t.Setenv("MILLENNIUM_STATE_DIR", filepath.Join(home, "state"))
-	// Isolate candidates that may resolve via default Steam paths on the host.
-	t.Setenv("MILLENNIUM_SKINS_DIR", filepath.Join(home, "skins"))
-	code := FollowLogs()
-	if code != 1 && code != 0 {
-		t.Fatalf("unexpected code %d", code)
+func TestFollowFilteredMissing(t *testing.T) {
+	if code := followFiltered(filepath.Join(t.TempDir(), "missing.log"), logFilterParts(), 100); code != 1 {
+		t.Fatalf("code=%d", code)
 	}
-	_ = strings.Contains
+}
+
+func TestFollowRotationPartialAndWriteFailure(t *testing.T) {
+	for _, scenario := range []string{"rotate", "truncate", "partial", "writer-error"} {
+		t.Run(scenario, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "log")
+			if err := os.WriteFile(path, []byte("BOOTSTRAP old\n"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			var output bytes.Buffer
+			cycle := 0
+			options := followOptions{maxCycles: 2, output: &output, cycleHook: func() {
+				cycle++
+				switch scenario {
+				case "rotate":
+					if cycle == 1 {
+						if err := os.Rename(path, path+".old"); err != nil {
+							t.Fatal(err)
+						}
+						if err := os.WriteFile(path, []byte("BOOTSTRAP new replacement log is larger\n"), 0600); err != nil {
+							t.Fatal(err)
+						}
+					}
+				case "truncate":
+					if cycle == 1 {
+						if err := os.WriteFile(path, []byte("BOOTSTRAP n\n"), 0600); err != nil {
+							t.Fatal(err)
+						}
+					}
+				case "partial":
+					f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0600)
+					if err != nil {
+						t.Fatal(err)
+					}
+					text := "BOOTSTRAP part"
+					if cycle == 2 {
+						text = "ial\n"
+					}
+					if _, err := f.WriteString(text); err != nil {
+						t.Fatal(err)
+					}
+					_ = f.Close()
+				}
+			}}
+			if scenario == "writer-error" {
+				options.output = failingLogWriter{}
+			}
+			code := followWithOptions(path, logFilterParts(), 100, options)
+			if scenario == "writer-error" {
+				if code != 1 {
+					t.Fatal("writer failure ignored")
+				}
+				return
+			}
+			expected := map[string]string{"rotate": "BOOTSTRAP new replacement log is larger\n", "truncate": "BOOTSTRAP n\n", "partial": "BOOTSTRAP partial\n"}[scenario]
+			if code != 0 || output.String() != "BOOTSTRAP old\n"+expected {
+				t.Fatalf("code=%d output=%q", code, output.String())
+			}
+		})
+	}
+}
+
+type failingLogWriter struct{}
+
+func (failingLogWriter) Write([]byte) (int, error) { return 0, io.ErrClosedPipe }
+
+type appendOnFirstLine struct {
+	bytes.Buffer
+	append func()
+}
+
+func (w *appendOnFirstLine) Write(b []byte) (int, error) {
+	n, err := w.Buffer.Write(b)
+	if w.append != nil {
+		appendNow := w.append
+		w.append = nil
+		appendNow()
+	}
+	return n, err
+}
+
+func TestFollowDoesNotLoseAppendDuringInitialOutput(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "log")
+	if err := os.WriteFile(path, []byte("BOOTSTRAP initial\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	output := &appendOnFirstLine{append: func() {
+		f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0600)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := f.WriteString("BOOTSTRAP during initial output\n"); err != nil {
+			t.Fatal(err)
+		}
+		_ = f.Close()
+	}}
+	if code := followWithOptions(path, logFilterParts(), 100, followOptions{maxCycles: 1, output: output}); code != 0 {
+		t.Fatal(code)
+	}
+	if got := output.String(); got != "BOOTSTRAP initial\nBOOTSTRAP during initial output\n" {
+		t.Fatalf("output=%q", got)
+	}
+}
+
+func TestTailRetainsOnlyRequestedLines(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "log")
+	if err := os.WriteFile(path, []byte("one\r\ntwo\nthree\nfour"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	lines, err := tailLines(path, 2)
+	if err != nil || strings.Join(lines, "|") != "three|four" {
+		t.Fatalf("lines=%q err=%v", lines, err)
+	}
+	lines, err = tailLines(path, 0)
+	if err != nil || len(lines) != 0 {
+		t.Fatalf("zero tail=%q err=%v", lines, err)
+	}
 }

@@ -81,23 +81,24 @@ func InstallRoot() string {
 func InferVersion(archivePath, fallback string) string {
 	base := filepath.Base(archivePath)
 	if i := strings.Index(base, "-v"); i >= 0 {
-		rest := base[i+2:]
-		end := 0
-		for j, c := range rest {
-			if (c >= '0' && c <= '9') || c == '.' {
-				end = j + 1
-				continue
+		label := base[i+2:]
+		for _, marker := range []string{"-linux-", "-windows-", "-darwin-"} {
+			if end := strings.Index(label, marker); end >= 0 {
+				label = label[:end]
+				break
 			}
-			break
 		}
-		if end > 0 {
-			return rest[:end]
+		for _, suffix := range []string{".tar.gz", ".tar.xz", ".tgz", ".zip"} {
+			label = strings.TrimSuffix(label, suffix)
+		}
+		if len(label) > 0 && label[0] >= '0' && label[0] <= '9' && clientfiles.ValidVersion(label) {
+			return label
 		}
 	}
-	if fallback != "" {
-		return strings.TrimPrefix(fallback, "v")
+	if label := strings.TrimPrefix(fallback, "v"); clientfiles.ValidVersion(label) {
+		return label
 	}
-	return time.Now().Format("20060102150405")
+	return "local"
 }
 
 // InstallLicense writes DEST/LICENSE best-effort.

@@ -105,6 +105,9 @@ func FormatReportFromCollect(r Report) string {
 	} else {
 		row(false, "Scheduler", "not configured", false)
 	}
+	if len(r.UnverifiedChecks) > 0 {
+		row(false, "Not verified", strings.Join(r.UnverifiedChecks, ", "), true)
+	}
 	fmt.Fprintf(&b, "\n  Update channel : %s\n", r.UpdateChannel)
 	b.WriteString("\nTip: millennium diag --json for machine-readable output; doctor --dry-run for a repair plan.\n")
 	return b.String()

@@ -2,9 +2,14 @@ package mcp
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
+
+	"github.com/bolens/millennium-helpers/internal/dirlock"
 )
 
 func TestRegisterWritesCursorAndClaude(t *testing.T) {
@@ -72,5 +77,76 @@ func TestRegisterPreservesInvalidConfig(t *testing.T) {
 	}
 	if string(raw) != invalid {
 		t.Fatalf("invalid config was overwritten: %q", raw)
+	}
+}
+
+func TestRegisterPreservesDocumentAndRejectsInvalidNamespace(t *testing.T) {
+	config := mcpHostConfig{Label: "fixture", Path: filepath.Join(t.TempDir(), "config.json"), Key: "mcpServers"}
+	for _, body := range []string{"null", `{"mcpServers":[]}`, `{"mcpServers":"keep"}`, `{broken`} {
+		if err := os.WriteFile(config.Path, []byte(body), 0600); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := registerHost(config, map[string]any{"command": mcpCommand, "args": []string{"mcp"}}); err == nil {
+			t.Fatalf("accepted %s", body)
+		}
+		after, err := os.ReadFile(config.Path)
+		if err != nil || string(after) != body {
+			t.Fatal("invalid document overwritten")
+		}
+	}
+	if err := os.WriteFile(config.Path, []byte(`{"unrelated":9007199254740993}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if ok, err := registerHost(config, map[string]any{"command": mcpCommand, "args": []string{"mcp"}}); err != nil || !ok {
+		t.Fatalf("registered=%v err=%v", ok, err)
+	}
+	after, err := os.ReadFile(config.Path)
+	if err != nil || !strings.Contains(string(after), "9007199254740993") {
+		t.Fatal("unrelated integer changed")
+	}
+}
+
+func TestRegisterRejectsCompetingWriter(t *testing.T) {
+	config := mcpHostConfig{Label: "fixture", Path: filepath.Join(t.TempDir(), "config.json"), Key: "mcpServers"}
+	before := []byte(`{"keep":true}`)
+	if err := os.WriteFile(config.Path, before, 0600); err != nil {
+		t.Fatal(err)
+	}
+	lock, err := dirlock.Acquire(filepath.Dir(config.Path))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if err := lock.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
+	if _, err := registerHost(config, map[string]any{}); !errors.Is(err, dirlock.ErrBusy) {
+		t.Fatalf("err=%v", err)
+	}
+	after, err := os.ReadFile(config.Path)
+	if err != nil || string(after) != string(before) {
+		t.Fatal("competing writer changed host config")
+	}
+}
+
+func TestRegisterDoesNotOverwriteUnreadableDocument(t *testing.T) {
+	if runtime.GOOS == "windows" || os.Geteuid() == 0 {
+		t.Skip("Unix discretionary read permissions")
+	}
+	config := mcpHostConfig{Label: "fixture", Path: filepath.Join(t.TempDir(), "config.json"), Key: "mcpServers"}
+	before := []byte(`{"keep":"private"}`)
+	if err := os.WriteFile(config.Path, before, 0000); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := registerHost(config, map[string]any{}); !errors.Is(err, os.ErrPermission) {
+		t.Fatalf("err=%v", err)
+	}
+	if err := os.Chmod(config.Path, 0600); err != nil {
+		t.Fatal(err)
+	}
+	after, err := os.ReadFile(config.Path)
+	if err != nil || string(after) != string(before) {
+		t.Fatal("unreadable host config overwritten")
 	}
 }

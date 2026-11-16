@@ -117,12 +117,6 @@ func ResolveChannel(explicit string) string {
 	return "stable"
 }
 
-// NeedsLegacy reports actions that still require shell/PS (none — all native).
-func NeedsLegacy(o Options) bool {
-	_ = o
-	return false
-}
-
 // RunCLI runs native schedule actions.
 func RunCLI(o Options) int {
 	if o.Help || o.Action == "" {

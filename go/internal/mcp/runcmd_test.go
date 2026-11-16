@@ -90,3 +90,11 @@ func TestToolsListHasConfirm(t *testing.T) {
 		t.Fatal("millennium_purge missing confirm")
 	}
 }
+
+func TestRunCmdRejectsEmptyCommand(t *testing.T) {
+	for _, args := range [][]string{nil, {}, {""}, {"  "}} {
+		if result := RunCmd(args, false, time.Second); !result.IsError {
+			t.Fatalf("accepted %q", args)
+		}
+	}
+}

@@ -11,13 +11,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Pages code examples use theme-aware shell syntax highlighting without changing copied commands.
 
+### Changed
+
+- JSON diagnostics mark unmeasured package and linger checks as false and list them under unverified_checks, preserving boolean field types.
+
 ### Fixed
+
+- Concurrent helper configuration changes and install/rollback operations reject contention before overwriting state.
+- Log following handles rotation, partial lines, and appends during initial output without dropping entries.
+- MCP preserves large request IDs and returns protocol errors for malformed requests without executing notifications.
+- Configuration edits and MCP registration preserve unrelated large integers and refuse to overwrite invalid host documents.
+- Configuration rejects ignored or ambiguous arguments, preserves the built-in Steam theme, and refuses stale theme-disable requests.
 
 - Linux diagnostics and repair recognize SteamRT3 and its x64 bootstrap, client library, and Lua helper.
 
 - Explicit light mode keeps its light palette when the operating system prefers dark mode.
 
 ### Security
+
+- Helper configuration mutation acknowledgements and dry-runs redact GitHub tokens.
 
 - Release and Nix source builds use Go 1.26.11 to include the net/http fix for CVE-2026-97054.
 

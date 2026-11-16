@@ -57,6 +57,9 @@ func resolveExecutable() string {
 }
 
 func RunCmd(argv []string, elevate bool, timeout time.Duration) CallResult {
+	if len(argv) == 0 || strings.TrimSpace(argv[0]) == "" {
+		return textResult("Error: command is empty", true)
+	}
 	if timeout <= 0 {
 		timeout = DefaultTimeout
 	}

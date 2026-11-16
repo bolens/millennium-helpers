@@ -94,6 +94,15 @@ Go to Settings -> Features -> MCP, click **+ Add New MCP Server**, and configure
 - **Type**: `command`
 - **Command**: `millennium mcp`
 
+## Protocol behavior
+
+Messages are newline-delimited JSON-RPC 2.0. Request IDs round-trip exactly,
+including integers larger than JavaScript's exact integer range. Notifications
+do not execute tools or produce responses. Malformed JSON, invalid requests,
+invalid tool parameters, and unknown methods return structured protocol errors.
+Response whitespace is not part of the interface. Consumers should decode JSON
+rather than matching formatted substrings.
+
 ## Related
 
 - **Docs index:** [README.md](README.md)

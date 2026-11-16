@@ -1,6 +1,7 @@
 package diag
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -43,9 +44,10 @@ func lineMatchesFilter(line string, parts []string) bool {
 
 // FollowLogs prints updater tail once, then filter-tails the newest Steam log.
 func FollowLogs() int {
+	maxCycles := followMaxCycles
 	if v := strings.TrimSpace(os.Getenv("MILLENNIUM_FOLLOW_MAX_CYCLES")); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {
-			followMaxCycles = n
+			maxCycles = n
 		}
 	}
 	state := schedule.LogPath()
@@ -62,97 +64,106 @@ func FollowLogs() int {
 	}
 	fmt.Printf("Reading log file: %s\n\n", logFile)
 	fmt.Println("Tailing log file (Ctrl+C to exit)...")
-	return followFiltered(logFile, logFilterParts(), 100)
+	return followWithOptions(logFile, logFilterParts(), 100, followOptions{maxCycles, followPollInterval, followCycleHook, followOutput})
+}
+
+type followOptions struct {
+	maxCycles    int
+	pollInterval time.Duration
+	cycleHook    func()
+	output       io.Writer
 }
 
 func followFiltered(path string, parts []string, initialTail int) int {
-	lines, err := tailLines(path, initialTail)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		return 1
-	}
-	for _, line := range lines {
-		if lineMatchesFilter(line, parts) {
-			if _, err := fmt.Fprintln(followOutput, line); err != nil {
-				fmt.Fprintf(os.Stderr, "Error: write follow output: %v\n", err)
-				return 1
-			}
-		}
-	}
+	return followWithOptions(path, parts, initialTail, followOptions{followMaxCycles, followPollInterval, followCycleHook, followOutput})
+}
 
-	f, err := os.Open(path)
+func followWithOptions(path string, parts []string, initialTail int, options followOptions) int {
+	f, err := openFollowFile(path)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return 1
 	}
 	defer func() { _ = f.Close() }()
-	offset, err := f.Seek(0, io.SeekEnd)
+	info, err := f.Stat()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
-
-	var partial string
-	cycles := 0
-	for {
-		if followMaxCycles > 0 && cycles >= followMaxCycles {
-			return 0
+	offset := info.Size()
+	lines, partial, err := readTail(io.NewSectionReader(f, 0, offset), initialTail)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+	emit := func(line string) error {
+		if lineMatchesFilter(line, parts) {
+			_, err := fmt.Fprintln(options.output, line)
+			return err
 		}
-		cycles++
-		if followCycleHook != nil {
-			followCycleHook()
+		return nil
+	}
+	for _, line := range lines {
+		if err := emit(line); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 1
 		}
-
-		st, err := os.Stat(path)
+	}
+	for cycle := 0; options.maxCycles <= 0 || cycle < options.maxCycles; cycle++ {
+		if options.cycleHook != nil {
+			options.cycleHook()
+		}
+		current, err := os.Stat(path)
 		if err != nil {
-			time.Sleep(followPollInterval)
+			time.Sleep(options.pollInterval)
 			continue
 		}
-		// Handle truncate / rotate (inode change): reopen if needed.
-		if st.Size() < offset {
-			_ = f.Close()
-			f, err = os.Open(path)
+		openInfo, err := f.Stat()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 1
+		}
+		if !os.SameFile(openInfo, current) || current.Size() < offset {
+			replacement, err := openFollowFile(path)
 			if err != nil {
-				time.Sleep(followPollInterval)
+				time.Sleep(options.pollInterval)
 				continue
 			}
+			_ = f.Close()
+			f = replacement
 			offset = 0
 			partial = ""
+			current, err = f.Stat()
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				return 1
+			}
 		}
-		if st.Size() == offset {
-			time.Sleep(followPollInterval)
+		if current.Size() == offset {
+			time.Sleep(options.pollInterval)
 			continue
 		}
-		if _, err := f.Seek(offset, io.SeekStart); err != nil {
-			time.Sleep(followPollInterval)
-			continue
-		}
-		buf := make([]byte, st.Size()-offset)
-		n, err := io.ReadFull(f, buf)
-		if err != nil && err != io.ErrUnexpectedEOF && err != io.EOF {
-			time.Sleep(followPollInterval)
-			continue
-		}
-		if n <= 0 {
-			time.Sleep(followPollInterval)
-			continue
-		}
-		offset += int64(n)
-		data := partial + string(buf[:n])
-		chunks := strings.Split(strings.ReplaceAll(data, "\r\n", "\n"), "\n")
-		if strings.HasSuffix(data, "\n") || strings.HasSuffix(data, "\r\n") {
-			partial = ""
-		} else if len(chunks) > 0 {
-			partial = chunks[len(chunks)-1]
-			chunks = chunks[:len(chunks)-1]
-		}
-		for _, line := range chunks {
-			if lineMatchesFilter(line, parts) {
-				if _, err := fmt.Fprintln(followOutput, line); err != nil {
-					fmt.Fprintf(os.Stderr, "Error: write follow output: %v\n", err)
+		reader := bufio.NewReader(io.NewSectionReader(f, offset, current.Size()-offset))
+		for {
+			text, readErr := reader.ReadString('\n')
+			offset += int64(len(text))
+			partial += text
+			if strings.HasSuffix(partial, "\n") {
+				line := strings.TrimSuffix(strings.TrimSuffix(partial, "\n"), "\r")
+				if err := emit(line); err != nil {
+					fmt.Fprintln(os.Stderr, err)
 					return 1
 				}
+				partial = ""
+			}
+			if readErr == io.EOF {
+				break
+			}
+			if readErr != nil {
+				fmt.Fprintln(os.Stderr, readErr)
+				return 1
 			}
 		}
 	}
+	return 0
 }
