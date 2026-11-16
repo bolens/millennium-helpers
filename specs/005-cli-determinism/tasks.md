@@ -21,3 +21,8 @@ and filesystem outcomes rather than manufacturing complete syscall-error coverag
 No independent reviewer was used. The expanded native quality script and all local
 checks pass with Go 1.26.11. Direct Windows execution is required for lock and log
 rotation behavior, not inferred from cross-compilation.
+
+The final self-review also found float64 conversion of unrelated JSON numbers
+and unsafe MCP-host registration on unreadable/non-object documents. Shared strict
+object decoding now preserves numeric text, and registration uses the same kernel
+lock boundary, validates its namespace, and preserves invalid input unchanged.

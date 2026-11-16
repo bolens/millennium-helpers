@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/bolens/millennium-helpers/internal/dirlock"
@@ -78,5 +79,19 @@ func TestDisableErrorsDoesNotDisableChangedTheme(t *testing.T) {
 	after, readErr := os.ReadFile(path)
 	if readErr != nil || string(after) != string(before) {
 		t.Fatal("stale report altered configuration")
+	}
+}
+
+func TestMutationPreservesUnknownLargeNumbers(t *testing.T) {
+	path, _, _ := fixture(t)
+	if err := os.WriteFile(path, []byte(`{"unknown":9007199254740993,"plugins":{"enabledPlugins":[]}}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := SetPlugins([]string{"alpha"}, true, false); err != nil {
+		t.Fatal(err)
+	}
+	body, err := os.ReadFile(path)
+	if err != nil || !strings.Contains(string(body), "9007199254740993") {
+		t.Fatal("unrelated integer changed")
 	}
 }

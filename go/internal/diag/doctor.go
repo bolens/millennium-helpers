@@ -67,7 +67,7 @@ func RunDoctorLive(o Options) int {
 	}
 	steps := DoctorPlan(r, o.Force)
 	if len(steps) == 0 {
-		fmt.Println("No repairable issues detected.")
+		fmt.Println("No issues detected among the completed checks.")
 		if len(r.UnverifiedChecks) > 0 {
 			fmt.Println("Some checks remain unverified; see millennium diag for details.")
 		}

@@ -12,6 +12,7 @@ import (
 
 	"github.com/bolens/millennium-helpers/internal/atomicfile"
 	"github.com/bolens/millennium-helpers/internal/dirlock"
+	"github.com/bolens/millennium-helpers/internal/jsonobject"
 	"github.com/bolens/millennium-helpers/internal/steam"
 )
 
@@ -154,14 +155,11 @@ func load() (document, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not read Millennium client config at %s: %w", path, err)
 	}
-	var data document
-	if err := json.Unmarshal(b, &data); err != nil {
+	object, err := jsonobject.Decode(b)
+	if err != nil {
 		return nil, fmt.Errorf("invalid Millennium client config at %s: %w", path, err)
 	}
-	if data == nil {
-		return nil, fmt.Errorf("Millennium client config must be a JSON object")
-	}
-	return data, nil
+	return document(object), nil
 }
 
 func object(data document, key string) (map[string]any, error) {

@@ -8,6 +8,8 @@ import (
 	"runtime"
 
 	"github.com/bolens/millennium-helpers/internal/atomicfile"
+	"github.com/bolens/millennium-helpers/internal/dirlock"
+	"github.com/bolens/millennium-helpers/internal/jsonobject"
 )
 
 const (
@@ -55,47 +57,15 @@ func Register() RegisterResult {
 
 		out.Lines = append(out.Lines, fmt.Sprintf("Registering Millennium Helpers MCP server in %s...", cfg.Label))
 
-		data := map[string]any{}
-		if raw, err := os.ReadFile(cfg.Path); err == nil && len(raw) > 0 {
-			if err := json.Unmarshal(raw, &data); err != nil {
-				out.Lines = append(out.Lines, fmt.Sprintf(
-					"  Error: existing config at %s is invalid JSON: %v. File left unchanged.", cfg.Path, err,
-				))
-				continue
-			}
-		}
-
-		servers, _ := data[cfg.Key].(map[string]any)
-		if servers == nil {
-			servers = map[string]any{}
-			data[cfg.Key] = servers
-		}
-
-		if existing, ok := servers[mcpServerName].(map[string]any); ok {
-			args, _ := existing["args"].([]any)
-			if cmd, _ := existing["command"].(string); cmd == mcpCommand && len(args) == 1 && args[0] == "mcp" {
-				out.Lines = append(out.Lines, fmt.Sprintf("  Already registered in %s.", cfg.Label))
-				out.RegisteredAny = true
-				continue
-			}
-		}
-
-		servers[mcpServerName] = serverConfig
-		raw, err := json.MarshalIndent(data, "", "  ")
+		registered, err := registerHost(cfg, serverConfig)
 		if err != nil {
-			out.Lines = append(out.Lines, fmt.Sprintf("  Error: failed to encode config for %s: %v", cfg.Path, err))
+			out.Lines = append(out.Lines, fmt.Sprintf("  Error: %s config left unchanged: %v", cfg.Label, err))
 			continue
 		}
-		mode := os.FileMode(0o644)
-		if st, err := os.Stat(cfg.Path); err == nil {
-			mode = st.Mode().Perm()
+		if registered {
+			out.Lines = append(out.Lines, fmt.Sprintf("  Registered in %s config: %s", cfg.Label, cfg.Path))
+			out.RegisteredAny = true
 		}
-		if err := atomicfile.WriteFile(cfg.Path, append(raw, '\n'), mode); err != nil {
-			out.Lines = append(out.Lines, fmt.Sprintf("  Error: failed to write config to %s: %v", cfg.Path, err))
-			continue
-		}
-		out.Lines = append(out.Lines, fmt.Sprintf("  Successfully registered in %s config: %s", cfg.Label, cfg.Path))
-		out.RegisteredAny = true
 	}
 
 	snippet, _ := json.MarshalIndent(map[string]any{
@@ -126,4 +96,52 @@ func RunRegister() int {
 		return 1
 	}
 	return 0
+}
+
+func registerHost(cfg mcpHostConfig, serverConfig map[string]any) (bool, error) {
+	lock, err := dirlock.Acquire(filepath.Dir(cfg.Path))
+	if err != nil {
+		return false, err
+	}
+	defer func() { _ = lock.Close() }()
+	data := map[string]any{}
+	raw, err := os.ReadFile(cfg.Path)
+	if err != nil && !os.IsNotExist(err) {
+		return false, err
+	}
+	if err == nil {
+		data, err = jsonobject.Decode(raw)
+		if err != nil {
+			return false, fmt.Errorf("invalid JSON: %w", err)
+		}
+	}
+	servers := map[string]any{}
+	if value, present := data[cfg.Key]; present {
+		var ok bool
+		servers, ok = value.(map[string]any)
+		if !ok {
+			return false, fmt.Errorf("%s must be a JSON object", cfg.Key)
+		}
+	} else {
+		data[cfg.Key] = servers
+	}
+	if existing, ok := servers[mcpServerName].(map[string]any); ok {
+		args, _ := existing["args"].([]any)
+		if command, _ := existing["command"].(string); command == mcpCommand && len(args) == 1 && args[0] == "mcp" {
+			return true, nil
+		}
+	}
+	servers[mcpServerName] = serverConfig
+	raw, err = json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return false, err
+	}
+	mode := os.FileMode(0644)
+	if info, err := os.Stat(cfg.Path); err == nil {
+		mode = info.Mode().Perm()
+	}
+	if err := atomicfile.WriteFile(cfg.Path, append(raw, '\n'), mode); err != nil {
+		return false, err
+	}
+	return true, nil
 }

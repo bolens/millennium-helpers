@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/bolens/millennium-helpers/internal/atomicfile"
+	"github.com/bolens/millennium-helpers/internal/jsonobject"
 	"github.com/bolens/millennium-helpers/internal/usercontext"
 )
 
@@ -68,14 +69,11 @@ func Load() (Data, error) {
 		}
 		return nil, err
 	}
-	var data Data
-	if err := json.Unmarshal(b, &data); err != nil {
+	object, err := jsonobject.Decode(b)
+	if err != nil {
 		return nil, fmt.Errorf("invalid config JSON at %s: %w", path, err)
 	}
-	if data == nil {
-		data = Data{}
-	}
-	return data, nil
+	return Data(object), nil
 }
 
 // Save writes config.json with indent and restrictive perms on Unix.

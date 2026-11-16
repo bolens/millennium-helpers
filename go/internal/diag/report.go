@@ -490,7 +490,7 @@ func FormatDoctorDryRun(r Report, force bool) string {
 	b.WriteString("=== Millennium Doctor plan (native) ===\n")
 	steps := DoctorPlan(r, force)
 	if len(steps) == 0 {
-		b.WriteString("No repairable issues detected.\n")
+		b.WriteString("No issues detected among the completed checks.\n")
 		if len(r.UnverifiedChecks) > 0 {
 			b.WriteString("Some checks remain unverified; see millennium diag for details.\n")
 		}

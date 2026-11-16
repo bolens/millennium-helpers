@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Concurrent helper configuration changes and install/rollback operations reject contention before overwriting state.
 - Log following handles rotation, partial lines, and appends during initial output without dropping entries.
 - MCP preserves large request IDs and returns protocol errors for malformed requests without executing notifications.
+- Configuration edits and MCP registration preserve unrelated large integers and refuse to overwrite invalid host documents.
 - Configuration rejects ignored or ambiguous arguments, preserves the built-in Steam theme, and refuses stale theme-disable requests.
 
 - Linux diagnostics and repair recognize SteamRT3 and its x64 bootstrap, client library, and Lua helper.

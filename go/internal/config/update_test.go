@@ -94,3 +94,18 @@ func TestConfigMutationArityAndSecretOutput(t *testing.T) {
 		t.Fatal("explicit clearing no longer supported")
 	}
 }
+
+func TestUpdatePreservesUnknownLargeNumbers(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.json")
+	t.Setenv("MILLENNIUM_CONFIG_FILE", path)
+	if err := os.WriteFile(path, []byte(`{"unknown":9007199254740993}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := Update(func(data Data) error { return Set(data, "backup_limit", "9") }); err != nil {
+		t.Fatal(err)
+	}
+	body, err := os.ReadFile(path)
+	if err != nil || !strings.Contains(string(body), "9007199254740993") {
+		t.Fatal("unrelated integer changed")
+	}
+}
