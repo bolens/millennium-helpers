@@ -113,6 +113,15 @@ requiring that container path to exist on the host. Legacy `ubuntu12_32` and
 Fixture checks establish file and hook consistency. Confirm live recovery after a
 Steam restart by checking for Millennium startup messages and its menu in Steam.
 
+### Older beta releases
+
+A beta or main channel can resolve to a release older than the installed stable
+client. Upgrade and rollback refuse an archive missing the x64 components when
+a targeted Steam installation uses SteamRT3. The active runtime and hooks are
+kept intact. Keep the selected channel if you want to wait for a compatible beta,
+or explicitly run `millennium upgrade --channel stable --yes` to install stable.
+Doctor does not silently change your selected channel.
+
 ### Recovery without millennium-helpers
 
 These steps are for native Linux x86-64 Steam, including Arch, when the installed

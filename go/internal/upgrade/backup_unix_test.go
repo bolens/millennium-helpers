@@ -10,6 +10,10 @@ import (
 )
 
 func TestRollbackMetadataAndBackupPreservation(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
+	t.Setenv("SUDO_USER", "")
+	t.Setenv("STEAM", "")
+	t.Setenv("STEAM_PATH", "")
 	if runtime.GOOS != "linux" {
 		t.Skip("Linux manifest validation")
 	}

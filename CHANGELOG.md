@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Configuration edits and MCP registration preserve unrelated large integers and refuse to overwrite invalid host documents.
 - Configuration rejects ignored or ambiguous arguments, preserves the built-in Steam theme, and refuses stale theme-disable requests.
 
+- Upgrades and rollbacks refuse clients missing SteamRT3 components before replacing a working installation, including older beta releases.
 - Linux diagnostics and repair recognize SteamRT3 and its x64 bootstrap, client library, and Lua helper. Recovery instructions cover installations without the helper.
 - Repair restores executable permissions on runtime helpers and refuses unsafe file and ownership targets.
 
