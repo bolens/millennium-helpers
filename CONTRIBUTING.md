@@ -43,7 +43,7 @@ Tools fall into three tiers. Install what matches the work you are doing.
 | **Pester** | Windows unit tests | `Install-Module Pester -Scope CurrentUser` (Dev Container post-create does this) |
 | **Go 1.22+** | Also listed under Core; needed anytime you touch `go/` beyond `check-all` | Same install notes as Core |
 | **PyYAML** | `make check-cli-contract` / `make check-winget` | `pip install pyyaml` |
-| **zsh**, **fish**, **Nushell (≥ 0.114)** | Completion syntax/runtime smokes in `make check-completions` / CI completions workflow | Distro packages or [Nushell releases](https://www.nushell.sh/); missing shells are skipped with a warning, not a hard fail |
+| **zsh**, **fish**, **Nushell (≥ 0.114)** | Completion syntax/runtime smokes in `make check-completions` and native CI checks | Distro packages or [Nushell releases](https://www.nushell.sh/); missing shells are skipped with a warning, not a hard fail |
 | `gh` | Release runbook / inspecting Actions | [GitHub CLI](https://cli.github.com/) |
 | `pre-commit` | Optional git hooks | `pip install pre-commit && pre-commit install && pre-commit install --hook-type pre-push` |
 | `actionlint` | Workflow lint (pre-commit) | [actionlint releases](https://github.com/rhysd/actionlint/releases) or distro/`go install`; skipped if missing |
@@ -270,7 +270,7 @@ pre-commit install --hook-type pre-push
 
 **pre-commit** runs: remote [pre-commit-hooks](https://github.com/pre-commit/pre-commit-hooks) sanity checks (private keys, merge conflicts, large files, symlinks, trailing whitespace, EOF newlines, LF line endings), plus local shellcheck, ruff check + format `--check`, VERSION presence, Arch from-source/`-bin`/`-git` `.SRCINFO` sync when those recipes change, packaging version sync, winget manifests, completions tests (when `completions/` changes), man-page coverage, docs cross-links (guides + licensing), actionlint (workflows; skipped if not installed), and gitleaks on staged changes (skipped if not installed).
 
-**pre-push** runs: `make lint`, and `make test-windows` when the push range touches `tests/windows/`, `completions/powershell/`, or `go/internal/install/` (skipped if `pwsh` is missing).
+**pre-push** runs: `make check-all`, and `make test-windows` when the push range touches `tests/windows/`, `completions/powershell/`, `go/internal/install/`, or `packaging/chocolatey/` (skipped if `pwsh` is missing).
 
 ## Style
 

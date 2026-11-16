@@ -118,7 +118,7 @@ millennium config theme NAME</code></pre></article>
     <section class="guide-section help" id="help" aria-labelledby="help-title">
       <header class="guide-heading"><p class="kicker">Get help</p><h2 id="help-title">Start with the symptom.</h2></header>
       <div class="help-grid">
-        <article><h3>Steam starts without Millennium</h3><p>Close Steam and run <code>millennium diag</code>. If the hook check fails, run <code>millennium doctor</code>.</p></article>
+        <article><h3>Steam starts without Millennium</h3><p>Run <code>millennium diag</code> to check the runtime and hooks. For SteamRT3 failures or missing logs, follow the <a href="https://github.com/bolens/millennium-helpers/blob/main/docs/steam-millennium-recovery.md">manual recovery guide</a>.</p></article>
         <article><h3>An update did not finish</h3><p>Run <code>millennium diag</code>, then retry <code>millennium upgrade</code>. Keep Steam closed until the command finishes.</p></article>
         <article><h3>A theme or plugin causes trouble</h3><p>Run <code>millennium config plugins</code> and disable the recent change. Restart Steam after you save the selection.</p></article>
         <article><h3>You need to share a report</h3><p>Run <code>millennium diag --share</code>. The command removes known sensitive fields before it uploads the report. Review the file path shown in the output.</p></article>
