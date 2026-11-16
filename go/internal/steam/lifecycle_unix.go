@@ -138,10 +138,10 @@ func CaptureEnv(username, home string) error {
 			}
 		}
 		cmdRaw, _ := os.ReadFile(filepath.Join(root, pid, "cmdline"))
-		args := bytes.Split(cmdRaw, []byte{0})
+		args := bytes.Split(bytes.TrimSuffix(cmdRaw, []byte{0}), []byte{0})
 		var quoted []string
 		for i, a := range args {
-			if i == 0 || len(a) == 0 {
+			if i == 0 {
 				continue
 			}
 			quoted = append(quoted, shellQuote(string(a)))

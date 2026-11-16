@@ -86,8 +86,9 @@ func unquoteShell(s string) string {
 			if s[0] == '"' {
 				inner = strings.ReplaceAll(inner, `\"`, `"`)
 				inner = strings.ReplaceAll(inner, `\\`, `\`)
+				return inner
 			}
-			return inner
+			return strings.ReplaceAll(inner, "'\\''", "'")
 		}
 	}
 	return s

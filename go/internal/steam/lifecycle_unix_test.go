@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 )
@@ -30,8 +31,15 @@ func TestRelaunchRetainsCapturedEnvironment(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("MILLENNIUM_STATE_DIR", dir)
 	result := filepath.Join(dir, "result")
+	sentinel := filepath.Join(dir, "must-not-exist")
+	argv := []string{"-srt-logger-opened", "space arg", "quote'arg", "$(touch " + sentinel + ")", "; touch " + sentinel + " #", ""}
+	var quoted []string
+	for _, arg := range argv {
+		quoted = append(quoted, shellQuote(arg))
+	}
+	display := ":42's display"
 	exe := filepath.Join(dir, "steam")
-	if err := os.WriteFile(exe, []byte("#!/bin/sh\nprintf '%s' \"$DISPLAY\" > "+shellQuote(result)+"\n"), 0o755); err != nil {
+	if err := os.WriteFile(exe, []byte("#!/bin/sh\nprintf '%s\\000' \"$DISPLAY\" \"$@\" > "+shellQuote(result)+"\n"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
@@ -41,22 +49,19 @@ func TestRelaunchRetainsCapturedEnvironment(t *testing.T) {
 		t.Fatal(err)
 	}
 	state := RelaunchStateFile(name, home)
-	if err := writeRelaunchEnv(state, map[string]string{"DISPLAY": ":42"}, "", false); err != nil {
+	if err := writeRelaunchEnv(state, map[string]string{"DISPLAY": display}, strings.Join(quoted, " "), false); err != nil {
 		t.Fatal(err)
 	}
 	attempted, err := relaunchFromState(name, home, runSteamCmdWithEnv)
 	if !attempted || err != nil {
 		t.Fatalf("relaunch %v %v", attempted, err)
 	}
-	deadline := time.Now().Add(3 * time.Second)
-	for time.Now().Before(deadline) {
-		if b, err := os.ReadFile(result); err == nil && string(b) == ":42" {
-			break
-		}
-		time.Sleep(10 * time.Millisecond)
+	expected := strings.Join(append([]string{display}, argv...), "\x00") + "\x00"
+	if b, err := os.ReadFile(result); err != nil || string(b) != expected {
+		t.Fatalf("captured environment/arguments lost: %q %v", b, err)
 	}
-	if b, err := os.ReadFile(result); err != nil || string(b) != ":42" {
-		t.Fatalf("captured display lost: %q %v", b, err)
+	if _, err := os.Stat(sentinel); !os.IsNotExist(err) {
+		t.Fatal("captured arguments executed as shell commands", err)
 	}
 	if _, err := os.Stat(state); !os.IsNotExist(err) {
 		t.Fatal("successful relaunch retained state")
@@ -116,5 +121,43 @@ func TestFailedExecutableRetainsRelaunchState(t *testing.T) {
 	}
 	if _, err := os.Stat(state); err != nil {
 		t.Fatal("lost failed relaunch state")
+	}
+}
+
+func TestCaptureEnvPreservesEmptyArguments(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("Linux proc capture")
+	}
+	root := t.TempDir()
+	t.Setenv("MOCK_PROC", root)
+	t.Setenv("MILLENNIUM_STATE_DIR", t.TempDir())
+	bin := t.TempDir()
+	if err := os.WriteFile(filepath.Join(bin, "pgrep"), []byte("#!/bin/sh\nprintf '4242\\n'\n"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", bin)
+	process := filepath.Join(root, "4242")
+	if err := os.Mkdir(process, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(process, "cmdline"), []byte("steam\x00-srt-logger-opened\x00\x00"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(process, "environ"), []byte("DISPLAY=:fixture\x00"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	name, home, err := TargetUser()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := CaptureEnv(name, home); err != nil {
+		t.Fatal(err)
+	}
+	vals, err := ParseRelaunchEnv(RelaunchStateFile(name, home))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := vals["STEAM_ARGS"], "'-srt-logger-opened' '' "; got != want {
+		t.Fatalf("args=%q, want %q", got, want)
 	}
 }
