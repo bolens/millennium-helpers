@@ -24,7 +24,7 @@ _srcdir="millennium-helpers-${pkgver}"
 source=("${url}/releases/download/v${pkgver}/millennium-helpers-v${pkgver}-src.tar.gz"
         "millennium-helpers.sudoers")
 noextract=("${_srcarchive}")
-sha256sums=('a90fe34e27d12afc042458ff9e700491226c27727a533a091e9f0e7f30ade71d'
+sha256sums=('0a2f6c0801cb911b46a49d35e07d3adcb584e71cd650db9887f763198c9f8d49'
             'b242d171bced3313da83fb6bfd6b29fdaf17fec28892b6e38435d7dd321949bd')
 
 prepare() {
