@@ -24,7 +24,7 @@ pkgbase = millennium-helpers
 	backup = etc/sudoers.d/millennium-helpers
 	source = https://github.com/bolens/millennium-helpers/releases/download/v4.1.2/millennium-helpers-v4.1.2-src.tar.gz
 	source = millennium-helpers.sudoers
-	sha256sums = 0a2f6c0801cb911b46a49d35e07d3adcb584e71cd650db9887f763198c9f8d49
+	sha256sums = 058931df9770e35f597d994cf8beccf0955524b021f95cfc3aa72585e3781c5d
 	sha256sums = b242d171bced3313da83fb6bfd6b29fdaf17fec28892b6e38435d7dd321949bd
 
 pkgname = millennium-helpers
