@@ -30,54 +30,6 @@ env:
   GO_VERSION: "1.26.11"
 
 jobs:
-  quality:
-    name: Go quality (vet/fmt/lint/vuln)
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-
-      - name: Setup Go
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: go/go.sum
-
-      - name: go vet
-        working-directory: go
-        run: go vet ./...
-
-      - name: gofmt
-        working-directory: go
-        run: |
-          set -euo pipefail
-          out="$(find . -name '*.go' -print0 | xargs -0 gofmt -l)"
-          if [ -n "$out" ]; then
-            printf 'gofmt needed:\n%s\n' "$out" >&2
-            exit 1
-          fi
-
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9
-        with:
-          version: v2.12.2
-          working-directory: go
-          args: --config=../.golangci.yml
-
-      - name: govulncheck
-        run: bash scripts/ci/check-govulncheck.sh
-
-      - name: Windows compile tests (Linux runner)
-        working-directory: go
-        run: |
-          set -euo pipefail
-          for pkg in $(go list ./...); do
-            GOOS=windows GOARCH=amd64 go test -buildvcs=false -c -o /dev/null "$pkg"
-          done
-
   test:
     name: Go test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -567,19 +519,3 @@ jobs:
           bin/millennium diag --help | grep -F 'Usage:'
           bin/millennium doctor --help | grep -F 'Usage:'
           bin/millennium doctor --dry-run | grep -F 'DRY RUN'
-
-  contract:
-    name: CLI contract
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-
-      - name: Install PyYAML
-        run: pip install pyyaml
-
-      - name: check-cli-contract
-        run: make check-cli-contract

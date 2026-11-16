@@ -71,7 +71,7 @@ func platformSetEnabled(enable, dryRun bool) ([]string, error) {
 				continue
 			}
 			if !validHook(disabled, plan.Target) {
-				if _, err := os.Stat(plan.Target); err != nil {
+				if _, err := os.Stat(repair.HostHookTarget(plan.Target)); err != nil {
 					return nil, fmt.Errorf("bootstrap library missing at %s (run upgrade first)", plan.Target)
 				}
 				details = append(details, "Enable: "+plan.Hook+" -> "+plan.Target)

@@ -63,19 +63,32 @@ jobs:
         run: |
           set -euo pipefail
           SHA="${{ github.sha }}"
+          # Portable checks moved to Woodpecker. A genuine main push must pass
+          # on this exact commit before a tag can produce release assets.
+          native_ok=false
+          for native_attempt in $(seq 1 60); do
+            native_state="$(gh api "repos/${{ github.repository }}/commits/$SHA/status" \
+              --jq '[.statuses[] | select(.context == "ci/woodpecker/push/woodpecker")][0].state // "missing"')"
+            if [[ "$native_state" == success ]]; then native_ok=true; break; fi
+            if [[ "$native_state" == failure || "$native_state" == error ]]; then
+              echo "Woodpecker failed for release commit $SHA" >&2
+              exit 1
+            fi
+            sleep 10
+          done
+          if [[ "$native_ok" != true ]]; then
+            echo "No successful Woodpecker main push after $native_attempt attempts for release commit $SHA" >&2
+            exit 1
+          fi
+
           # Every entry must declare on.push.tags: [v*] so tag pushes schedule them.
           # Latest completed run must be success (not merely "some older success").
           REQUIRED_WORKFLOWS=(
             test-suite.yml
-            shellcheck.yml
             completions.yml
             go.yml
-            version-sync.yml
             package-manifests.yml
-            actionlint.yml
-            python-lint.yml
             powershell-lint.yml
-            man-pages.yml
             codeql.yml
           )
 
@@ -666,7 +679,6 @@ jobs:
           # Only these jobs gate auto-merge. Ignore CodeQL Analyze / labeler / etc.
           # Names must match GitHub check names (matrix jobs include the key in parentheses).
           REQUIRED_CHECKS=(
-            "VERSION matches packaging manifests"
             "Validate packaging manifests"
             "Validate Scoop matrix shapes"
             "Validate Winget manifests"
@@ -679,7 +691,7 @@ jobs:
             "homebrew (millennium-helpers-bin)"
             "Validate AUR packaging (millennium-helpers)"
             "Validate AUR packaging (millennium-helpers-bin)"
-            "Build Nix Package"
+            "ci/woodpecker/pr/woodpecker"
           )
 
           echo "Packaging PR #${PR}: ${PR_URL}"

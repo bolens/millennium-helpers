@@ -478,15 +478,10 @@ assert_not_contains "$(cat "${REPO_ROOT}/.github/workflows/release.yml")" "scrip
 
 release_gate=$(awk '/name: Wait for required CI/,/build-release:/' "${REPO_ROOT}/.github/workflows/release.yml")
 assert_contains "$release_gate" "test-suite.yml" "release gate waits on test-suite.yml"
-assert_contains "$release_gate" "shellcheck.yml" "release gate waits on shellcheck.yml"
 assert_contains "$release_gate" "completions.yml" "release gate waits on completions.yml"
 assert_contains "$release_gate" "go.yml" "release gate waits on go.yml"
-assert_contains "$release_gate" "version-sync.yml" "release gate waits on version-sync.yml"
 assert_contains "$release_gate" "package-manifests.yml" "release gate waits on package-manifests.yml"
-assert_contains "$release_gate" "actionlint.yml" "release gate waits on actionlint.yml"
-assert_contains "$release_gate" "python-lint.yml" "release gate waits on python-lint.yml"
 assert_contains "$release_gate" "powershell-lint.yml" "release gate waits on powershell-lint.yml"
-assert_contains "$release_gate" "man-pages.yml" "release gate waits on man-pages.yml"
 assert_contains "$release_gate" "codeql.yml" "release gate waits on codeql.yml"
 assert_contains "$release_gate" "sort_by(.createdAt) | last" "release gate requires latest completed CI run"
 
@@ -494,7 +489,7 @@ release_yml=$(cat "${REPO_ROOT}/.github/workflows/release.yml")
 assert_contains "$release_yml" "name: Assert skip CI policy" "release refuses skip_ci_gate abuse via assert job"
 assert_contains "$release_yml" "skip_ci_gate is only allowed for tag_name=v-draft" "release documents skip_ci_gate=v-draft-only"
 
-for gate_wf in version-sync package-manifests actionlint python-lint powershell-lint man-pages go codeql; do
+for gate_wf in package-manifests powershell-lint go codeql; do
   wf_body=$(cat "${REPO_ROOT}/.github/workflows/${gate_wf}.yml")
   assert_contains "$wf_body" "tags: [ 'v*' ]" "${gate_wf}.yml declares tags: [v*] for release gate"
 done
@@ -506,7 +501,7 @@ assert_contains "$finalize" "homebrew (millennium-helpers-bin)" "release finaliz
 assert_contains "$finalize" "Validate AUR packaging (millennium-helpers-bin)" "release finalize waits on Arch -bin"
 assert_contains "$finalize" "Build deb from-source" "release finalize waits on deb from-source build"
 assert_contains "$finalize" "Validate Chocolatey package" "release finalize waits on Chocolatey validation"
-assert_contains "$finalize" "Build Nix Package" "release finalize waits on Nix build"
+assert_contains "$finalize" "ci/woodpecker/pr/woodpecker" "release finalize waits on native packaging and Nix gate"
 
 # --- Workflow path-filter sanity ---
 scoop_ci=$(cat "${REPO_ROOT}/.github/workflows/package-install-windows.yml")
@@ -517,12 +512,17 @@ assert_contains "$scoop_ci" "Validate Chocolatey install script shape" "Windows 
 assert_not_contains "$scoop_ci" "- 'README.md'" "Scoop CI path filters do not trigger on README-only docs edits"
 assert_not_contains "$scoop_ci" "- 'LICENSE'" "Scoop CI path filters do not trigger on LICENSE-only edits"
 
-nix_wf=$(cat "${REPO_ROOT}/.github/workflows/nix.yml")
-assert_contains "$nix_wf" "- 'VERSION'" "Nix CI path filters include VERSION"
-assert_contains "$nix_wf" "millennium-helpers-bin" "Nix CI builds -bin package when asset exists"
-assert_contains "$nix_wf" "Source release asset not published yet" "Nix CI skips unpublished from-source asset builds"
-assert_contains "$nix_wf" "millennium-helpers-git" "Nix CI always builds git package"
-assert_not_contains "$nix_wf" "- 'LICENSE'" "Nix CI path filters do not trigger on LICENSE-only edits"
+native_wf=$(cat "${REPO_ROOT}/.woodpecker.yml")
+nix_check=$(cat "${REPO_ROOT}/scripts/ci/check-nix.sh")
+assert_contains "$native_wf" "bash scripts/ci/check-nix.sh" "native gate invokes Nix checks"
+assert_contains "$nix_check" "millennium-helpers-bin" "Nix builds available -bin assets"
+assert_contains "$nix_check" "Release asset unavailable" "Nix evaluates unpublished assets without building"
+assert_contains "$nix_check" "millennium-helpers-git" "Nix always builds the git package"
+assert_contains "$release_gate" "ci/woodpecker/push/woodpecker" "release requires native main status"
+assert_contains "$release_gate" "commits/\$SHA/status" "native release status is tied to exact release SHA"
+for migrated in actionlint changelog docs-crosslinks man-pages nix python-lint shellcheck source-lint version-sync; do
+  assert_file_not_exists "${REPO_ROOT}/.github/workflows/${migrated}.yml" "migrated ${migrated} workflow removed"
+done
 
 pkg_wf=$(cat "${REPO_ROOT}/.github/workflows/pkgbuild.yml")
 assert_contains "$pkg_wf" "- 'VERSION'" "PKGBUILD CI path filters include VERSION"
@@ -544,7 +544,7 @@ assert_contains "$ps_lint" "completions/powershell" "PowerShell lint path filter
 assert_contains "$ps_lint" "tests/windows" "PowerShell lint path filters include tests/windows"
 assert_not_contains "$ps_lint" "scripts/windows/**" "PowerShell lint no longer watches removed scripts/windows tree"
 
-for wf in homebrew.yml package-manifests.yml version-sync.yml man-pages.yml python-lint.yml; do
+for wf in homebrew.yml package-manifests.yml; do
   body=$(cat "${REPO_ROOT}/.github/workflows/${wf}")
   assert_not_contains "$body" "- 'LICENSE'" "${wf} path filters do not trigger on LICENSE-only edits"
   assert_not_contains "$body" "- 'README.md'" "${wf} path filters do not trigger on README-only docs edits"
@@ -562,15 +562,10 @@ hb=$(cat "${REPO_ROOT}/.github/workflows/homebrew.yml")
 assert_contains "$hb" "- 'Formula/**'" "Homebrew CI path filters include Formula"
 assert_contains "$hb" "millennium-helpers-bin" "Homebrew CI audits -bin formula"
 
-vs=$(cat "${REPO_ROOT}/.github/workflows/version-sync.yml")
-assert_contains "$vs" "- 'VERSION'" "version-sync path filters include VERSION"
-assert_contains "$vs" "- 'Formula/**'" "version-sync path filters include Formula"
-assert_contains "$vs" "- 'pyproject.toml'" "version-sync path filters include pyproject.toml"
-assert_contains "$vs" "sync-stable-srcinfo.sh" "version-sync path filters include sync-stable-srcinfo.sh"
-assert_contains "$vs" "sync-bin-srcinfo.sh" "version-sync path filters include sync-bin-srcinfo.sh"
-assert_contains "$vs" "packaging/millennium-helpers-bin/**" "version-sync watches Arch -bin"
-assert_contains "$vs" "packaging/chocolatey/**" "version-sync watches Chocolatey"
-assert_contains "$vs" "bump-version.sh" "version-sync path filters include bump-version.sh"
+native_make=$(cat "${REPO_ROOT}/Makefile")
+assert_contains "$native_wf" "make check-all" "native gate runs complete local gate"
+assert_contains "$native_make" "\$(MAKE) check-version" "native lint includes version synchronization"
+assert_contains "$native_wf" "check-native-quality.sh" "native gate invokes migrated quality and workflow audits"
 
 pre_commit=$(cat "${REPO_ROOT}/.pre-commit-config.yaml")
 assert_contains "$pre_commit" "sync-stable-srcinfo" "pre-commit includes sync-stable-srcinfo hook"

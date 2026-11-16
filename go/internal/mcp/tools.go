@@ -13,7 +13,7 @@ func ToolsList() []Tool {
 		// @@cli-contract:mcp.tools@@
 		{
 			Name:        "millennium_diag",
-			Description: "Run diagnostics to check the health of the Millennium client, themes, update timers, and configurations. Can optionally run in doctor mode to apply auto-repairs.",
+			Description: "Run diagnostics to check the health of the Millennium client, themes, update timers, configurations, and Linux SteamRT3 bootstrap compatibility. Can optionally run in doctor mode to apply auto-repairs.",
 			InputSchema: map[string]any{
 				"type": "object",
 				"properties": map[string]any{

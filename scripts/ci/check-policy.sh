@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # cspell:ignore ASKPASS NOSYSTEM
-# Run the exact shared source policy used by the retained Source lint workflow.
+# Run the exact shared source policy used by the native source policy step.
 set -euo pipefail
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
 # The tooling clone must never inherit caller indexes, worktrees, tracing or auth.

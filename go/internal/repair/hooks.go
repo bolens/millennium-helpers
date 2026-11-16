@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/bolens/millennium-helpers/internal/theme"
 	"github.com/bolens/millennium-helpers/internal/usercontext"
@@ -26,6 +27,34 @@ func MillenniumLibRoot() string {
 		return filepath.Join(d, "millennium")
 	}
 	return "/usr/lib/millennium"
+}
+
+// SteamRT3 detects an installed 64-bit client or the explicit opt-in marker.
+func SteamRT3(root string) bool {
+	for _, name := range []string{"steamrt64/steam", ".steam-enable-steamrt64-client"} {
+		if st, err := os.Stat(filepath.Join(root, name)); err == nil && st.Mode().IsRegular() {
+			return true
+		}
+	}
+	return false
+}
+
+// HooksAt is shared by diagnostics, injection toggles, and the safe Linux writer.
+func HooksAt(steam, libRoot string) []HookPlan {
+	out := []HookPlan{
+		{filepath.Join(steam, "ubuntu12_32/libXtst.so.6"), filepath.Join(libRoot, "libmillennium_bootstrap_x86.so"), steam},
+		{filepath.Join(steam, "ubuntu12_64/libXtst.so.6"), filepath.Join(libRoot, "libmillennium_bootstrap_hhx64.so"), steam},
+	}
+	if SteamRT3(steam) {
+		out = append(out, HookPlan{filepath.Join(steam, "steamrt64/libXtst.so.6"),
+			filepath.Join("/run/host", libRoot, "libmillennium_bootstrap_x64.so"), steam})
+	}
+	return out
+}
+
+// HostHookTarget maps a pressure-vessel link target back to its host file.
+func HostHookTarget(target string) string {
+	return strings.TrimPrefix(target, "/run/host")
 }
 
 // PlanHooks lists libXtst → bootstrap symlink pairs for existing Steam trees.
@@ -59,14 +88,7 @@ func PlanHooks() []HookPlan {
 		if st, err := os.Stat(steam); err != nil || !st.IsDir() {
 			continue
 		}
-		for _, arch := range []struct{ folder, lib string }{
-			{"ubuntu12_32", "x86"},
-			{"ubuntu12_64", "hhx64"},
-		} {
-			hook := filepath.Join(steam, arch.folder, "libXtst.so.6")
-			target := filepath.Join(root, "libmillennium_bootstrap_"+arch.lib+".so")
-			out = append(out, HookPlan{Hook: hook, Target: target, Steam: steam})
-		}
+		out = append(out, HooksAt(steam, root)...)
 	}
 	return out
 }

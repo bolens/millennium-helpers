@@ -90,6 +90,29 @@ Repair and doctor capture Steam's session before shutdown, verify the client has
 exited, and attempt relaunch even after maintenance fails. A relaunch failure keeps
 the saved session for recovery and makes the command fail.
 
+## Steam starts but Millennium is missing on Linux
+
+SteamRT3 runs the 64-bit client inside pressure-vessel. Run `millennium diag`
+to check **SteamRT3 Compatibility** and **Bootstrap Hooks**, then preview repairs
+with `millennium diag doctor --dry-run`. JSON includes `steamrt3`,
+`steamrt3_compatible`, `steamrt3_detail`, and `hooks_ok` for this path.
+
+A healthy legacy install can still lack the x64 bootstrap, client library, and Lua
+helper. Upgrade Millennium to v3.6.3 or newer through the owning package manager or
+`millennium upgrade --channel stable`, then run `millennium repair`. Doctor retains
+your configured update channel. If that channel still supplies an incompatible
+client, choose a compatible release explicitly and rerun diagnostics.
+
+The SteamRT3 hook is `steamrt64/libXtst.so.6` and targets
+`/run/host/usr/lib/millennium/libmillennium_bootstrap_x64.so` inside the container.
+The `hhx64` bootstrap belongs to steamwebhelper and cannot replace the x64 client
+bootstrap. Diagnostics validate the host library behind `/run/host` rather than
+requiring that container path to exist on the host. Legacy `ubuntu12_32` and
+`ubuntu12_64` hooks remain installed. No global preload override is needed.
+
+Fixture checks establish file and hook consistency. Confirm live recovery after a
+Steam restart by checking for Millennium startup messages and its menu in Steam.
+
 ## Related
 
 - **Docs index:** [README.md](README.md)

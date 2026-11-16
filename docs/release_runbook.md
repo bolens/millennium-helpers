@@ -151,19 +151,21 @@ not sufficient because the release gate queries runs for the exact tag SHA.
 ```bash
 SHA="$(git rev-parse HEAD)"
 gh run list --commit "$SHA" --limit 30
+gh api "repos/bolens/millennium-helpers/commits/$SHA/status" \
+  --jq '.statuses[] | select(.context == "ci/woodpecker/push/woodpecker") | .state'
 
 # Required for the release CD gate (latest completed run must be success on this SHA):
 for wf in \
-  test-suite.yml shellcheck.yml completions.yml go.yml \
-  version-sync.yml package-manifests.yml actionlint.yml \
-  python-lint.yml powershell-lint.yml man-pages.yml codeql.yml
+  test-suite.yml completions.yml go.yml \
+  package-manifests.yml \
+  powershell-lint.yml codeql.yml
 do
   echo "=== $wf ==="
   gh run list --commit "$SHA" --workflow "$wf" --limit 3
 done
 
 # Packaging installs/audits that need published assets are gated later in release finalize:
-# homebrew.yml, nix.yml, pkgbuild.yml, package-install-windows.yml, etc.
+# homebrew.yml, pkgbuild.yml, package-install-windows.yml, etc.
 
 # Investigate failures:
 # gh run view <run-id> --log-failed
@@ -172,20 +174,16 @@ done
 Critical workflows for a release commit (**CD pre-build gate** — all must pass on the tag SHA):
 
 - **CI: Cross-Platform Test Suite**
-- **CI: Shell Script Linting** (ShellCheck)
+- **Woodpecker** on the exact main commit: portable quality, contracts, workflow audits, Nix, and source policy
 - **CI: Shell Completions Validation**
 - **CI: Go**
-- **CI: Packaging Version Sync**
 - **CI: Package Manifests Validation**
-- **CI: actionlint**
-- **CI: Python Lint**
 - **CI: PowerShell Script Analysis**
-- **CI: Man Pages**
 - **CI: CodeQL**
 
 `skip_ci_gate` on workflow_dispatch is allowed only for `tag_name=v-draft`. Real `vX.Y.Z` tags always wait for the gate before building assets.
 
-Do **not** tag while ShellCheck, the Test Suite, or Completions CI is red.
+Do **not** tag while Woodpecker, the Test Suite, or Completions CI is red.
 
 ---
 
@@ -198,7 +196,7 @@ git push origin "vX.Y.Z"
 
 This starts **CD: Deployment & Release Automation**, which:
 
-1. Waits for **Test Suite + ShellCheck + Completions** success on that commit SHA
+1. Waits for **Test Suite + Woodpecker + Completions** success on that commit SHA
 2. Builds versioned OS/arch bin packs, `-src` archives, standalone Go binaries, checksums, and an SPDX JSON SBOM
 3. Creates GitHub build-provenance attestations for real-tag release assets
 4. Creates a **draft** GitHub release
@@ -268,9 +266,9 @@ git switch main && git pull --ff-only origin main
 SHA="$(git rev-parse HEAD)"
 gh run list --commit "$SHA" --limit 30
 for wf in \
-  test-suite.yml shellcheck.yml completions.yml go.yml \
-  version-sync.yml package-manifests.yml actionlint.yml \
-  python-lint.yml powershell-lint.yml man-pages.yml
+  test-suite.yml completions.yml go.yml \
+  package-manifests.yml \
+  powershell-lint.yml
 do
   gh run list --commit "$SHA" --workflow "$wf" --limit 3
 done

@@ -12,7 +12,7 @@ entrypoints into that same contract.
 | Phase | Check group / canonical local command | Native workflow / step | Retained hosted owner / boundary |
 | --- | --- | --- | --- |
 | `validate` | Source, CLI, packaging and docs contracts: `make lint`; focused docs: `make check-docs` | `woodpecker` / `core` | PR, main push and native manual validation; no installation or publisher secrets |
-| `validate` | Shared source and changelog policy: `bash scripts/ci/check-policy.sh` | `woodpecker` / `source-and-changelog-policy` | Same full shared selectors and changelog checker. Required `ci/woodpecker/pr/woodpecker` replaces the disabled hosted duplicates |
+| `validate` | Shared source and changelog policy: `bash scripts/ci/check-policy.sh` | `woodpecker` / `source-and-changelog-policy` | Same full shared selectors and changelog checker. Required `ci/woodpecker/pr/woodpecker` replaces the removed hosted duplicates |
 | `test` | Go and Bash suites: `make check-all`; focused Go: `make test-go` | `woodpecker` / `core` | Existing macOS, Windows/Pester, distro and development-image coverage remains hosted |
 | `test` | Linux race suite: `(cd go && CGO_ENABLED=1 go test -buildvcs=false -race ./...)` with a C toolchain | `woodpecker` / `core` | Runs as an isolated non-root user; it does not replace other platform checks |
 | `validate` | CLI build: `make build` | `woodpecker` / `core` | Generated output remains a build result, not a published package |
@@ -27,15 +27,21 @@ the helper as UID 1000, matching the core workspace owner. Its pinned Node image
 and direct tool pins require reviewed updates; Actions dependency automation
 does not update these Woodpecker references.
 
-Exact-head PR and genuine-main acceptance are complete. The duplicate hosted
-Source lint and Changelog workflows are disabled, and the native
-`ci/woodpecker/pr/woodpecker` check is required. The seven existing Go, CLI and
-workflow-security requirements remain. Other hosted workflows and triggers
-retain their roles. The release gate still waits for its eleven GitHub workflow
-filenames at the exact tag SHA.
-This native lane has no tag trigger and cannot satisfy those release waits.
-Native completion tests still skip Nushell when absent; PowerShell, actual
-macOS/Windows, package builds and workflow-security coverage are not added here.
+Portable Go quality, CLI contracts, workflow audits, shell/Python lint,
+docs/man/version checks, source policy, and Nix evaluation/builds now belong to
+Woodpecker. Their duplicate GitHub workflow files and Go jobs are removed.
+`check-native-quality.sh` pins golangci-lint 2.12.2, actionlint 1.7.12, and
+zizmor 1.29.0 with offline medium-severity/medium-confidence blocking audits.
+`check-nix.sh` evaluates every declared platform and builds available Linux
+release, binary, and git packages. Nix runs in a disposable unprivileged container
+with its internal build sandbox disabled, without host mounts or credentials.
+
+The native PR status plus three native Go platform tests form the merge gate.
+Cut over host settings only after observing the replacement native PR gate.
+The release gate also requires the genuine main-push native status on the exact
+release SHA. Native checks run on tags as well. GitHub retains native platform,
+distro/container, packaging installation, CodeQL, Nushell completion, and publishing
+coverage. Linux cross-compilation does not replace Windows or macOS execution.
 
 The existing `woodpecker` alias remains stable. This index
 does not change CLI contracts, version sources, generated files or publication.
@@ -57,8 +63,8 @@ updaters do not monitor these Woodpecker YAML references. Direct tool pins and
 image updates require a reviewed PR and successful native execution.
 
 CI, vulnerability scans, and release builds use Go 1.26.11 for current standard-
-library security fixes. The module language minimum remains Go 1.22. The hosted
-quality job uses golangci-lint 2.12.2, which supports this compiler. Keep the
+library security fixes. The module language minimum remains Go 1.22. The native
+quality step uses golangci-lint 2.12.2, which supports this compiler. Keep the
 module toolchain, native image, hosted compiler, and scan default aligned.
 Nix source packages and the development shell share that security patch through
 [`nix/go.nix`](../nix/go.nix). Binary packages require a newly built release asset.
