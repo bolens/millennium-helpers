@@ -148,10 +148,10 @@ so its recorded version will remain unchanged until you reinstall an updated pac
      echo "Saved previous installation: $backup"
    fi
    sudo install -d -m 755 /usr/lib/millennium
-   sudo cp -a "$work_dir/usr/lib/millennium/." /usr/lib/millennium/
-   sudo chmod 755 /usr/lib/millennium/libmillennium_pvs64 \
-     /usr/lib/millennium/libmillennium_luavm_x86 \
-     /usr/lib/millennium/libmillennium_luavm_x64
+   sudo install -m 644 "$work_dir/usr/lib/millennium/"*.so /usr/lib/millennium/
+   sudo install -m 755 "$work_dir/usr/lib/millennium/libmillennium_pvs64" \
+     "$work_dir/usr/lib/millennium/libmillennium_luavm_x86" \
+     "$work_dir/usr/lib/millennium/libmillennium_luavm_x64" /usr/lib/millennium/
    printf '%s\n' "$version" | sudo tee /usr/lib/millennium/version.txt >/dev/null
    (cd "$work_dir/usr/lib/millennium" && \
      sha256sum libmillennium_*.so libmillennium_luavm_* libmillennium_pvs64) > "$work_dir/checksums.txt"
