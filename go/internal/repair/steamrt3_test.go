@@ -8,6 +8,9 @@ import (
 )
 
 func TestSteamRT3HookPlan(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("Linux container hook targets")
+	}
 	root := t.TempDir()
 	if SteamRT3(root) {
 		t.Fatal("empty tree detected as SteamRT3")

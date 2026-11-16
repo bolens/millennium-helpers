@@ -3,6 +3,7 @@ package clientfiles
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -38,14 +39,16 @@ func TestLinux64IntegrityAndModes(t *testing.T) {
 	if err := ValidateLinux64(root); err != nil {
 		t.Fatal(err)
 	}
-	if HelpersExecutable(root) {
-		t.Fatal("missed non-executable x64 Lua helper")
-	}
-	if err := NormalizeHelpers(root); err != nil {
-		t.Fatal(err)
-	}
-	if !HelpersExecutable(root) {
-		t.Fatal("x64 helper mode not repaired")
+	if runtime.GOOS != "windows" {
+		if HelpersExecutable(root) {
+			t.Fatal("missed non-executable x64 Lua helper")
+		}
+		if err := NormalizeHelpers(root); err != nil {
+			t.Fatal(err)
+		}
+		if !HelpersExecutable(root) {
+			t.Fatal("x64 helper mode not repaired")
+		}
 	}
 	if err := WriteChecksums(root); err != nil {
 		t.Fatal(err)
