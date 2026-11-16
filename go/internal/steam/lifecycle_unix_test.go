@@ -38,8 +38,9 @@ func TestRelaunchRetainsCapturedEnvironment(t *testing.T) {
 		quoted = append(quoted, shellQuote(arg))
 	}
 	display := ":42's display"
+	logFolder := "custom logs' folder"
 	exe := filepath.Join(dir, "steam")
-	if err := os.WriteFile(exe, []byte("#!/bin/sh\nprintf '%s\\000' \"$DISPLAY\" \"$@\" > "+shellQuote(result)+"\n"), 0o755); err != nil {
+	if err := os.WriteFile(exe, []byte("#!/bin/sh\nprintf '%s\\000' \"$DISPLAY\" \"$STEAM_RUNTIME_LOGGER\" \"$STEAM_CLIENT_LOG_FOLDER\" \"$@\" > "+shellQuote(result)+"\n"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
@@ -49,14 +50,14 @@ func TestRelaunchRetainsCapturedEnvironment(t *testing.T) {
 		t.Fatal(err)
 	}
 	state := RelaunchStateFile(name, home)
-	if err := writeRelaunchEnv(state, map[string]string{"DISPLAY": display}, strings.Join(quoted, " "), false); err != nil {
+	if err := writeRelaunchEnv(state, map[string]string{"DISPLAY": display, "STEAM_RUNTIME_LOGGER": "0", "STEAM_CLIENT_LOG_FOLDER": logFolder}, strings.Join(quoted, " "), false); err != nil {
 		t.Fatal(err)
 	}
 	attempted, err := relaunchFromState(name, home, runSteamCmdWithEnv)
 	if !attempted || err != nil {
 		t.Fatalf("relaunch %v %v", attempted, err)
 	}
-	expected := strings.Join(append([]string{display}, argv[1:]...), "\x00") + "\x00"
+	expected := strings.Join(append([]string{display, "0", logFolder}, argv[1:]...), "\x00") + "\x00"
 	if b, err := os.ReadFile(result); err != nil || string(b) != expected {
 		t.Fatalf("captured environment/arguments lost: %q %v", b, err)
 	}
@@ -143,7 +144,7 @@ func TestCaptureEnvPreservesEmptyArguments(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(process, "cmdline"), []byte("steam\x00-srt-logger-opened\x00\x00"), 0644); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(process, "environ"), []byte("DISPLAY=:fixture\x00"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(process, "environ"), []byte("DISPLAY=:fixture\x00STEAM_RUNTIME_LOGGER=0\x00STEAM_CLIENT_LOG_FOLDER=custom-logs\x00"), 0644); err != nil {
 		t.Fatal(err)
 	}
 	name, home, err := TargetUser()
@@ -156,6 +157,9 @@ func TestCaptureEnvPreservesEmptyArguments(t *testing.T) {
 	vals, err := ParseRelaunchEnv(RelaunchStateFile(name, home))
 	if err != nil {
 		t.Fatal(err)
+	}
+	if vals["STEAM_RUNTIME_LOGGER"] != "0" || vals["STEAM_CLIENT_LOG_FOLDER"] != "custom-logs" {
+		t.Fatal("logging preferences lost in capture")
 	}
 	if got, want := vals["STEAM_ARGS"], "'-srt-logger-opened' '' "; got != want {
 		t.Fatalf("args=%q, want %q", got, want)

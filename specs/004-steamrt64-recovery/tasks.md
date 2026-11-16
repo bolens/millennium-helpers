@@ -67,3 +67,8 @@ console-linux.txt. The new Steam client's stdout was a pipe rather than
 /dev/null; client and webhelper processes mapped their Millennium libraries.
 Runtime binary hashes were unchanged across both cycles. No manual restart
 was used to produce this logging evidence.
+
+Logging preferences are captured and replayed as well: an explicit
+STEAM_RUNTIME_LOGGER opt-out and a custom STEAM_CLIENT_LOG_FOLDER are retained.
+The real-shell regression test checks quoted logging preference values and
+user arguments without executing their contents.

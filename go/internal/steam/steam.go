@@ -16,6 +16,7 @@ import (
 var EnvKeys = []string{
 	"DISPLAY", "XAUTHORITY", "DBUS_SESSION_BUS_ADDRESS",
 	"WAYLAND_DISPLAY", "XDG_RUNTIME_DIR", "XDG_SESSION_TYPE", "XDG_CURRENT_DESKTOP",
+	"STEAM_RUNTIME_LOGGER", "STEAM_CLIENT_LOG_FOLDER",
 }
 
 // TargetUser resolves SUDO_USER when elevated, else the current account.
