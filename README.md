@@ -114,7 +114,8 @@ archives, or built via `make build` when installing from a checkout.
 nix profile install github:bolens/millennium-helpers
 nix profile install github:bolens/millennium-helpers#millennium-helpers-bin
 nix profile install github:bolens/millennium-helpers#millennium-helpers-git
-# Or pin a tag: nix profile install github:bolens/millennium-helpers/v4.1.2
+# Pin 4.1.2 using the commit with synchronized release hashes:
+nix profile install github:bolens/millennium-helpers/cd3686fbda87ea6102f0eaef18d59d6dc50706c9
 ```
 
 **Homebrew** (formulas at `Formula/millennium-helpers.rb` and
