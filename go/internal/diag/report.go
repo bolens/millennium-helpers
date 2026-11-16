@@ -403,14 +403,14 @@ func FormatJSON(r Report) string {
 		FlatpakOK                bool     `json:"flatpak_ok"`
 		SudoersOK                bool     `json:"sudoers_ok"`
 		TimerActive              bool     `json:"timer_active"`
-		LingerOK                 *bool    `json:"linger_ok"`
-		ScriptsUpToDate          *bool    `json:"scripts_up_to_date"`
+		LingerOK                 bool     `json:"linger_ok"`
+		ScriptsUpToDate          bool     `json:"scripts_up_to_date"`
 		PermissionsOK            bool     `json:"permissions_ok"`
 		SkinsDirOK               bool     `json:"skins_dir_ok"`
-		CompletionsOK            *bool    `json:"completions_ok"`
-		CleanOfObsolete          *bool    `json:"clean_of_obsolete"`
-		UnmanagedFilesOK         *bool    `json:"unmanaged_files_ok"`
-		MixedInstallOK           *bool    `json:"mixed_install_ok"`
+		CompletionsOK            bool     `json:"completions_ok"`
+		CleanOfObsolete          bool     `json:"clean_of_obsolete"`
+		UnmanagedFilesOK         bool     `json:"unmanaged_files_ok"`
+		MixedInstallOK           bool     `json:"mixed_install_ok"`
 		InstallMethod            string   `json:"install_method"`
 		HelpersCheckout          string   `json:"helpers_checkout"`
 		HelpersTrack             string   `json:"helpers_track"`
@@ -425,11 +425,11 @@ func FormatJSON(r Report) string {
 		PermissionsOK    bool     `json:"permissions_ok"`
 		SkinsDirOK       bool     `json:"skins_dir_ok"`
 		TaskScheduled    bool     `json:"task_scheduled"`
-		CleanOfObsolete  *bool    `json:"clean_of_obsolete"`
-		CompletionsOK    *bool    `json:"completions_ok"`
-		ScriptsUpToDate  *bool    `json:"scripts_up_to_date"`
+		CleanOfObsolete  bool     `json:"clean_of_obsolete"`
+		CompletionsOK    bool     `json:"completions_ok"`
+		ScriptsUpToDate  bool     `json:"scripts_up_to_date"`
 		InstallMethod    string   `json:"install_method"`
-		MixedInstallOK   *bool    `json:"mixed_install_ok"`
+		MixedInstallOK   bool     `json:"mixed_install_ok"`
 		HelpersCheckout  string   `json:"helpers_checkout"`
 		HelpersTrack     string   `json:"helpers_track"`
 		HelpersRef       string   `json:"helpers_ref"`
@@ -437,11 +437,11 @@ func FormatJSON(r Report) string {
 		UpdateChannel    string   `json:"update_channel"`
 		Version          string   `json:"version"`
 	}
-	measured := func(name string, value bool) *bool {
+	measured := func(name string, value bool) bool {
 		if slices.Contains(r.UnverifiedChecks, name) {
-			return nil
+			return false
 		}
-		return &value
+		return value
 	}
 	var b []byte
 	var err error

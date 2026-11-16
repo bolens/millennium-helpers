@@ -197,13 +197,13 @@ This procedure does not need a global `LD_PRELOAD` or
 
 ## Diagnostic limits
 
-JSON diagnostics return `null` for checks that have not been implemented or
-measured, and list them in `unverified_checks`. This includes helpers freshness,
+JSON diagnostics preserve their boolean check fields. Unverified checks return
+`false` and are also named in `unverified_checks`, so callers can distinguish an
+unknown result from a measured failure. This includes helpers freshness,
 completion/package cleanup, mixed installs, and Linux linger status. These values
-previously reported success without inspecting their state. Scripts should treat
-`null` as unknown. The human report names the same unverified checks. Binary
-integrity, runtime helper modes, bootstrap hooks, permissions, skins, and scheduler
-presence retain their measured results.
+previously reported success without inspecting their state. The human report names
+the same unverified checks. Binary integrity, runtime helper modes, bootstrap hooks,
+permissions, skins, and scheduler presence retain their measured results.
 
 ## Command and concurrency guarantees
 

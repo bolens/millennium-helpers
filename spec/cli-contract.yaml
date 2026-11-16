@@ -150,7 +150,7 @@ commands:
       update timers, configurations, and Linux SteamRT3 bootstrap compatibility.
       Can optionally run in doctor mode to
       apply auto-repairs.
-    notes: "Report, doctor, logs, and share are mutually exclusive modes. Flags must apply to the selected mode. JSON diagnostic checks are nullable when unverified and named in unverified_checks."
+    notes: "Report, doctor, logs, and share are mutually exclusive modes. Flags must apply to the selected mode. JSON diagnostic checks preserve boolean types; unverified checks return false and are named in unverified_checks."
     subcommands: [doctor, logs]
     flags:
       - name: fix

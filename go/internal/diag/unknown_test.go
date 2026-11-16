@@ -12,7 +12,7 @@ func TestUnknownChecksAreNotReportedAsHealthy(t *testing.T) {
 	if err := json.Unmarshal([]byte(FormatJSON(report)), &got); err != nil {
 		t.Fatal(err)
 	}
-	if value, present := got["scripts_up_to_date"]; !present || value != nil {
+	if value, present := got["scripts_up_to_date"]; !present || value != false {
 		t.Fatalf("unmeasured freshness=%v present=%v", value, present)
 	}
 	if got["binaries_ok"] != true {

@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- JSON diagnostics mark unmeasured package and linger checks as null and list them under unverified_checks.
+- JSON diagnostics mark unmeasured package and linger checks as false and list them under unverified_checks, preserving boolean field types.
 
 ### Fixed
 
