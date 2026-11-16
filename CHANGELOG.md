@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.2] - 2026-11-16
+
+### Fixed
+
+- Automatic Linux Steam relaunch drops the stale logger transport flag so repair and doctor restarts create fresh console logs while preserving user arguments and logging preferences.
+
 ## [4.1.1] - 2026-11-16
 
 ### Changed

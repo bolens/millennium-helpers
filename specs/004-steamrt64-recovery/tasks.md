@@ -52,3 +52,23 @@ home. Scheduler target resolution now shares usercontext's HOME/sudo boundary,
 and disable tests stub systemctl while checking both scopes and dry-run
 non-execution. The test-created beta timer is no longer installed; the original
 unscheduled state is preserved while beta remains the selected channel.
+
+Automatic relaunch logging follow-up (v4.1.2): Steam's installed steam.sh
+treats -srt-logger-opened as an inherited logger connection. Detached helper
+restarts had retained that flag despite having no inherited logging pipe. Linux
+relaunch now filters the exact transport marker from current and legacy saved
+argument forms, retaining other quoting, empty arguments, and user values.
+Malformed saved quoting fails before launch and preserves recovery state.
+
+On 2026-11-16, two consecutive live repair --yes --skip-theme runs with the
+4.1.2 candidate exited successfully and automatically relaunched Steam. Each
+cycle wrote fresh Started Millennium and Loaded hhx64 entries to
+console-linux.txt. The new Steam client's stdout was a pipe rather than
+/dev/null; client and webhelper processes mapped their Millennium libraries.
+Runtime binary hashes were unchanged across both cycles. No manual restart
+was used to produce this logging evidence.
+
+Logging preferences are captured and replayed as well: an explicit
+STEAM_RUNTIME_LOGGER opt-out and a custom STEAM_CLIENT_LOG_FOLDER are retained.
+The real-shell regression test checks quoted logging preference values and
+user arguments without executing their contents.

@@ -1,5 +1,5 @@
 Name:           millennium-helpers-bin
-Version: 4.1.1
+Version: 4.1.2
 Release: 1%{?dist}
 Summary:        Millennium helpers (prebuilt release assets)
 License:        MIT
