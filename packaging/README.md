@@ -2,7 +2,7 @@
 
 | Variant | Meaning | Typical source |
 | --- | --- | --- |
-| **from-source** (`millennium-helpers`) | Tagged `vX.Y.Z`, build Go when applicable | GitHub tag archive + `make build` |
+| **from-source** (`millennium-helpers`) | Tagged `vX.Y.Z`, build Go when applicable | Controlled source archive + `make build` |
 | **bin** (`millennium-helpers-bin`) | Published release assets | `millennium-helpers-v{VER}-{os}-{arch}.tar.gz` / `.zip` |
 | **git** (`millennium-helpers-git`) | Tip of `main` | VCS / `main.zip` / flake source |
 
@@ -32,6 +32,11 @@ native and hosted compiler pins and verify both source variants and the shell.
 Prebuilt `-bin` packages retain the compiler embedded in the published asset.
 Changing the Nix compiler cannot patch an existing binary release.
 
+To pin a Nix release, use the merged packaging-update commit after publication.
+The signed source tag predates the release asset hashes and can contain hashes
+from the previous release. The [README](../README.md#installation) has a verified
+4.1.2 pin. The `-git` variant builds the flake source instead of release assets.
+
 The flake exposes source packages and CLI apps on x86_64-linux and
 aarch64-linux. The published Nix binary asset is linux-amd64, so `-bin` is
 available only on x86_64-linux. Darwin package outputs are not advertised by
@@ -44,4 +49,5 @@ and platform admission. It does not establish native execution or cross-build
 coverage.
 
 Run `nix flake check --all-systems --no-build --no-write-lock-file` before the
-native package builds. The existing Nix CI job enforces this admission check.
+native package builds. The Woodpecker `nix` step enforces this admission check and builds available Linux
+packages. See the [CI ownership map](../docs/woodpecker-transition.md).

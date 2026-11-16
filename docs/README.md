@@ -53,6 +53,7 @@ Index of Millennium Helpers docs. `make check-docs` enforces that this index, th
 | --- | --- | --- |
 | [licensing.md](licensing.md) | Users & packagers | Helpers MIT + Millennium client MIT, vendored notice, upgrade behavior |
 | [mcp.md](mcp.md) | Users | MCP server tools, registration with Claude / Cursor / Windsurf |
+| [steam-millennium-recovery.md](steam-millennium-recovery.md) | Users | Manual native Linux SteamRT3 repair and logging recovery without helpers |
 | [security_troubleshooting.md](security_troubleshooting.md) | Users | Sudoers / Task Scheduler design, common failures |
 | [steam_deck.md](steam_deck.md) | Users | Steam Deck (SteamOS) and Flatpak Steam hooks / overrides |
 | [uninstall_dryrun.md](uninstall_dryrun.md) | Users | Dry-run mode and manual uninstall per install method |

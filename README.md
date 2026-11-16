@@ -14,6 +14,10 @@ CLI helpers for [Millennium](https://github.com/SteamClientHomebrew/Millennium).
 [Docs](docs/README.md) ·
 [Website](https://bolens.github.io/millennium-helpers/)
 
+Steam updated and Millennium stopped loading? Follow the
+[manual Steam/Millennium and logging recovery guide](docs/steam-millennium-recovery.md).
+No helper installation is required.
+
 ---
 
 ## Getting started
@@ -42,14 +46,9 @@ millennium mcp                  # MCP server for AI assistants
 millennium --help
 ```
 
-```text
-$ millennium diag
-  [✔] Steam Client                                  : Running (PID: 12345)
-  [✔] Millennium Binary Version                     : v2.x.x (stable channel) - Verified Healthy
-  [✔]     - Hook (ubuntu12_32)                      : Active and Verified
-  [✔] Systemd Auto-Update Timer                     : Enabled and Active
-  [✔] Sudoers Passwordless Update Authorization     : Active & Verified
-```
+Diagnostics report runtime integrity, bootstrap hooks, SteamRT3 compatibility,
+permissions, and scheduler state. Read the reported details: unverified checks
+are listed separately and do not establish a healthy installation.
 
 ---
 
@@ -74,7 +73,7 @@ $ millennium diag
 | --- | --- |
 | **curl (recommended)** | `curl -fsSL https://raw.githubusercontent.com/bolens/millennium-helpers/main/install.sh \| bash -s -- install` |
 | curl (tip of `main`) | `curl -fsSL …/install.sh \| bash -s -- install --track main` |
-| curl (pinned tag) | `curl -fsSL …/install.sh \| bash -s -- install --tag v3.0.0` |
+| curl (pinned tag) | `curl -fsSL …/install.sh \| bash -s -- install --tag v4.1.2` |
 | Clone | `git clone … && sudo ./install.sh` (needs Go, or a release tree with `bin/millennium`) |
 | Nix (from-source) | `nix profile install github:bolens/millennium-helpers` |
 | Nix (prebuilt `-bin`) | `nix profile install github:bolens/millennium-helpers#millennium-helpers-bin` |
@@ -103,7 +102,7 @@ sudo ./install.sh install
 # Tip-of-main helpers:
 sudo ./install.sh install --track main
 # Pin helpers to a release tag:
-sudo ./install.sh install --tag v3.0.0
+sudo ./install.sh install --tag v4.1.2
 ```
 
 Install requires the Go dispatcher (`bin/millennium`) — present in release/from-source
@@ -115,7 +114,8 @@ archives, or built via `make build` when installing from a checkout.
 nix profile install github:bolens/millennium-helpers
 nix profile install github:bolens/millennium-helpers#millennium-helpers-bin
 nix profile install github:bolens/millennium-helpers#millennium-helpers-git
-# Or pin a tag: nix profile install github:bolens/millennium-helpers/v3.0.0
+# Pin 4.1.2 using the commit with synchronized release hashes:
+nix profile install github:bolens/millennium-helpers/cd3686fbda87ea6102f0eaef18d59d6dc50706c9
 ```
 
 **Homebrew** (formulas at `Formula/millennium-helpers.rb` and
@@ -344,6 +344,7 @@ deactivated together; apply that preview with `disable-errors --yes`. Add
 | Pages accessibility evidence | [docs/site-evidence/README.md](docs/site-evidence/README.md) |
 | MCP server setup & tools | [docs/mcp.md](docs/mcp.md) |
 | Security policy | [SECURITY.md](SECURITY.md) |
+| Manual Steam/Millennium and logging recovery | [docs/steam-millennium-recovery.md](docs/steam-millennium-recovery.md) |
 | Security & troubleshooting | [docs/security_troubleshooting.md](docs/security_troubleshooting.md) |
 | Steam Deck & Flatpak | [docs/steam_deck.md](docs/steam_deck.md) |
 | Contributing | [CONTRIBUTING.md](CONTRIBUTING.md) |
@@ -367,7 +368,7 @@ make test-go       # Go unit + dispatcher smokes
 # make test-all-distros            # optional; requires Docker
 ```
 
-Helpers report version via `--version` / `-V` (from the repo `VERSION` file). A Dev Container (includes `pwsh`, with Docker-in-Docker in the full variant) and a Nix `devShell` (lint tools only) are available for a reproducible environment. Go owns the installed CLI; feature CI is [`go.yml`](.github/workflows/go.yml) (Linux / Windows / macOS). See [CONTRIBUTING.md](CONTRIBUTING.md) for layout and install bootstrap notes.
+Helpers report version via `--version` / `-V` (from the repo `VERSION` file). A Dev Container (includes `pwsh`, with Docker-in-Docker in the full variant) and a Nix `devShell` (Go and lint tools) are available for a reproducible environment. Go owns the installed CLI; native platform CI is [`go.yml`](.github/workflows/go.yml) (Linux / Windows / macOS), with portable checks and Linux race tests in [Woodpecker](docs/woodpecker-transition.md). See [CONTRIBUTING.md](CONTRIBUTING.md) for layout and install bootstrap notes.
 
 ---
 

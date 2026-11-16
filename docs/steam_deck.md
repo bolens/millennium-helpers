@@ -21,7 +21,8 @@ millennium diag --json
 
 Look for:
 
-- **Bootstrap Hooks** — `libXtst.so.6` symlinks under your Steam `ubuntu12_32` / `ubuntu12_64` dirs
+- **Bootstrap Hooks** — `libXtst.so.6` symlinks under your Steam `ubuntu12_32` / `ubuntu12_64`
+  dirs and `steamrt64` when the SteamRT3 client is installed
 - **Flatpak Sandbox Override** — `/usr/lib/millennium` must be visible inside the Flatpak container
 - **Permissions / skins** — ownership under `~/.local/share/Steam` or the Flatpak data tree
 
@@ -106,8 +107,8 @@ After changing overrides, fully quit Steam and relaunch it.
 ## Multi-library / SD card libraries
 
 Steam may keep games on an SD card or secondary library, but Millennium hooks live
-in the **client** Steam directory (bootstrap under `ubuntu12_*`), not inside each
-game library folder. Point diagnostics at the client install Steam uses to launch,
+in the **client** Steam directory: `ubuntu12_*` and, for SteamRT3, `steamrt64`.
+They do not belong in game library folders. Point diagnostics at the client install Steam uses to launch,
 not only the library on `/run/media/...`.
 
 If you have multiple Steam installs (native + Flatpak), run `millennium diag` and
@@ -115,12 +116,16 @@ confirm hooks exist for the install you actually launch on Deck.
 
 ---
 
+For native desktop Linux, the [manual recovery guide](steam-millennium-recovery.md)
+covers the verified SteamRT3 runtime and restoring logs. Its system-library install
+commands do not apply to Flatpak or an immutable SteamOS root.
+
 ## Common Deck / Flatpak failures
 
 ### Millennium does not load in Flatpak Steam
 1. Confirm binaries: `ls /usr/lib/millennium/version.txt`
 2. Confirm override (see above)
-3. Confirm hooks under the Flatpak Steam path point at `/usr/lib/millennium/...`
+3. Confirm legacy hooks under the Flatpak Steam path point at `/usr/lib/millennium/...`. A SteamRT3 `steamrt64` hook uses `/run/host/usr/lib/millennium/libmillennium_bootstrap_x64.so`; inspect it inside the client container.
 4. Run `sudo millennium repair` then relaunch Steam
 
 ### Blank / black Steam UI after upgrade
@@ -131,7 +136,7 @@ sudo millennium repair
 ```
 
 ### Rate limits during upgrade on Deck Wi‑Fi
-Set a GitHub token in config (`millennium schedule setup` or `config set github_token ...`)
+Set a GitHub token in config (`millennium schedule setup` or `millennium schedule config set github_token ...`)
 or export `GITHUB_TOKEN` before upgrading.
 
 ### Purge / uninstall
