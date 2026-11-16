@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Linux diagnostics and repair recognize SteamRT3 and its x64 bootstrap, client library, and Lua helper.
+
 - Explicit light mode keeps its light palette when the operating system prefers dark mode.
 
 ### Security

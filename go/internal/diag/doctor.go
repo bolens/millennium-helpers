@@ -31,7 +31,7 @@ func DoctorPlan(r Report, force bool) []DoctorStep {
 	if r.BinariesNeedPrivilege {
 		out = append(out, DoctorStep{ID: "binaries_access", Detail: "re-run sudo millennium diag doctor to verify unreadable client files"})
 	} else if runtime.GOOS != "darwin" {
-		add(!r.BinariesOK, "upgrade_force", "millennium upgrade --force")
+		add(!r.BinariesOK || (r.SteamRT3 && !r.SteamRT3Compatible), "upgrade_force", "millennium upgrade --force")
 	}
 	if runtime.GOOS != "windows" {
 		if runtime.GOOS == "linux" {

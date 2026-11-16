@@ -147,7 +147,8 @@ commands:
     mcp: millennium_diag
     mcp_description: >-
       Run diagnostics to check the health of the Millennium client, themes,
-      update timers, and configurations. Can optionally run in doctor mode to
+      update timers, configurations, and Linux SteamRT3 bootstrap compatibility.
+      Can optionally run in doctor mode to
       apply auto-repairs.
     subcommands: [doctor, logs]
     flags:

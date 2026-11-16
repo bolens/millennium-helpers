@@ -26,7 +26,10 @@ type Report struct {
 	BinariesNeedPrivilege    bool   `json:"-"`
 	BinariesOK               bool   `json:"binaries_ok"`
 	RuntimeHelpersExecutable bool   `json:"runtime_helpers_executable"`
-	HooksOK                  bool   `json:"hooks_ok,omitempty"`
+	HooksOK                  bool   `json:"hooks_ok"`
+	SteamRT3                 bool   `json:"steamrt3,omitempty"`
+	SteamRT3Compatible       bool   `json:"steamrt3_compatible,omitempty"`
+	SteamRT3Detail           string `json:"steamrt3_detail,omitempty"`
 	FlatpakOK                bool   `json:"flatpak_ok,omitempty"`
 	SudoersOK                bool   `json:"sudoers_ok,omitempty"`
 	TimerActive              bool   `json:"timer_active,omitempty"`
@@ -155,6 +158,22 @@ func Collect() Report {
 	r.BinariesOK, r.BinariesDetail, binariesErr = checkBinaries()
 	r.BinariesNeedPrivilege = errors.Is(binariesErr, os.ErrPermission)
 	r.RuntimeHelpersExecutable = repair.RuntimeHelpersExecutable()
+	if runtime.GOOS == "linux" {
+		for _, dir := range steam.DirCandidates() {
+			if repair.SteamRT3(dir) {
+				r.SteamRT3 = true
+			}
+		}
+		if r.SteamRT3 {
+			err := clientfiles.ValidateLinux64(repair.MillenniumLibRoot())
+			r.SteamRT3Compatible = err == nil
+			r.SteamRT3Detail = "64-bit client components present"
+			if err != nil {
+				r.SteamRT3Detail = err.Error()
+			}
+		}
+	}
+
 	r.PermissionsOK = repair.PermissionsOK()
 	if runtime.GOOS != "windows" {
 		r.HooksOK, r.FlatpakOK = checkHooks()
@@ -287,32 +306,24 @@ func checkHooks() (hooksOK, flatpakOK bool) {
 			continue
 		}
 		found = true
-		for _, arch := range []struct{ folder, lib string }{
-			{"ubuntu12_32", "x86"},
-			{"ubuntu12_64", "hhx64"},
-		} {
-			hook := filepath.Join(steam, arch.folder, "libXtst.so.6")
-			fi, err := os.Lstat(hook)
+		for _, plan := range repair.HooksAt(steam, repair.MillenniumLibRoot()) {
+			target, err := os.Readlink(plan.Hook)
 			if err != nil {
 				hooksOK = false
 				continue
 			}
-			if fi.Mode()&os.ModeSymlink == 0 {
-				continue // warn-level in bash; not hard fail
+			if !filepath.IsAbs(target) {
+				target = filepath.Join(filepath.Dir(plan.Hook), target)
 			}
-			target, err := os.Readlink(hook)
-			if err != nil {
+			if filepath.Clean(target) != filepath.Clean(plan.Target) {
 				hooksOK = false
 				continue
 			}
-			want := "libmillennium_bootstrap_" + arch.lib + ".so"
-			if !strings.Contains(target, want) {
-				continue
-			}
-			if _, err := os.Stat(target); err != nil {
+			if st, err := os.Stat(repair.HostHookTarget(plan.Target)); err != nil || !st.Mode().IsRegular() {
 				hooksOK = false
 			}
 		}
+
 		if strings.Contains(steam, "com.valvesoftware.Steam") {
 			// Flatpak override presence is best-effort.
 			out, err := exec.Command("flatpak", "override", "--user", "--show", "com.valvesoftware.Steam").CombinedOutput()
@@ -362,6 +373,9 @@ func FormatJSON(r Report) string {
 		BinariesOK               bool   `json:"binaries_ok"`
 		RuntimeHelpersExecutable *bool  `json:"runtime_helpers_executable,omitempty"`
 		HooksOK                  bool   `json:"hooks_ok"`
+		SteamRT3                 *bool  `json:"steamrt3,omitempty"`
+		SteamRT3Compatible       *bool  `json:"steamrt3_compatible,omitempty"`
+		SteamRT3Detail           string `json:"steamrt3_detail,omitempty"`
 		FlatpakOK                bool   `json:"flatpak_ok"`
 		SudoersOK                bool   `json:"sudoers_ok"`
 		TimerActive              bool   `json:"timer_active"`
@@ -400,9 +414,13 @@ func FormatJSON(r Report) string {
 	}
 	var b []byte
 	var err error
-	var helperModes *bool
+	var helperModes, rt3, compatible *bool
 	if runtime.GOOS == "linux" {
 		helperModes = &r.RuntimeHelpersExecutable
+		rt3 = &r.SteamRT3
+		if r.SteamRT3 {
+			compatible = &r.SteamRT3Compatible
+		}
 	}
 	if runtime.GOOS == "windows" {
 		b, err = json.MarshalIndent(winJSON{
@@ -417,7 +435,8 @@ func FormatJSON(r Report) string {
 		b, err = json.MarshalIndent(unixJSON{
 			SteamRunning: r.SteamRunning, BinariesOK: r.BinariesOK, HooksOK: r.HooksOK, FlatpakOK: r.FlatpakOK,
 			RuntimeHelpersExecutable: helperModes,
-			SudoersOK:                r.SudoersOK, TimerActive: r.TimerActive, LingerOK: r.LingerOK,
+			SteamRT3:                 rt3, SteamRT3Compatible: compatible, SteamRT3Detail: r.SteamRT3Detail,
+			SudoersOK: r.SudoersOK, TimerActive: r.TimerActive, LingerOK: r.LingerOK,
 			ScriptsUpToDate: r.ScriptsUpToDate, PermissionsOK: r.PermissionsOK, SkinsDirOK: r.SkinsDirOK,
 			CompletionsOK: r.CompletionsOK, CleanOfObsolete: r.CleanOfObsolete, UnmanagedFilesOK: r.UnmanagedFilesOK,
 			MixedInstallOK: r.MixedInstallOK, InstallMethod: r.InstallMethod, HelpersCheckout: r.HelpersCheckout,

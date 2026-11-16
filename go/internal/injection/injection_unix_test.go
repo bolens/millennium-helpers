@@ -19,7 +19,7 @@ func TestDisableEnablePreservesBootstrapAndConfig(t *testing.T) {
 	if err := os.WriteFile(config, []byte(`{"plugins":{"enabled":true}}`), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	for _, arch := range []struct{ dir, lib string }{{"ubuntu12_32", "x86"}, {"ubuntu12_64", "hhx64"}} {
+	for _, arch := range []struct{ dir, lib string }{{"ubuntu12_32", "x86"}, {"ubuntu12_64", "hhx64"}, {"steamrt64", "x64"}} {
 		target := filepath.Join(libBase, "millennium", "libmillennium_bootstrap_"+arch.lib+".so")
 		hook := filepath.Join(steam, arch.dir, "libXtst.so.6")
 		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
@@ -30,6 +30,12 @@ func TestDisableEnablePreservesBootstrapAndConfig(t *testing.T) {
 		}
 		if err := os.MkdirAll(filepath.Dir(hook), 0o755); err != nil {
 			t.Fatal(err)
+		}
+		if arch.dir == "steamrt64" {
+			if err := os.WriteFile(filepath.Join(steam, "steamrt64/steam"), nil, 0755); err != nil {
+				t.Fatal(err)
+			}
+			target = filepath.Join("/run/host", target)
 		}
 		if err := os.Symlink(target, hook); err != nil {
 			t.Fatal(err)

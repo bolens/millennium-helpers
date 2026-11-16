@@ -30,9 +30,42 @@ func Linux() []File {
 	}
 }
 
+// Linux64 lists the additional components required by the SteamRT3 client.
+func Linux64() []File {
+	return []File{
+		{"libmillennium_bootstrap_x64.so", false},
+		{"libmillennium_x64.so", false},
+		{"libmillennium_luavm_x64", true},
+	}
+}
+
+// LinuxAt preserves older clients, but requires the complete x64 group if any
+// member exists. A partial upgrade must not silently pass integrity checks.
+func LinuxAt(root string) []File {
+	files := Linux()
+	manifest, _ := os.ReadFile(filepath.Join(root, "checksums.txt"))
+	for _, f := range Linux64() {
+		if _, err := os.Lstat(filepath.Join(root, f.Name)); !os.IsNotExist(err) || strings.Contains(string(manifest), f.Name) {
+			return append(files, Linux64()...)
+		}
+	}
+	return files
+}
+
+// ValidateLinux64 checks SteamRT3 compatibility independently of legacy health.
+func ValidateLinux64(root string) error {
+	for _, f := range Linux64() {
+		st, err := os.Lstat(filepath.Join(root, f.Name))
+		if err != nil || !st.Mode().IsRegular() {
+			return fmt.Errorf("SteamRT3 requires %s; upgrade Millennium to v3.6.3 or newer", f.Name)
+		}
+	}
+	return nil
+}
+
 // ValidateFiles rejects incomplete installs and non-regular components.
 func ValidateFiles(root string) error {
-	for _, f := range Linux() {
+	for _, f := range LinuxAt(root) {
 		st, err := os.Lstat(filepath.Join(root, f.Name))
 		if errors.Is(err, os.ErrPermission) {
 			return fmt.Errorf("cannot inspect client file %s: %w", f.Name, os.ErrPermission)
@@ -46,7 +79,7 @@ func ValidateFiles(root string) error {
 
 // HelpersExecutable checks shared-install modes, not the privileged caller's access.
 func HelpersExecutable(root string) bool {
-	for _, f := range Linux() {
+	for _, f := range LinuxAt(root) {
 		if !f.Executable {
 			continue
 		}
@@ -60,7 +93,7 @@ func HelpersExecutable(root string) bool {
 
 // NormalizeHelpers validates every helper before changing any modes.
 func NormalizeHelpers(root string) error {
-	for _, f := range Linux() {
+	for _, f := range LinuxAt(root) {
 		if !f.Executable {
 			continue
 		}
@@ -69,7 +102,7 @@ func NormalizeHelpers(root string) error {
 			return fmt.Errorf("runtime helper missing or not regular: %s", f.Name)
 		}
 	}
-	for _, f := range Linux() {
+	for _, f := range LinuxAt(root) {
 		if f.Executable {
 			if err := os.Chmod(filepath.Join(root, f.Name), 0o755); err != nil {
 				return fmt.Errorf("cannot restore executable mode: %s", f.Name)
@@ -101,7 +134,7 @@ func WriteChecksums(root string) error {
 		return err
 	}
 	var b strings.Builder
-	for _, f := range Linux() {
+	for _, f := range LinuxAt(root) {
 		sum, err := digest(root, f.Name)
 		if err != nil {
 			return err
@@ -151,7 +184,7 @@ func Verify(root string) error {
 		}
 		expected[name] = strings.ToLower(fields[0])
 	}
-	for _, f := range Linux() {
+	for _, f := range LinuxAt(root) {
 		want, ok := expected[f.Name]
 		if !ok {
 			return fmt.Errorf("client integrity manifest omits %s", f.Name)

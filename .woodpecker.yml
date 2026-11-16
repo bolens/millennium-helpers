@@ -10,7 +10,7 @@ clone:
 when:
   - event: push
     branch: main
-  - event: [pull_request, manual]
+  - event: [pull_request, manual, tag]
 steps:
   - name: core
     image: docker.io/library/golang:1.26.11-trixie@sha256:fa340cb59ebeb1d53ac1cccfc334201d938fe5f3458003cccb767096d8e032b8
@@ -26,6 +26,7 @@ steps:
       - chown -R ci:ci "$CI_WORKSPACE"
       - runuser -u ci -- env PATH=/opt/ci-python/bin:/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin GOTOOLCHAIN=local GOCACHE=/tmp/ci-go-cache GOPATH=/tmp/ci-gopath GOMODCACHE=/tmp/ci-go-modules make check-all
       - runuser -u ci -- env PATH=/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin GOTOOLCHAIN=local GOCACHE=/tmp/ci-go-cache GOPATH=/tmp/ci-gopath GOMODCACHE=/tmp/ci-go-modules make build
+      - runuser -u ci -- env PATH=/opt/ci-python/bin:/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin GOTOOLCHAIN=local GOCACHE=/tmp/ci-go-cache GOPATH=/tmp/ci-gopath GOMODCACHE=/tmp/ci-go-modules bash scripts/ci/check-native-quality.sh
       - runuser -u ci -- env PATH=/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin GOTOOLCHAIN=local GOCACHE=/tmp/ci-go-cache GOPATH=/tmp/ci-gopath GOMODCACHE=/tmp/ci-go-modules CGO_ENABLED=1 sh -c 'cd go && go test -buildvcs=false -race ./...'
 
   - name: source-and-changelog-policy
@@ -38,3 +39,11 @@ steps:
       - test "$(id -u node)" -eq 1000
       - test "$(stat -c %u "$CI_WORKSPACE")" -eq 1000
       - runuser -u node -- sh -c 'test "$(id -u)" -eq 1000 && test "$(git rev-parse HEAD)" = "$CI_COMMIT_SHA" && exec bash scripts/ci/check-policy.sh'
+
+  - name: nix
+    image: docker.io/nixos/nix:2.34.4@sha256:0b1530edf840d9af519c7f3970cafbbed68d9d9554a83cc9adc04099753117e1
+    environment:
+      NIX_CONFIG: "experimental-features = nix-command flakes\nsandbox = false"
+    commands:
+      - git config --global --add safe.directory "$CI_WORKSPACE"
+      - bash scripts/ci/check-nix.sh

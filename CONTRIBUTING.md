@@ -312,6 +312,14 @@ When changing attribution, the vendored notice, upgrade license installation, ma
 2. Keep `third_party/README.md` and man-page `LICENSE` sections pointing at the hub.
 3. Run `make check-docs` (included in `make lint` / `make check-all`).
 
+## CI ownership
+
+Woodpecker runs `make check-all`, builds, Linux race tests, shared source policy,
+`bash scripts/ci/check-native-quality.sh`, and `bash scripts/ci/check-nix.sh`.
+Portable checks run for every PR, main push, tag, and manual run. GitHub retains
+native platform tests, distribution/install checks, CodeQL, and publishing.
+Portable checks require no publishing credentials or Docker socket.
+
 ## Pull requests
 
 - Keep PRs focused; include a short summary and test plan.

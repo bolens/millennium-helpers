@@ -23,12 +23,16 @@ func InstallHooksAt(steamRoot, libRoot string) error {
 			_ = unix.Close(fd)
 		}
 	}()
-	targets := []string{"libmillennium_bootstrap_x86.so", "libmillennium_bootstrap_hhx64.so"}
-	for i, folder := range []string{"ubuntu12_32", "ubuntu12_64"} {
-		st, err := os.Lstat(filepath.Join(libRoot, targets[i]))
+	plans := HooksAt(steamRoot, libRoot)
+	// Preflight every library before creating or replacing any hook.
+	for _, p := range plans {
+		st, err := os.Lstat(HostHookTarget(p.Target))
 		if err != nil || !st.Mode().IsRegular() {
-			return fmt.Errorf("bootstrap library missing or not regular: %s", targets[i])
+			return fmt.Errorf("bootstrap library missing or not regular: %s (upgrade Millennium first)", filepath.Base(p.Target))
 		}
+	}
+	for _, p := range plans {
+		folder := filepath.Base(filepath.Dir(p.Hook))
 		fd, err := safefs.OpenChildDir(root, folder, true, 0o755, -1, -1)
 		if err != nil {
 			return fmt.Errorf("cannot safely open Steam architecture directory: %w", err)
@@ -36,9 +40,10 @@ func InstallHooksAt(steamRoot, libRoot string) error {
 		dirs = append(dirs, fd)
 	}
 	for i, fd := range dirs {
-		if err := safefs.Symlink(fd, "libXtst.so.6", filepath.Join(libRoot, targets[i])); err != nil {
+		if err := safefs.Symlink(fd, "libXtst.so.6", plans[i].Target); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }

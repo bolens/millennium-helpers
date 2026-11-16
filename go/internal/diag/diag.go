@@ -89,6 +89,11 @@ func FormatReportFromCollect(r Report) string {
 	row(r.BinariesOK, "Millennium Binary Version", r.BinariesDetail, false)
 	if runtime.GOOS == "linux" {
 		row(r.RuntimeHelpersExecutable, "Runtime Helper Modes", fmt.Sprintf("executable=%v", r.RuntimeHelpersExecutable), false)
+		row(r.HooksOK, "Bootstrap Hooks", fmt.Sprintf("ok=%v", r.HooksOK), false)
+		if r.SteamRT3 {
+			row(r.SteamRT3Compatible, "SteamRT3 Compatibility", r.SteamRT3Detail, false)
+		}
+
 	}
 	if runtime.GOOS != "windows" {
 		row(r.PermissionsOK, "User File Ownership", fmt.Sprintf("ok=%v", r.PermissionsOK), false)
