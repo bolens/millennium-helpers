@@ -11,22 +11,22 @@ class MillenniumHelpersBin < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/bolens/millennium-helpers/releases/download/v4.1.1/millennium-helpers-v4.1.1-darwin-arm64.tar.gz"
+      url "https://github.com/bolens/millennium-helpers/releases/download/v4.1.2/millennium-helpers-v4.1.2-darwin-arm64.tar.gz"
       sha256 "924c8a370ee96597683a0e2ce0dcb26811acacb0797b1157617559cce8ab74cb"
     end
     on_intel do
-      url "https://github.com/bolens/millennium-helpers/releases/download/v4.1.1/millennium-helpers-v4.1.1-darwin-amd64.tar.gz"
+      url "https://github.com/bolens/millennium-helpers/releases/download/v4.1.2/millennium-helpers-v4.1.2-darwin-amd64.tar.gz"
       sha256 "39d9624fce58a31d203fbfb66264603c43a9023b02ea2243f0337093406b21ff"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/bolens/millennium-helpers/releases/download/v4.1.1/millennium-helpers-v4.1.1-linux-arm64.tar.gz"
+      url "https://github.com/bolens/millennium-helpers/releases/download/v4.1.2/millennium-helpers-v4.1.2-linux-arm64.tar.gz"
       sha256 "1b4f9ab3f4cb5b438726bd0fbc6aae9d4b0b9980715292f50ba3a4bd029a4ee0"
     end
     on_intel do
-      url "https://github.com/bolens/millennium-helpers/releases/download/v4.1.1/millennium-helpers-v4.1.1-linux-amd64.tar.gz"
+      url "https://github.com/bolens/millennium-helpers/releases/download/v4.1.2/millennium-helpers-v4.1.2-linux-amd64.tar.gz"
       sha256 "3711b6c5efa850c4085210fd74b715f831391c6c70c3c104f5a2df996ea31fd8"
     end
   end

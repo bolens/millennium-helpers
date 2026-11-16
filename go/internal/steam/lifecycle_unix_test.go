@@ -56,7 +56,7 @@ func TestRelaunchRetainsCapturedEnvironment(t *testing.T) {
 	if !attempted || err != nil {
 		t.Fatalf("relaunch %v %v", attempted, err)
 	}
-	expected := strings.Join(append([]string{display}, argv...), "\x00") + "\x00"
+	expected := strings.Join(append([]string{display}, argv[1:]...), "\x00") + "\x00"
 	if b, err := os.ReadFile(result); err != nil || string(b) != expected {
 		t.Fatalf("captured environment/arguments lost: %q %v", b, err)
 	}
@@ -159,5 +159,28 @@ func TestCaptureEnvPreservesEmptyArguments(t *testing.T) {
 	}
 	if got, want := vals["STEAM_ARGS"], "'-srt-logger-opened' '' "; got != want {
 		t.Fatalf("args=%q, want %q", got, want)
+	}
+}
+
+func TestMalformedRelaunchArgumentsPreserveState(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("Linux relaunch arguments")
+	}
+	t.Setenv("MILLENNIUM_STATE_DIR", t.TempDir())
+	name, home, err := TargetUser()
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := RelaunchStateFile(name, home)
+	if err := writeRelaunchEnv(state, nil, "'unterminated", false); err != nil {
+		t.Fatal(err)
+	}
+	called := false
+	attempted, err := relaunchFromState(name, home, func(string, string, map[string]string) error { called = true; return nil })
+	if err == nil || attempted || called {
+		t.Fatalf("malformed state launched: %v %v %v", attempted, called, err)
+	}
+	if _, err := os.Stat(state); err != nil {
+		t.Fatal("lost recovery state", err)
 	}
 }

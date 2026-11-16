@@ -292,7 +292,14 @@ func relaunchFromState(username, home string, launch func(string, string, map[st
 	if err != nil {
 		return false, err
 	}
-	argDisplay := vals["STEAM_ARGS"]
+	steamArgs := vals["STEAM_ARGS"]
+	if runtime.GOOS == "linux" {
+		steamArgs, err = relaunchArguments(steamArgs)
+		if err != nil {
+			return false, err
+		}
+	}
+	argDisplay := steamArgs
 	if argDisplay == "" {
 		argDisplay = "none"
 	}
@@ -317,7 +324,6 @@ func relaunchFromState(username, home string, launch func(string, string, map[st
 		}
 	}
 
-	steamArgs := vals["STEAM_ARGS"]
 	var cmd string
 	switch {
 	case wasFlatpak:
