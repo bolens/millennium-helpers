@@ -113,6 +113,88 @@ requiring that container path to exist on the host. Legacy `ubuntu12_32` and
 Fixture checks establish file and hook consistency. Confirm live recovery after a
 Steam restart by checking for Millennium startup messages and its menu in Steam.
 
+### Recovery without millennium-helpers
+
+These steps are for native Linux x86-64 Steam, including Arch, when the installed
+Millennium package still lacks SteamRT3 support. They are not a Flatpak or NixOS
+procedure. Upstream [Millennium v3.6.3](https://github.com/SteamClientHomebrew/Millennium/releases/tag/v3.6.3)
+already includes the required files. Prefer an updated distribution package when
+available. The manual installation below changes files outside the package manager,
+so its recorded version will remain unchanged until you reinstall an updated package.
+
+1. Close games and exit Steam completely. `pgrep -x steam` should print nothing.
+   Do not replace libraries while Steam is running.
+2. Download and verify the upstream archive, preserve the current installation,
+   then install its files. Run this block in a terminal:
+
+   ```bash
+   bash <<'BASH'
+   set -euo pipefail
+   if pgrep -x steam >/dev/null; then
+     echo "Exit Steam before continuing." >&2
+     exit 1
+   fi
+   work_dir=$(mktemp -d)
+   version=3.6.3
+   archive="millennium-v${version}-linux-x86_64.tar.gz"
+   release="https://github.com/SteamClientHomebrew/Millennium/releases/download/v${version}"
+   curl -fL "$release/$archive" -o "$work_dir/$archive"
+   curl -fL "$release/millennium-v${version}-linux-x86_64.sha256" -o "$work_dir/check.sha256"
+   (cd "$work_dir" && sha256sum --check check.sha256)
+   tar -xzf "$work_dir/$archive" -C "$work_dir"
+   if [ -d /usr/lib/millennium ]; then
+     backup="/usr/lib/millennium.before-steamrt3-$(date +%Y%m%d%H%M%S)"
+     sudo cp -a /usr/lib/millennium "$backup"
+     echo "Saved previous installation: $backup"
+   fi
+   sudo install -d -m 755 /usr/lib/millennium
+   sudo cp -a "$work_dir/usr/lib/millennium/." /usr/lib/millennium/
+   sudo chmod 755 /usr/lib/millennium/libmillennium_pvs64 \
+     /usr/lib/millennium/libmillennium_luavm_x86 \
+     /usr/lib/millennium/libmillennium_luavm_x64
+   printf '%s\n' "$version" | sudo tee /usr/lib/millennium/version.txt >/dev/null
+   (cd "$work_dir/usr/lib/millennium" && \
+     sha256sum libmillennium_*.so libmillennium_luavm_* libmillennium_pvs64) > "$work_dir/checksums.txt"
+   sudo install -m 644 "$work_dir/checksums.txt" /usr/lib/millennium/checksums.txt
+   rm -rf -- "$work_dir"
+   BASH
+   ```
+
+   Stop if checksum verification fails. The block exits before installing anything.
+   The executable-mode repair is necessary because this release archive stores the
+   Lua and pressure-vessel helpers without executable permissions.
+3. Add the SteamRT3 hook as your regular user. This preserves an existing hook:
+
+   ```bash
+   bash <<'BASH'
+   set -euo pipefail
+   steam_root=$(readlink -f "$HOME/.steam/steam")
+   test -f "$steam_root/steamrt64/steam"
+   hook="$steam_root/steamrt64/libXtst.so.6"
+   test ! -d "$hook"
+   if [ -e "$hook" ] || [ -L "$hook" ]; then
+     cp -a -- "$hook" "$hook.before-steamrt3-$(date +%Y%m%d%H%M%S)"
+   fi
+   ln -sfn /run/host/usr/lib/millennium/libmillennium_bootstrap_x64.so "$hook"
+   readlink "$hook"
+   BASH
+   ```
+
+   If Steam is installed elsewhere, set `steam_root` to its actual root instead.
+   The `/run/host` target is resolved inside pressure-vessel. It may appear broken
+   from the host. Use `bootstrap_x64`, not `bootstrap_hhx64`, for this hook.
+4. Start Steam normally. Confirm Millennium appears in Steam and look for new
+   `Started Millennium` and `SteamRT3 bootstrap` entries in
+   `~/.steam/steam/logs/console-linux.txt`. Check their timestamps to avoid mistaking
+   an older successful launch for the current one.
+5. Once your distribution package catches up, reinstall or update it so the package
+   database and installed files agree. For rollback, exit Steam, restore the saved
+   installation and hook, then restart Steam. An old bootstrap still cannot load
+   into the new client, so rollback only reverses this workaround.
+
+This procedure does not need a global `LD_PRELOAD` or
+`PRESSURE_VESSEL_APP_LD_PRELOAD` override.
+
 ## Related
 
 - **Docs index:** [README.md](README.md)
