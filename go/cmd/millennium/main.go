@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"runtime"
@@ -73,12 +74,15 @@ install/uninstall helpers, and mcp JSON-RPC (see spec/cli-contract.yaml).`,
 		Short:              "Alias for millennium diag doctor",
 		DisableFlagParsing: true,
 		RunE: func(cmd *cobra.Command, a []string) error {
-			os.Exit(diag.RunCLI(append([]string{"doctor"}, a...)))
-			return nil
+			return commandResult(diag.RunCLI(append([]string{"doctor"}, a...)))
 		},
 	})
 
 	if err := root.Execute(); err != nil {
+		var status commandStatus
+		if errors.As(err, &status) {
+			return int(status)
+		}
 		msg := err.Error()
 		unknown := ""
 		if _, after, ok := strings.Cut(msg, `unknown command "`); ok {
@@ -103,6 +107,20 @@ install/uninstall helpers, and mcp JSON-RPC (see spec/cli-contract.yaml).`,
 	return 0
 }
 
+// Only main exits the process. Commands return status to the dispatcher so
+// deferred cleanup runs and callers can exercise the same implementation.
+type commandStatus int
+
+func (status commandStatus) Error() string {
+	return fmt.Sprintf("command exited with status %d", status)
+}
+func commandResult(code int) error {
+	if code == 0 {
+		return nil
+	}
+	return commandStatus(code)
+}
+
 func knownCommands() []string {
 	return []string{"diag", "doctor", "upgrade", "schedule", "theme", "config", "injection", "repair", "purge", "mcp", "install", "uninstall", "help"}
 }
@@ -117,16 +135,13 @@ func newConfigCmd() *cobra.Command {
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "Error:", err)
 				fmt.Fprintln(os.Stderr, "Try 'millennium config --help' for usage.")
-				os.Exit(1)
-				return nil
+				return commandResult(1)
 			}
 			if options.Version {
 				version.Print("millennium config")
-				os.Exit(0)
-				return nil
+				return commandResult(0)
 			}
-			os.Exit(clientconfig.RunCLI(options))
-			return nil
+			return commandResult(clientconfig.RunCLI(options))
 		},
 	}
 }
@@ -140,16 +155,13 @@ func newInjectionCmd() *cobra.Command {
 			opts, err := injection.ParseArgs(a)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
-				os.Exit(1)
-				return nil
+				return commandResult(1)
 			}
 			if opts.Version {
 				version.Print("millennium injection")
-				os.Exit(0)
-				return nil
+				return commandResult(0)
 			}
-			os.Exit(injection.RunCLI(opts))
-			return nil
+			return commandResult(injection.RunCLI(opts))
 		},
 	}
 }
@@ -161,22 +173,18 @@ func newScheduleCmd() *cobra.Command {
 		DisableFlagParsing: true,
 		RunE: func(cmd *cobra.Command, a []string) error {
 			if rest, ok := takeConfigArgs(a); ok {
-				os.Exit(config.RunCLI(rest))
-				return nil
+				return commandResult(config.RunCLI(rest))
 			}
 			opts, err := schedule.ParseArgs(a)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
-				os.Exit(1)
-				return nil
+				return commandResult(1)
 			}
 			if opts.Version {
 				version.Print("millennium-schedule")
-				os.Exit(0)
-				return nil
+				return commandResult(0)
 			}
-			os.Exit(schedule.RunCLI(opts))
-			return nil
+			return commandResult(schedule.RunCLI(opts))
 		},
 	}
 }
@@ -210,6 +218,7 @@ func takeConfigArgs(a []string) ([]string, bool) {
 			if !strings.HasPrefix(tok, "-") {
 				return nil, false
 			}
+			out = append(out, tok)
 			continue
 		}
 		out = append(out, tok)
@@ -226,16 +235,13 @@ func newThemeCmd() *cobra.Command {
 			opts, err := theme.ParseArgs(a)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
-				os.Exit(1)
-				return nil
+				return commandResult(1)
 			}
 			if opts.Version {
 				version.Print("millennium-theme")
-				os.Exit(0)
-				return nil
+				return commandResult(0)
 			}
-			os.Exit(theme.RunCLI(opts))
-			return nil
+			return commandResult(theme.RunCLI(opts))
 		},
 	}
 }
@@ -249,16 +255,13 @@ func newDiagCmd() *cobra.Command {
 			opts, err := diag.ParseArgs(a)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
-				os.Exit(1)
-				return nil
+				return commandResult(1)
 			}
 			if opts.Version {
 				version.Print("millennium-diag")
-				os.Exit(0)
-				return nil
+				return commandResult(0)
 			}
-			os.Exit(diag.RunCLI(a))
-			return nil
+			return commandResult(diag.RunCLI(a))
 		},
 	}
 }
@@ -272,27 +275,22 @@ func newUpgradeCmd() *cobra.Command {
 			opts, err := upgrade.ParseArgs(a)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
-				os.Exit(1)
-				return nil
+				return commandResult(1)
 			}
 			if opts.Version {
 				version.Print("millennium-upgrade")
-				os.Exit(0)
-				return nil
+				return commandResult(0)
 			}
 			handled, code := upgrade.RunNative(opts)
 			if handled {
-				os.Exit(code)
-				return nil
+				return commandResult(code)
 			}
 			if opts.Rollback {
 				if handled, code := upgrade.TrySudoRollbackHandoff(opts); handled {
-					os.Exit(code)
-					return nil
+					return commandResult(code)
 				}
 				fmt.Fprintln(os.Stderr, "Error: rollback requires a writable install root (or sudo on Linux).")
-				os.Exit(1)
-				return nil
+				return commandResult(1)
 			}
 			archivePath := opts.LocalFile
 			ver := ""
@@ -301,12 +299,10 @@ func newUpgradeCmd() *cobra.Command {
 				path, sha, tag, err := upgrade.FetchRemoteArchive(opts)
 				if err != nil {
 					fmt.Fprintln(os.Stderr, err.Error())
-					os.Exit(1)
-					return nil
+					return commandResult(1)
 				}
 				if path == "" {
-					os.Exit(0)
-					return nil
+					return commandResult(0)
 				}
 				archivePath = path
 				ver = strings.TrimPrefix(tag, "v")
@@ -318,15 +314,13 @@ func newUpgradeCmd() *cobra.Command {
 				if removeArchive {
 					_ = os.Remove(archivePath)
 				}
-				os.Exit(code)
-				return nil
+				return commandResult(code)
 			}
 			if handled, code := upgrade.TrySudoInstallHandoff(opts, archivePath, opts.LocalSHA); handled {
 				if removeArchive {
 					_ = os.Remove(archivePath)
 				}
-				os.Exit(code)
-				return nil
+				return commandResult(code)
 			}
 			if removeArchive {
 				_ = os.Remove(archivePath)
@@ -339,8 +333,7 @@ func newUpgradeCmd() *cobra.Command {
 			} else {
 				fmt.Fprintln(os.Stderr, "Hint: set MILLENNIUM_LIB_DIR to a writable path, or re-run as root.")
 			}
-			os.Exit(1)
-			return nil
+			return commandResult(1)
 		},
 	}
 }
@@ -354,21 +347,17 @@ func newPurgeCmd() *cobra.Command {
 			dry, yes, quiet, help, ver, err := purge.ParseFlags(a)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
-				os.Exit(1)
-				return nil
+				return commandResult(1)
 			}
 			if ver {
 				version.Print("millennium-purge")
-				os.Exit(0)
-				return nil
+				return commandResult(0)
 			}
 			if help {
 				fmt.Println("Usage: millennium purge [-d|--dry-run] [-y|--yes] [-q|--quiet]")
-				os.Exit(0)
-				return nil
+				return commandResult(0)
 			}
-			os.Exit(purge.RunCLI(dry, yes, quiet))
-			return nil
+			return commandResult(purge.RunCLI(dry, yes, quiet))
 		},
 	}
 }
@@ -382,21 +371,17 @@ func newRepairCmd() *cobra.Command {
 			dry, yes, quiet, skip, help, ver, err := repair.ParseFlags(a)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
-				os.Exit(1)
-				return nil
+				return commandResult(1)
 			}
 			if ver {
 				version.Print("millennium-repair")
-				os.Exit(0)
-				return nil
+				return commandResult(0)
 			}
 			if help {
 				fmt.Println("Usage: millennium repair [-d|--dry-run] [-y|--yes] [-s|--skip-theme] [-q|--quiet]")
-				os.Exit(0)
-				return nil
+				return commandResult(0)
 			}
-			os.Exit(repair.RunCLI(dry, skip, quiet, yes))
-			return nil
+			return commandResult(repair.RunCLI(dry, skip, quiet, yes))
 		},
 	}
 }
@@ -410,11 +395,9 @@ func newMcpCmd() *cobra.Command {
 			opts, err := mcp.ParseArgs(a)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
-				os.Exit(2)
-				return nil
+				return commandResult(2)
 			}
-			os.Exit(mcp.RunCLI(opts))
-			return nil
+			return commandResult(mcp.RunCLI(opts))
 		},
 	}
 }
@@ -425,8 +408,7 @@ func newInstallCmd() *cobra.Command {
 		Short:              "Install helpers (dispatcher, completions, libs)",
 		DisableFlagParsing: true,
 		RunE: func(cmd *cobra.Command, a []string) error {
-			os.Exit(install.RunCLI("install", a))
-			return nil
+			return commandResult(install.RunCLI("install", a))
 		},
 	}
 }
@@ -437,8 +419,7 @@ func newUninstallCmd() *cobra.Command {
 		Short:              "Uninstall helpers",
 		DisableFlagParsing: true,
 		RunE: func(cmd *cobra.Command, a []string) error {
-			os.Exit(install.RunCLI("uninstall", a))
-			return nil
+			return commandResult(install.RunCLI("uninstall", a))
 		},
 	}
 }

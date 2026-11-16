@@ -195,6 +195,40 @@ so its recorded version will remain unchanged until you reinstall an updated pac
 This procedure does not need a global `LD_PRELOAD` or
 `PRESSURE_VESSEL_APP_LD_PRELOAD` override.
 
+## Diagnostic limits
+
+JSON diagnostics return `null` for checks that have not been implemented or
+measured, and list them in `unverified_checks`. This includes helpers freshness,
+completion/package cleanup, mixed installs, and Linux linger status. These values
+previously reported success without inspecting their state. Scripts should treat
+`null` as unknown. The human report names the same unverified checks. Binary
+integrity, runtime helper modes, bootstrap hooks, permissions, skins, and scheduler
+presence retain their measured results.
+
+## Command and concurrency guarantees
+
+`millennium diag` reports, `diag doctor` repairs, `diag logs` reads logs, and
+`diag --share` uploads a redacted report. Choose one mode per invocation.
+`--force`, `--dry-run`, and `--yes` require doctor mode. `--follow` requires logs.
+`--json` is supported for reports and shared reports, not doctor or logs.
+
+Helpers settings remain under `millennium schedule config`. `get` takes one key,
+`set` takes a key and value, and `list` takes no arguments. Use an explicit empty
+string to clear a setting, for example `millennium schedule config set github_token ""`.
+Mutation output redacts credentials. An explicit `get github_token` still returns
+the stored value so scripts retain their existing interface.
+
+Conflicting helper configuration writes and install/rollback transactions fail
+with a contention error. Wait for the other helper operation to finish and retry.
+Locks release when the owning process exits. Windows retains a lock file so two
+processes cannot accidentally lock different file objects. Do not delete it as a
+recovery step. These locks coordinate helpers, not Steam or a distribution package
+manager. Close Steam before editing client settings or replacing its libraries.
+
+Local archives keep their prerelease version suffix. If a custom filename provides
+no version and no release metadata is available, the installed label is `local`
+rather than an invented timestamp.
+
 ## Related
 
 - **Docs index:** [README.md](README.md)

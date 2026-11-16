@@ -148,16 +148,11 @@ func runSetup(o Options) int {
 		fmt.Println("(other keys such as backup_limit are preserved)")
 	} else {
 		if err := withSetupConfigDir(cfgDir, func() error {
-			data, err := config.Load()
-			if err != nil {
-				return err
-			}
-			if data == nil {
-				data = config.Data{}
-			}
-			data["update_channel"] = channel
-			data["github_token"] = token
-			return config.Save(data)
+			return config.Update(func(data config.Data) error {
+				data["update_channel"] = channel
+				data["github_token"] = token
+				return nil
+			})
 		}); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: failed to write configuration: %v\n", err)
 			return 1

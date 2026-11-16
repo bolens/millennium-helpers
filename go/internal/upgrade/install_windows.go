@@ -13,7 +13,7 @@ import (
 	"github.com/bolens/millennium-helpers/internal/theme"
 )
 
-func installPlatform(archivePath, version string, o Options) error {
+func installPlatformLocked(archivePath, version string, o Options) error {
 	steam := theme.FindSteamDir()
 	if steam == "" {
 		return fmt.Errorf("Steam directory not found")
@@ -52,8 +52,8 @@ func installPlatform(archivePath, version string, o Options) error {
 		return fmt.Errorf("create backup root: %w", err)
 	}
 	// Back up every destination the archive will replace before mutating Steam.
-	bak := filepath.Join(bakRoot, oldVer+"_"+time.Now().Format("20060102150405"))
-	if err := os.Mkdir(bak, 0o755); err != nil {
+	bak, err := reserveTimestampedBackup(bakRoot, oldVer, time.Now())
+	if err != nil {
 		return fmt.Errorf("create backup: %w", err)
 	}
 	backedUp := false

@@ -209,6 +209,10 @@ func errorsFromPaths(paths []string) ([]Finding, string, error) {
 
 // DisableTheme resets the active theme to Steam, optionally guarding its current name.
 func DisableTheme(expected string, dryRun bool) error {
+	return withMutation(dryRun, func() error { return disableTheme(expected, dryRun) })
+}
+
+func disableTheme(expected string, dryRun bool) error {
 	summary, err := Show()
 	if err != nil {
 		return err
@@ -219,11 +223,20 @@ func DisableTheme(expected string, dryRun bool) error {
 	if summary.ActiveTheme == "Steam" {
 		return nil
 	}
-	return SetTheme("Steam", dryRun)
+	return setTheme("Steam", dryRun)
 }
 
 // DisableFlagged disables enabled plugins and the active non-Steam theme with findings.
 func DisableFlagged(findings []Finding, scope string, dryRun bool) (plugins []string, theme string, err error) {
+	err = withMutation(dryRun, func() error {
+		var workErr error
+		plugins, theme, workErr = disableFlagged(findings, scope, dryRun)
+		return workErr
+	})
+	return
+}
+
+func disableFlagged(findings []Finding, scope string, dryRun bool) (plugins []string, theme string, err error) {
 	if scope != "all" && scope != "plugins" && scope != "themes" {
 		return nil, "", fmt.Errorf("invalid disable scope %q", scope)
 	}
@@ -265,6 +278,9 @@ func DisableFlagged(findings []Finding, scope string, dryRun bool) (plugins []st
 		themeConfig, objectErr := object(data, "themes")
 		if objectErr != nil {
 			return plugins, theme, objectErr
+		}
+		if stringValue(themeConfig, "activeTheme") != theme {
+			return plugins, theme, fmt.Errorf("active theme changed since error inspection; inspect errors again before disabling it")
 		}
 		themeConfig["activeTheme"] = "Steam"
 	}

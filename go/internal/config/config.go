@@ -249,9 +249,17 @@ Manage Millennium Helpers configuration (native Go).
 
 	switch action {
 	case "list", "show", "":
+		if len(positional) > 1 {
+			fmt.Fprintln(os.Stderr, "Error: config list does not accept arguments.")
+			return 1
+		}
 		fmt.Print(FormatList(data))
 		return 0
 	case "get":
+		if len(positional) != 2 {
+			fmt.Fprintln(os.Stderr, "Error: config get requires exactly one key.")
+			return 1
+		}
 		if key == "" {
 			fmt.Fprintln(os.Stderr, "Error: config get requires a key name.")
 			return 1
@@ -263,6 +271,10 @@ Manage Millennium Helpers configuration (native Go).
 		fmt.Println(Get(data, key))
 		return 0
 	case "set":
+		if len(positional) != 3 {
+			fmt.Fprintln(os.Stderr, "Error: config set requires a key and value. Use an explicit empty string to clear a value.")
+			return 1
+		}
 		if key == "" {
 			fmt.Fprintln(os.Stderr, "Error: config set requires a key name.")
 			return 1
@@ -272,19 +284,26 @@ Manage Millennium Helpers configuration (native Go).
 			return 1
 		}
 		if dryRun {
-			fmt.Fprintf(os.Stderr, "[DRY RUN] Would set config option %s to %s\n", key, val)
+			fmt.Fprintf(os.Stderr, "[DRY RUN] Would set config option %s to %s\n", key, displayValue(key, val))
 			return 0
 		}
-		if err := Save(data); err != nil {
+		if err := Update(func(current Data) error { return Set(current, key, val) }); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: failed to write configuration: %v\n", err)
 			return 1
 		}
 		if !quiet {
-			fmt.Printf("Config option %s set to '%s' successfully.\n", key, val)
+			fmt.Printf("Config option %s set to '%s' successfully.\n", key, displayValue(key, val))
 		}
 		return 0
 	default:
 		fmt.Fprintf(os.Stderr, "Error: Unknown config action '%s'. Use get, set, or list.\n", action)
 		return 1
 	}
+}
+
+func displayValue(key, value string) string {
+	if key == "github_token" && value != "" {
+		return "[REDACTED]"
+	}
+	return value
 }

@@ -3,21 +3,10 @@ package schedule
 import (
 	"os"
 	"path/filepath"
-	"runtime"
-	"strings"
 	"testing"
 
 	"github.com/bolens/millennium-helpers/internal/config"
 )
-
-func TestNeedsLegacySetupNative(t *testing.T) {
-	if NeedsLegacy(Options{Action: "setup"}) {
-		t.Fatal("setup should be native")
-	}
-	if NeedsLegacy(Options{Action: "config"}) {
-		t.Fatal("config should be native")
-	}
-}
 
 func TestSetupWizardDryRunPreserveDefaults(t *testing.T) {
 	home := t.TempDir()
@@ -74,7 +63,6 @@ func TestSetupWizardDryRunPreserveDefaults(t *testing.T) {
 	if config.Get(data, "backup_limit") != "7" {
 		t.Fatalf("backup_limit touched: %v", data)
 	}
-	_ = runtime.GOOS
 }
 
 func TestSetupWizardLivePreserveBackupKeys(t *testing.T) {
@@ -167,5 +155,4 @@ func TestPromptChannelDefaults(t *testing.T) {
 	if err != nil || ch != "main" {
 		t.Fatalf("ch=%q err=%v", ch, err)
 	}
-	_ = strings.Contains
 }

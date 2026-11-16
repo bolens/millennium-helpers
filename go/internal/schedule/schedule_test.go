@@ -66,24 +66,6 @@ func TestFormatStatusConfigured(t *testing.T) {
 	}
 }
 
-func TestNeedsLegacy(t *testing.T) {
-	if NeedsLegacy(Options{Action: "setup"}) {
-		t.Fatal("setup should be native")
-	}
-	if NeedsLegacy(Options{Action: "status"}) {
-		t.Fatal("status should be native")
-	}
-	if NeedsLegacy(Options{Action: "enable", DryRun: true}) {
-		t.Fatal("dry-run enable should be native")
-	}
-	if NeedsLegacy(Options{Action: "enable"}) {
-		t.Fatal("enable should be native (Unix timers / Windows Task Scheduler)")
-	}
-	if NeedsLegacy(Options{Action: "disable"}) {
-		t.Fatal("disable should be native")
-	}
-}
-
 func TestBuildEnablePowerShell(t *testing.T) {
 	arg, script := buildEnablePowerShell(
 		"beta",

@@ -70,20 +70,6 @@ func TestVerifyFileSHA256(t *testing.T) {
 	}
 }
 
-func TestNeedsLegacyAlwaysFalse(t *testing.T) {
-	cases := []Options{
-		{},
-		{LocalFile: "/tmp/a.tgz"},
-		{Rollback: true, RollbackTarget: "1"},
-		{DryRun: true},
-	}
-	for _, o := range cases {
-		if NeedsLegacy(o) {
-			t.Fatalf("NeedsLegacy(%+v) = true; expected false", o)
-		}
-	}
-}
-
 func TestInferVersion(t *testing.T) {
 	if got := InferVersion("/tmp/millennium-v2.30.0-linux-x86_64.tar.gz", ""); got != "2.30.0" {
 		t.Fatalf("%s", got)
@@ -338,18 +324,6 @@ func TestApplyRollbackDryRun(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(lib, "millennium.bak_x")); err != nil {
 		t.Fatal("dry-run must not consume backup")
-	}
-}
-
-func TestNeedsLegacyRollback(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("unix writability via MOCK_LIB_DIR")
-	}
-	lib := t.TempDir()
-	t.Setenv("MOCK_LIB_DIR", lib)
-	t.Setenv("MILLENNIUM_LIB_DIR", lib)
-	if NeedsLegacy(Options{Rollback: true, RollbackTarget: "1"}) {
-		t.Fatal("NeedsLegacy must stay false")
 	}
 }
 

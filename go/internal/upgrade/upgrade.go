@@ -202,12 +202,6 @@ func VerifyFileSHA256(path, expectedHex string) error {
 	return nil
 }
 
-// NeedsLegacy reports whether this invocation must run the shell/PS upgrade path.
-// Always false — install/rollback are native (+ Linux sudo handoff).
-func NeedsLegacy(o Options) bool {
-	return false
-}
-
 // RunNative handles help/version/rollback-list/dry-run and pre-verify. Returns handled=true when done.
 func RunNative(o Options) (handled bool, code int) {
 	if o.Help {

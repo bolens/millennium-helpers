@@ -31,30 +31,6 @@ func TestRunReadOnly(t *testing.T) {
 	}
 }
 
-func TestNeedsLegacy(t *testing.T) {
-	if NeedsLegacy(nil) {
-		t.Fatal("bare diag should be native")
-	}
-	if NeedsLegacy([]string{"--json"}) {
-		t.Fatal("json should be native")
-	}
-	if NeedsLegacy([]string{"--share"}) {
-		t.Fatal("share should be native")
-	}
-	if NeedsLegacy([]string{"logs"}) {
-		t.Fatal("logs should be native")
-	}
-	if NeedsLegacy([]string{"doctor", "--dry-run"}) {
-		t.Fatal("doctor dry-run should be native")
-	}
-	if NeedsLegacy([]string{"doctor"}) {
-		t.Fatal("live doctor should be native")
-	}
-	if NeedsLegacy([]string{"logs", "--follow"}) {
-		t.Fatal("follow should be native")
-	}
-}
-
 func TestDoctorPlan(t *testing.T) {
 	r := Report{
 		BinariesOK: false, HooksOK: false, SkinsDirOK: false,

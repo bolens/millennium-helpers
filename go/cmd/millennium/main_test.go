@@ -605,3 +605,26 @@ func repoRoot(t *testing.T) string {
 	}
 	return filepath.Clean(filepath.Join(wd, ".."))
 }
+
+func TestScheduleConfigDoesNotDiscardUnknownFlags(t *testing.T) {
+	got, ok := takeConfigArgs([]string{"--typo", "config", "list"})
+	if !ok || len(got) != 2 || got[0] != "--typo" || got[1] != "list" {
+		t.Fatalf("args=%q routed=%v", got, ok)
+	}
+}
+
+func TestDispatcherReturnsStatusWithoutExitingProcess(t *testing.T) {
+	for _, tc := range []struct {
+		args []string
+		want int
+	}{
+		{[]string{"diag", "--help"}, 0},
+		{[]string{"mcp", "--invalid"}, 2},
+		{[]string{"schedule", "--typo", "config", "list"}, 1},
+		{[]string{"diag", "doctor", "--share"}, 1},
+	} {
+		if got := run(tc.args); got != tc.want {
+			t.Fatalf("%q: code=%d want=%d", tc.args, got, tc.want)
+		}
+	}
+}

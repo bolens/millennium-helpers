@@ -9,3 +9,5 @@ Installation validation alone does not establish feature completion.
 - [Portable Woodpecker validation](003-woodpecker-validation/spec.md) - planned native CI transition.
 
 - [SteamRT3 recovery](004-steamrt64-recovery/spec.md): [plan](004-steamrt64-recovery/plan.md), [tasks](004-steamrt64-recovery/tasks.md).
+
+- [CLI and transaction consistency](005-cli-determinism/spec.md): [plan](005-cli-determinism/plan.md), [tasks](005-cli-determinism/tasks.md).
