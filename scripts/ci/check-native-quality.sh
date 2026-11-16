@@ -15,6 +15,7 @@ python3 -m venv "$scratch/venv"
 "$scratch/venv/bin/pip" install --disable-pip-version-check zizmor==1.29.0
 (cd go && golangci-lint run --config=../.golangci.yml)
 actionlint
+shellcheck .devcontainer/*.sh
 "$scratch/venv/bin/zizmor" --offline --min-severity medium --min-confidence medium .github/workflows
 python3 -m compileall -q scripts
 ruff check scripts
