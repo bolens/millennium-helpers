@@ -11,7 +11,7 @@ Installers:
 - Architecture: x64
   InstallerType: zip
   InstallerUrl: https://github.com/bolens/millennium-helpers/releases/download/v4.1.0/millennium-helpers-v4.1.0-windows-amd64.zip
-  InstallerSha256: "67ED6EFD411A863D80C6642B1B6BDC31F1C79308852A5843F1AA5FBD1F6F578C"
+  InstallerSha256: "2C7AA37D0F536EF769E53906E7E0CDA70116ED303C0DC08553C27C38005057A1"
   UpgradeBehavior: uninstallPrevious
 ManifestType: installer
 ManifestVersion: 1.5.0
