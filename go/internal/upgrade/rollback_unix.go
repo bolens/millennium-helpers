@@ -24,6 +24,9 @@ func rollbackPlatformLocked(backupName string, o Options) error {
 		if err := clientfiles.Verify(backupPath); err != nil {
 			return fmt.Errorf("backup validation failed: %w", err)
 		}
+		if err := validateClientActivation(backupPath, o.AllUsers); err != nil {
+			return err
+		}
 		if err := clientfiles.NormalizeHelpers(backupPath); err != nil {
 			return fmt.Errorf("backup permissions failed: %w", err)
 		}

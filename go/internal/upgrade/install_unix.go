@@ -12,6 +12,7 @@ import (
 	"github.com/bolens/millennium-helpers/internal/archive"
 	"github.com/bolens/millennium-helpers/internal/clientfiles"
 	"github.com/bolens/millennium-helpers/internal/repair"
+	"github.com/bolens/millennium-helpers/internal/steam"
 )
 
 func installPlatformLocked(archivePath, version string, o Options) error {
@@ -38,7 +39,11 @@ func installPlatformLocked(archivePath, version string, o Options) error {
 	if err := os.MkdirAll(destTmp, 0o755); err != nil {
 		return err
 	}
+	defer func() { _ = os.RemoveAll(destTmp) }()
 	if err := copyTreeFiles(src, destTmp); err != nil {
+		return err
+	}
+	if err := validateClientActivation(destTmp, o.AllUsers); err != nil {
 		return err
 	}
 	if err := normalizeRuntimeHelperModes(destTmp); err != nil {
@@ -158,4 +163,31 @@ func linkHooksForHome(home string) error {
 		return nil
 	}
 	return repair.InstallHooksAt(steam, InstallRoot())
+}
+
+// validateClientActivation refuses a legacy client before replacing the active
+// installation when any targeted Steam tree needs the x64 client components.
+func validateClientActivation(root string, allUsers bool) error {
+	if runtime.GOOS != "linux" {
+		return nil
+	}
+	homes, err := hookHomes(allUsers)
+	if err != nil {
+		return err
+	}
+	roots := steam.DirCandidates()
+	for _, home := range homes {
+		for _, relative := range []string{".local/share/Steam", ".steam/steam", ".steam/root", ".var/app/com.valvesoftware.Steam/.local/share/Steam"} {
+			roots = append(roots, filepath.Join(home, relative))
+		}
+	}
+	for _, candidate := range roots {
+		if repair.SteamRT3(candidate) {
+			if err := clientfiles.ValidateLinux64(root); err != nil {
+				return fmt.Errorf("client activation refused: %w; select a compatible release with millennium upgrade --channel stable", err)
+			}
+			break
+		}
+	}
+	return nil
 }

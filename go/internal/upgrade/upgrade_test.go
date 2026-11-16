@@ -268,6 +268,10 @@ func TestWindowsBackupName(t *testing.T) {
 }
 
 func TestApplyRollbackUnix(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
+	t.Setenv("SUDO_USER", "")
+	t.Setenv("STEAM", "")
+	t.Setenv("STEAM_PATH", "")
 	if runtime.GOOS == "windows" {
 		t.Skip("unix rollback")
 	}

@@ -24,3 +24,10 @@ suites passed, the pinned native quality script passed, actionlint and zizmor
 passed, and all declared Nix platforms evaluated. The secret scan reported only
 two existing synthetic token fixtures and no skipped files. Staged gitleaks and
 commit hooks passed. No independent reviewer was used.
+
+Release activation follow-up: reject legacy archives and rollback candidates
+before replacing the active install when a targeted account has SteamRT3. This
+includes beta/main channels resolving to an older beta. Tests cover active and
+hook preservation, untouched backup permissions, compatible components, custom
+Steam roots, and all-users detection. Existing rollback fixtures isolate HOME
+so they do not depend on the developer's installed Steam version.
